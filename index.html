@@ -199,47 +199,96 @@ const chapters = [
   { at: 0.68, title: 'Your object next', text: 'Facade, interior, Kizhi, Fallingwater — same format on your frames. Pavel Galanté · Qora.' },
 ];
 
-// ——— sound (IG: first gesture unlocks pleasant ambient) ———
+// ——— sound: exact IG home theme (IG_HomePage_v5_v4.mp3) ———
 const soundCue = $('soundCue');
 let soundOn = false;
-// 1:1 IG home theme: /sounds/general/IG_HomePage_v5_v4.mp3
+const AMBIENT_URL = new URL('./assets/sounds/ambient_loop.mp3', import.meta.url).href;
+const CLICK_URL = new URL('./assets/sounds/click.mp3', import.meta.url).href;
+const MUSIC_VOL = 1;
+
 const music = new Howl({
-  src: ['./assets/sounds/ambient_loop.mp3'],
+  src: [AMBIENT_URL],
   loop: true,
-  volume: 0,
+  volume: MUSIC_VOL,
   preload: true,
-  html5: true,
+  html5: false, // WebAudio — html5 play() was silently failing
 });
-const tick = new Howl({ src: ['./assets/sounds/click.mp3'], volume: 0.22, preload: true });
-const MUSIC_VOL = 1; // IG Bde.IG_HomePage_v5_v4 = 1
-function enableSound() {
-  if (soundOn) return;
-  soundOn = true;
-  soundBtn.textContent = 'Sound on';
-  soundBtn.classList.add('is-on');
-  soundCue.classList.add('is-hide');
-  try { Howler.ctx?.resume?.(); } catch (_) {}
-  if (!music.playing()) music.play();
-  music.fade(music.volume(), MUSIC_VOL, 2000); // IG P3 = 2000ms
+const tick = new Howl({ src: [CLICK_URL], volume: 0.25, preload: true, html5: false });
+
+music.on('loaderror', (_id, err) => console.error('[sound] ambient loaderror', err, AMBIENT_URL));
+music.on('playerror', (_id, err) => console.error('[sound] ambient playerror', err));
+
+function setSoundUI(on) {
+  soundOn = on;
+  soundBtn.textContent = on ? 'Sound on' : 'Sound off';
+  soundBtn.classList.toggle('is-on', on);
+  soundCue.classList.toggle('is-hide', on);
 }
+
+async function enableSound() {
+  setSoundUI(true);
+  try {
+    if (Howler.ctx && Howler.ctx.state !== 'running') await Howler.ctx.resume();
+  } catch (_) {}
+  Howler.mute(false);
+  Howler.volume(1);
+
+  const kick = () => {
+    if (music.playing()) {
+      music.volume(MUSIC_VOL);
+      return;
+    }
+    music.volume(0);
+    const id = music.play();
+    // audible immediately, then ease to full (IG ~2s)
+    if (id == null) {
+      // retry once on next tick (gesture / decode race)
+      requestAnimationFrame(() => {
+        music.volume(MUSIC_VOL);
+        music.play();
+      });
+      return;
+    }
+    music.fade(0, MUSIC_VOL, 2000, id);
+  };
+
+  if (music.state() === 'loaded') kick();
+  else music.once('load', kick);
+}
+
 function disableSound() {
-  if (!soundOn) return;
-  soundOn = false;
-  soundBtn.textContent = 'Sound off';
-  soundBtn.classList.remove('is-on');
-  music.fade(music.volume(), 0, 450);
-  setTimeout(() => { if (!soundOn) music.pause(); }, 500);
+  setSoundUI(false);
+  const v = music.volume();
+  music.fade(typeof v === 'number' ? v : MUSIC_VOL, 0, 400);
+  setTimeout(() => { if (!soundOn) music.stop(); }, 450);
 }
+
 soundBtn.onclick = (e) => {
+  e.preventDefault();
   e.stopPropagation();
-  tick.play();
-  if (!soundOn) enableSound(); else disableSound();
+  if (!soundOn || !music.playing()) {
+    try { tick.play(); } catch (_) {}
+    enableSound();
+  } else {
+    try { tick.play(); } catch (_) {}
+    disableSound();
+  }
 };
-soundCue.onclick = (e) => { e.stopPropagation(); tick.play(); enableSound(); };
-// any first gesture starts music (browser autoplay policy)
-const unlock = () => { enableSound(); window.removeEventListener('pointerdown', unlock); window.removeEventListener('keydown', unlock); };
-window.addEventListener('pointerdown', unlock, { once: true });
-window.addEventListener('keydown', unlock, { once: true });
+soundCue.onclick = (e) => {
+  e.preventDefault();
+  e.stopPropagation();
+  try { tick.play(); } catch (_) {}
+  enableSound();
+};
+
+// first real user gesture unlocks audio (IG pattern)
+const unlock = () => {
+  enableSound();
+  window.removeEventListener('pointerdown', unlock, true);
+  window.removeEventListener('keydown', unlock, true);
+};
+window.addEventListener('pointerdown', unlock, { once: true, capture: true });
+window.addEventListener('keydown', unlock, { once: true, capture: true });
 
 // ——— LOADER ———
 const loadState = { p: 0 };
