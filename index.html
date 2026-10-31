@@ -461,23 +461,18 @@ const chapters = [
   { at: 0.68, title: 'Your object. This format.', text: 'Facade, interior, Kizhi, Fallingwater — we rebuild this study on your frames. Pavel Galanté · Qora.' },
 ];
 
-// ——— SOUND (Howler, IG pattern) ———
+// ——— SOUND ———
 let soundOn = false;
-const ambient = new Howl({
+const music = new Howl({
   src: ['./assets/sounds/ambient.wav'],
   loop: true,
   volume: 0,
   preload: true,
-});
-const marble = new Howl({
-  src: ['./assets/sounds/marble.wav'],
-  loop: true,
-  volume: 0,
-  preload: true,
+  html5: false,
 });
 const tick = new Howl({
   src: ['./assets/sounds/click.mp3', './assets/sounds/pop.ogg'],
-  volume: 0.35,
+  volume: 0.28,
   preload: true,
 });
 
@@ -486,21 +481,22 @@ function enableSound() {
   soundOn = true;
   soundBtn.textContent = 'Sound on';
   soundBtn.classList.add('is-on');
-  if (!ambient.playing()) ambient.play();
-  if (!marble.playing()) marble.play();
-  ambient.fade(0, 0.28, 1600);
-  marble.fade(0, 0.09, 2200);
+  // unlock AudioContext then play
+  try { Howler.ctx && Howler.ctx.resume && Howler.ctx.resume(); } catch (_) {}
+  if (!music.playing()) music.play();
+  music.fade(music.volume(), 0.42, 1400);
 }
 function toggleSound() {
-  if (!soundOn) { enableSound(); tick.play(); return; }
+  tick.play();
+  if (!soundOn) { enableSound(); return; }
   soundOn = false;
   soundBtn.textContent = 'Sound off';
   soundBtn.classList.remove('is-on');
-  ambient.fade(ambient.volume(), 0, 500);
-  marble.fade(marble.volume(), 0, 500);
-  setTimeout(() => { ambient.stop(); marble.stop(); }, 520);
+  const v = music.volume();
+  music.fade(v, 0, 450);
+  setTimeout(() => { if (!soundOn) music.pause(); }, 480);
 }
-soundBtn.addEventListener('click', toggleSound);
+soundBtn.addEventListener('click', (e) => { e.stopPropagation(); toggleSound(); });
 
 // ——— THREE ———
 const canvas = $('webgl');
@@ -552,6 +548,8 @@ for (const t of [plasterMap, reliefMap]) {
 plasterMap.repeat.set(2.4, 2.4);
 depthMap.minFilter = THREE.LinearFilter;
 depthMap.magFilter = THREE.LinearFilter;
+depthMap.wrapS = depthMap.wrapT = THREE.ClampToEdgeWrapping;
+reliefMap.wrapS = reliefMap.wrapT = THREE.ClampToEdgeWrapping;
 
 // Full-field plaster wall
 const wallMat = new THREE.MeshStandardMaterial({
@@ -564,15 +562,15 @@ const wall = new THREE.Mesh(new THREE.PlaneGeometry(18, 12), wallMat);
 wall.position.z = -0.4;
 scene.add(wall);
 
-// Bas-relief (displaced + lit) — the IG signature
+// Bas-relief — smooth parallax + lit normals (no fract / no vertex shake)
 const uniforms = {
   uMap: { value: reliefMap },
   uDepth: { value: depthMap },
-  uDisplace: { value: 0.15 },
+  uDisplace: { value: 0.22 },
   uScroll: { value: 0 },
   uMouse: { value: new THREE.Vector2() },
-  uLightDir: { value: new THREE.Vector3(-0.45, 0.75, 0.55).normalize() },
-  uTime: { value: 0 },
+  uLightDir: { value: new THREE.Vector3(-0.4, 0.72, 0.6).normalize() },
+  uParallax: { value: 0.045 },
 };
 
 const reliefMat = new THREE.ShaderMaterial({
@@ -582,32 +580,32 @@ const reliefMat = new THREE.ShaderMaterial({
     uniform sampler2D uDepth;
     uniform float uDisplace;
     uniform float uScroll;
-    uniform vec2 uMouse;
     varying vec2 vUv;
     varying float vD;
     varying vec3 vN;
     varying vec3 vW;
 
+    vec2 scrollUv(vec2 uv) {
+      // soft pan down — NO fract (fract = тряска на шве)
+      return clamp(uv + vec2(0.0, uScroll), 0.002, 0.998);
+    }
+
     void main() {
       vUv = uv;
-      // scroll field downward (IG: ride along the wall)
-      vec2 duv = uv;
-      duv.y = fract(uv.y + uScroll);
+      vec2 duv = scrollUv(uv);
       float d = texture2D(uDepth, duv).r;
       vD = d;
 
-      // finite differences for normals from depth
-      float texel = 1.0 / 512.0;
-      float dL = texture2D(uDepth, duv + vec2(-texel, 0.0)).r;
-      float dR = texture2D(uDepth, duv + vec2( texel, 0.0)).r;
-      float dD = texture2D(uDepth, duv + vec2(0.0, -texel)).r;
-      float dU = texture2D(uDepth, duv + vec2(0.0,  texel)).r;
-      vec3 n = normalize(vec3((dL - dR) * uDisplace * 18.0, (dD - dU) * uDisplace * 18.0, 1.0));
+      float texel = 1.0 / 700.0;
+      float dL = texture2D(uDepth, scrollUv(uv + vec2(-texel, 0.0))).r;
+      float dR = texture2D(uDepth, scrollUv(uv + vec2( texel, 0.0))).r;
+      float dD = texture2D(uDepth, scrollUv(uv + vec2(0.0, -texel))).r;
+      float dU = texture2D(uDepth, scrollUv(uv + vec2(0.0,  texel))).r;
+      vec3 n = normalize(vec3((dL - dR) * uDisplace * 14.0, (dD - dU) * uDisplace * 14.0, 1.0));
       vN = normalize(normalMatrix * n);
 
       vec3 pos = position;
-      pos.z += (d - 0.35) * uDisplace;
-      pos.xy += uMouse * d * 0.08;
+      pos.z += (d - 0.32) * uDisplace;
 
       vec4 mv = modelViewMatrix * vec4(pos, 1.0);
       vW = mv.xyz;
@@ -616,37 +614,51 @@ const reliefMat = new THREE.ShaderMaterial({
   `,
   fragmentShader: /* glsl */`
     uniform sampler2D uMap;
+    uniform sampler2D uDepth;
     uniform float uScroll;
+    uniform vec2 uMouse;
     uniform vec3 uLightDir;
     uniform float uDisplace;
+    uniform float uParallax;
     varying vec2 vUv;
     varying float vD;
     varying vec3 vN;
     varying vec3 vW;
 
-    void main() {
-      vec2 duv = vUv;
-      duv.y = fract(vUv.y + uScroll);
-      vec3 albedo = texture2D(uMap, duv).rgb;
-      // desaturate toward stone
-      float g = dot(albedo, vec3(0.299, 0.587, 0.114));
-      albedo = mix(albedo, vec3(g), 0.35);
-      albedo = mix(albedo, vec3(0.88), 0.18);
+    vec2 scrollUv(vec2 uv) {
+      return clamp(uv + vec2(0.0, uScroll), 0.002, 0.998);
+    }
 
-      vec3 N = normalize(vN);
+    void main() {
+      // mouse moves the carved layer (depth parallax) — плавно меняет «эту часть»
+      float d0 = texture2D(uDepth, scrollUv(vUv)).r;
+      vec2 parallax = uMouse * (d0 - 0.2) * uParallax;
+      vec2 duv = scrollUv(vUv + parallax);
+
+      vec3 albedo = texture2D(uMap, duv).rgb;
+      float g = dot(albedo, vec3(0.299, 0.587, 0.114));
+      albedo = mix(albedo, vec3(g), 0.32);
+      albedo = mix(albedo, vec3(0.89), 0.16);
+
+      float d = texture2D(uDepth, duv).r;
+      // refresh normal with parallaxed depth
+      float texel = 1.0 / 700.0;
+      float dL = texture2D(uDepth, clamp(duv + vec2(-texel, 0.0), 0.002, 0.998)).r;
+      float dR = texture2D(uDepth, clamp(duv + vec2( texel, 0.0), 0.002, 0.998)).r;
+      float dDn = texture2D(uDepth, clamp(duv + vec2(0.0, -texel), 0.002, 0.998)).r;
+      float dUp = texture2D(uDepth, clamp(duv + vec2(0.0,  texel), 0.002, 0.998)).r;
+      vec3 nTex = normalize(vec3((dL - dR) * uDisplace * 14.0, (dDn - dUp) * uDisplace * 14.0, 1.0));
+      vec3 N = normalize(mix(normalize(vN), nTex, 0.65));
+
       vec3 L = normalize(uLightDir);
       float diff = clamp(dot(N, L), 0.0, 1.0);
-      float amb = 0.55;
       vec3 V = normalize(-vW);
       vec3 H = normalize(L + V);
-      float spec = pow(clamp(dot(N, H), 0.0, 1.0), 42.0) * 0.22 * smoothstep(0.2, 0.8, vD);
+      float spec = pow(clamp(dot(N, H), 0.0, 1.0), 48.0) * 0.2 * smoothstep(0.25, 0.85, d);
 
-      // AO in recesses
-      float ao = mix(0.72, 1.0, pow(vD, 0.85));
-      float shade = amb + diff * 0.55;
-      vec3 col = albedo * shade * ao + vec3(spec);
-      // soft paper grade
-      col = mix(col, vec3(0.91), 0.06);
+      float ao = mix(0.74, 1.0, pow(d, 0.9));
+      vec3 col = albedo * (0.52 + diff * 0.58) * ao + vec3(spec);
+      col = mix(col, vec3(0.91), 0.05);
 
       gl_FragColor = vec4(col, 1.0);
     }
@@ -654,10 +666,10 @@ const reliefMat = new THREE.ShaderMaterial({
 });
 
 const relief = new THREE.Mesh(
-  new THREE.PlaneGeometry(7.2, 3.6, 320, 160),
+  new THREE.PlaneGeometry(7.6, 3.8, 200, 110),
   reliefMat
 );
-relief.position.set(0, -0.85, 0.15);
+relief.position.set(0, -0.35, 0.15);
 scene.add(relief);
 
 function fit() {
@@ -701,16 +713,21 @@ await Promise.all([
 setLoader(1);
 finishLoad();
 
-// ——— virtual scroll ———
+// ——— virtual scroll (heavily damped = no shake) ———
 let target = 0;
 let progress = 0;
+let scrollU = 0;
+let displaceU = 0.22;
 const mouse = new THREE.Vector2();
 const mouseS = new THREE.Vector2();
+const cam = new THREE.Vector3(0, 0, 6.2);
+const look = new THREE.Vector3(0, -0.35, 0);
+const lightS = new THREE.Vector3(-0.4, 0.72, 0.6);
 
 function onWheel(e) {
   e.preventDefault();
-  enableSound(); // first gesture unlocks audio (IG pattern)
-  target = THREE.MathUtils.clamp(target + e.deltaY * 0.00085, 0, 1);
+  enableSound();
+  target = THREE.MathUtils.clamp(target + e.deltaY * 0.00055, 0, 1);
 }
 addEventListener('wheel', onWheel, { passive: false });
 
@@ -722,7 +739,7 @@ addEventListener('touchmove', (e) => {
   enableSound();
   const dy = touchY - e.touches[0].clientY;
   touchY = e.touches[0].clientY;
-  target = THREE.MathUtils.clamp(target + dy * 0.0026, 0, 1);
+  target = THREE.MathUtils.clamp(target + dy * 0.0018, 0, 1);
 }, { passive: false });
 
 addEventListener('pointermove', (e) => {
@@ -740,7 +757,7 @@ menu.querySelectorAll('[data-jump]').forEach((btn) => {
     menu.classList.remove('is-open');
   });
 });
-$('projectsLink').addEventListener('mouseenter', () => tick.play());
+$('projectsLink').addEventListener('mouseenter', () => { if (soundOn) tick.play(); });
 
 let chapter = -1;
 function syncChapter(p) {
@@ -759,44 +776,58 @@ function syncChapter(p) {
     panelTitle.textContent = chapters[idx].title;
     panelText.textContent = chapters[idx].text;
     panel.classList.add('is-on');
-  }, 200);
+  }, 220);
 }
 
 const clock = new THREE.Clock();
-function frame() {
-  const dt = Math.min(clock.getDelta(), 0.05);
-  const t = clock.elapsedTime;
+function damp(current, next, speed, dt) {
+  return current + (next - current) * (1 - Math.exp(-speed * dt));
+}
 
-  progress += (target - progress) * (1 - Math.exp(-dt * 3.5));
+function frame() {
+  const dt = Math.min(clock.getDelta(), 0.033);
+
+  // soft scroll
+  progress = damp(progress, target, 2.4, dt);
   const p = progress;
 
-  // ride the wall downward
-  uniforms.uScroll.value = p * 0.55;
-  // volume grows like IG relief awakening
-  uniforms.uDisplace.value = THREE.MathUtils.lerp(0.12, 0.72, THREE.MathUtils.smoothstep(p, 0.0, 0.55));
-  uniforms.uTime.value = t;
+  const scrollTarget = p * 0.18; // small pan, no wrap
+  const displaceTarget = THREE.MathUtils.lerp(0.2, 0.55, THREE.MathUtils.smoothstep(p, 0.0, 0.6));
+  scrollU = damp(scrollU, scrollTarget, 2.2, dt);
+  displaceU = damp(displaceU, displaceTarget, 2.0, dt);
+  uniforms.uScroll.value = scrollU;
+  uniforms.uDisplace.value = displaceU;
 
-  mouseS.lerp(mouse, 1 - Math.exp(-dt * 5));
-  uniforms.uMouse.value.copy(mouseS).multiplyScalar(0.15);
-  // light follows mouse slightly
-  uniforms.uLightDir.value.set(-0.45 + mouseS.x * 0.25, 0.75 + mouseS.y * 0.1, 0.55).normalize();
+  // mouse: very smooth — меняет свет + parallax кусок рельефа
+  mouseS.x = damp(mouseS.x, mouse.x, 3.2, dt);
+  mouseS.y = damp(mouseS.y, mouse.y, 3.2, dt);
+  uniforms.uMouse.value.set(mouseS.x, mouseS.y);
 
-  // camera micro-parallax (IG feel), not fly-into
-  camera.position.x = mouseS.x * 0.12;
-  camera.position.y = mouseS.y * 0.06;
-  camera.lookAt(0, -0.4 - p * 0.15, 0);
+  lightS.x = damp(lightS.x, -0.4 + mouseS.x * 0.55, 2.8, dt);
+  lightS.y = damp(lightS.y, 0.72 + mouseS.y * 0.28, 2.8, dt);
+  lightS.z = 0.6;
+  uniforms.uLightDir.value.copy(lightS).normalize();
 
-  relief.position.y = THREE.MathUtils.lerp(-0.55, 0.35, p);
-  wall.position.y = p * -0.35;
+  // camera barely breathes — no shake
+  cam.x = damp(cam.x, mouseS.x * 0.045, 2.5, dt);
+  cam.y = damp(cam.y, mouseS.y * 0.025, 2.5, dt);
+  cam.z = 6.2;
+  look.x = damp(look.x, mouseS.x * 0.02, 2.5, dt);
+  look.y = damp(look.y, -0.35 + mouseS.y * 0.02 - p * 0.08, 2.2, dt);
+  camera.position.copy(cam);
+  camera.lookAt(look);
+
+  relief.position.y = damp(relief.position.y, THREE.MathUtils.lerp(-0.2, 0.15, p), 2.0, dt);
+  wall.position.y = damp(wall.position.y, p * -0.12, 2.0, dt);
 
   rail.style.height = `${(p * 100).toFixed(1)}%`;
-  midScroll.classList.toggle('is-hide', p > 0.06);
+  midScroll.classList.toggle('is-hide', p > 0.05);
   syncChapter(p);
 
-  // marble bed volume with scroll
-  if (soundOn) {
-    const mv = 0.05 + p * 0.08;
-    if (Math.abs(marble.volume() - mv) > 0.01) marble.volume(mv);
+  if (soundOn && music.playing()) {
+    const want = 0.34 + p * 0.1;
+    const cur = music.volume();
+    if (Math.abs(cur - want) > 0.02) music.volume(damp(cur, want, 1.2, dt));
   }
 
   renderer.render(scene, camera);
