@@ -5,10 +5,21 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
 <title>Qora · Study</title>
 <meta name="theme-color" content="#e8e8e8" />
-<link rel="preconnect" href="https://fonts.googleapis.com" />
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-<link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;1,400&family=Inter:wght@300;400;500&display=swap" rel="stylesheet" />
 <style>
+  @font-face {
+    font-family: PSTimes;
+    font-weight: 400;
+    font-style: normal;
+    font-display: swap;
+    src: url("./assets/fonts/PSTimes.woff2") format("woff2");
+  }
+  @font-face {
+    font-family: HelveticaNeueRegular;
+    font-weight: 400;
+    font-style: normal;
+    font-display: swap;
+    src: url("./assets/fonts/HelveticaNeue.woff2") format("woff2");
+  }
   :root {
     --bg: #e8e8e8;
     --ink: #030303;
@@ -21,7 +32,7 @@
     overflow: hidden;
     background: var(--bg);
     color: var(--ink);
-    font-family: Inter, Helvetica, Arial, sans-serif;
+    font-family: HelveticaNeueRegular, Helvetica, Arial, sans-serif;
     font-weight: 400;
     -webkit-font-smoothing: antialiased;
     touch-action: none;
@@ -35,92 +46,111 @@
     height: 100%;
     display: block;
     z-index: 1;
+    opacity: 0;
   }
 
-  /* ——— LOADER (IG introLoader) ——— */
+  /* ——— LOADER 1:1 Immersive Garden ——— */
   .introLoader {
     position: fixed;
     inset: 0;
-    z-index: 50;
-    background: var(--bg);
-    display: grid;
-    grid-template-columns: 1fr;
-    align-items: center;
-    transition: opacity .9s ease, visibility .9s ease;
+    z-index: 1010;
+    height: 100vh;
+    width: 100%;
+    color: #030303;
+    pointer-events: auto;
+    will-change: transform;
   }
   .introLoader.is-done {
-    opacity: 0;
-    visibility: hidden;
     pointer-events: none;
   }
-  .introLoader__row {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    width: 100%;
-    padding: 0 clamp(24px, 4vw, 56px);
-    gap: 24px;
-  }
-  .introLoader__logo {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    flex: 0 0 auto;
-  }
-  .introLoader__mark {
-    width: 28px;
-    height: 28px;
-  }
-  .introLoader__brand {
-    font-size: 11px;
-    letter-spacing: .28em;
-    text-transform: uppercase;
-    font-weight: 500;
-  }
-  .introLoader__progressWrap {
-    position: relative;
-    flex: 1 1 auto;
-    max-width: 640px;
-    margin: 0 auto;
-  }
-  .introLoader__baseline {
-    font-family: "EB Garamond", "Times New Roman", serif;
-    font-size: clamp(22px, 2.6vw, 37px);
-    font-weight: 400;
-    line-height: 1.15;
-    letter-spacing: -.01em;
-    color: rgba(3,3,3,.18);
-    white-space: nowrap;
-    text-align: center;
-  }
-  .introLoader__fill {
+  .introLoader__bg {
     position: absolute;
     inset: 0;
-    overflow: hidden;
-    width: 0%;
+    background: #e8e8e8;
+    will-change: opacity;
+  }
+  .introLoader__wrapper {
+    position: relative;
+    z-index: 2;
+    height: 100%;
+    width: 100%;
+    max-width: 2088px;
+    margin: 0 auto;
+    padding: 0 16px;
+    display: grid;
+    grid-template-columns: repeat(12, 1fr);
+    column-gap: 16px;
+    align-items: center;
+    align-content: center;
+  }
+  .introLoader__logo {
+    grid-column: 2 / 4;
+    position: relative;
+    will-change: transform, opacity;
+  }
+  .introLoader__logo svg {
+    display: block;
+    width: 76%;
+    min-width: 170px;
+    height: auto;
+    opacity: 0;
+  }
+  .introLoader__progressWrapper {
+    grid-column: 4 / 10;
+    position: relative;
+    font-family: PSTimes, "Times New Roman", serif;
+    font-size: clamp(28px, 1.944vw, 37.24px);
+    font-weight: 400;
+    line-height: 1.2;
+  }
+  .introLoader__progressBar {
+    position: absolute;
+    top: .5em;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    opacity: .2;
     pointer-events: none;
   }
-  .introLoader__fill > span {
-    display: block;
-    width: max-content;
-    min-width: 100%;
-    font-family: "EB Garamond", "Times New Roman", serif;
-    font-size: clamp(22px, 2.6vw, 37px);
-    font-weight: 400;
-    line-height: 1.15;
-    letter-spacing: -.01em;
-    color: var(--ink);
-    white-space: nowrap;
-    text-align: center;
+  .introLoader__progressBar > div {
+    width: 100%;
+    height: 1px;
+    background: currentColor;
+    transform: scaleX(0);
+    transform-origin: 0 0;
+    will-change: transform, opacity;
   }
-  .introLoader__pct {
-    flex: 0 0 auto;
-    width: 64px;
-    text-align: right;
-    font-size: 11px;
-    letter-spacing: .2em;
-    color: var(--mute);
+  .introLoader__baseline {
+    display: flex;
+    flex-wrap: wrap;
+    gap: .33em;
+    margin-top: -.2em;
+    will-change: transform;
+  }
+  .introLoader__baseline > div {
+    opacity: 0;
+    will-change: opacity;
+  }
+  .introLoader__scrollDown {
+    grid-column: 10 / 13;
+    font-family: HelveticaNeueRegular, Helvetica, Arial, sans-serif;
+    font-size: 14px;
+    line-height: 1.1;
+    opacity: 0;
+    will-change: opacity, transform;
+    text-align: left;
+  }
+  .introLoader__scrollDown .num {
+    opacity: .6;
     font-variant-numeric: tabular-nums;
+    min-width: 2.2em;
+  }
+  @media (max-width: 1024px) {
+    .introLoader__logo { grid-column: 1 / 5; }
+    .introLoader__progressWrapper,
+    .introLoader__scrollDown { grid-column: 1 / 12; }
+    .introLoader__scrollDown { margin-top: 18px; }
   }
 
   /* ——— CHROME (IG home) ——— */
@@ -183,8 +213,8 @@
   .mid-title {
     flex: 1 1 auto;
     text-align: center;
-    font-family: "EB Garamond", "Times New Roman", serif;
-    font-size: clamp(22px, 2.6vw, 37px);
+    font-family: PSTimes, "Times New Roman", serif;
+    font-size: clamp(22px, 1.944vw, 37px);
     font-weight: 400;
     letter-spacing: -.01em;
     line-height: 1.15;
@@ -195,7 +225,7 @@
     flex: 0 0 auto;
     min-width: 160px;
     text-align: right;
-    font-family: "EB Garamond", serif;
+    font-family: HelveticaNeueRegular, Helvetica, Arial, sans-serif;
     font-size: 14px;
     color: var(--ink);
     opacity: .85;
@@ -300,7 +330,7 @@
     transform: translateY(0);
   }
   .panel h2 {
-    font-family: "EB Garamond", serif;
+    font-family: PSTimes, "Times New Roman", serif;
     font-size: clamp(28px, 4vw, 42px);
     font-weight: 400;
     line-height: 1.05;
@@ -333,7 +363,7 @@
   .menu-sheet ul { list-style: none; text-align: center; }
   .menu-sheet li { margin: 18px 0; }
   .menu-sheet a, .menu-sheet button {
-    font-family: "EB Garamond", serif;
+    font-family: PSTimes, "Times New Roman", serif;
     font-size: clamp(28px, 5vw, 44px);
     color: var(--ink);
     text-decoration: none;
@@ -362,21 +392,35 @@
 </style>
 </head>
 <body>
-  <!-- LOADER -->
-  <div class="introLoader" id="loader">
-    <div class="introLoader__row">
-      <div class="introLoader__logo">
-        <svg class="introLoader__mark" viewBox="0 0 32 32" fill="none" aria-hidden="true">
-          <path d="M16 2.5 L27 8.2 V19.5 L16 29.5 L5 19.5 V8.2 Z" stroke="#030303" stroke-width="1.2"/>
-          <path d="M11.5 20 V12.5 H15.2 C17.1 12.5 18.2 13.5 18.2 15.1 C18.2 16.7 17.1 17.7 15.2 17.7 H13.2 V20 H11.5 Z M13.2 16.3 H15 C16 16.3 16.5 15.9 16.5 15.1 C16.5 14.3 16 13.9 15 13.9 H13.2 V16.3 Z" fill="#030303"/>
+  <!-- LOADER — Immersive Garden 1:1 structure -->
+  <div class="introLoader main" id="loader">
+    <div class="introLoader__bg" id="loaderBg"></div>
+    <div class="introLoader__wrapper">
+      <div class="introLoader__logo" id="loaderLogo">
+        <svg viewBox="0 0 180 36" fill="none" aria-hidden="true">
+          <defs>
+            <mask id="logoMask">
+              <rect id="logoMaskRect" x="-118" y="0" width="180" height="36" fill="#fff"/>
+            </mask>
+          </defs>
+          <g mask="url(#logoMask)">
+            <path d="M14 2.5 L26 8.5 V20.5 L14 31.5 L2 20.5 V8.5 Z" stroke="#030303" stroke-width="1.15" fill="none"/>
+            <path d="M9.2 22.2 V12.8 H13.4 C15.55 12.8 16.85 13.95 16.85 15.85 C16.85 17.7 15.55 18.85 13.4 18.85 H11.2 V22.2 H9.2 Z M11.2 17.2 H13.25 C14.35 17.2 14.85 16.75 14.85 15.85 C14.85 14.95 14.35 14.5 13.25 14.5 H11.2 V17.2 Z" fill="#030303"/>
+            <text x="34" y="22.5" fill="#030303" font-family="HelveticaNeueRegular, Helvetica, Arial, sans-serif" font-size="11" letter-spacing="3.2">QORA</text>
+          </g>
         </svg>
-        <div class="introLoader__brand">Qora</div>
       </div>
-      <div class="introLoader__progressWrap">
-        <div class="introLoader__baseline" id="loadBase">Atmospheres for architecture</div>
-        <div class="introLoader__fill" id="loadFill"><span>Atmospheres for architecture</span></div>
+      <div class="introLoader__progressWrapper">
+        <div class="introLoader__progressBar"><div id="progressLine"></div></div>
+        <div class="introLoader__baseline" id="baseline">
+          <div>Atmospheres</div>
+          <div>for</div>
+          <div>architecture</div>
+        </div>
       </div>
-      <div class="introLoader__pct" id="loadPct">0</div>
+      <div class="introLoader__scrollDown" id="scrollDown">
+        <div><div class="num" id="loadPct">0</div></div>
+      </div>
     </div>
   </div>
 
@@ -428,22 +472,25 @@
   </div>
 
 <script src="https://cdn.jsdelivr.net/npm/howler@2.2.4/dist/howler.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js"></script>
 <script type="importmap">
 { "imports": { "three": "https://unpkg.com/three@0.160.0/build/three.module.js" } }
 </script>
 <script type="module">
 /**
- * Immersive Garden–faithful home study
- * - introLoader text-fill progress
- * - light plaster field + lit bas-relief
- * - virtual scroll (overflow hidden)
- * - Howler ambient + marble bed + UI ticks
+ * Immersive Garden–faithful study
+ * Loader: word stagger + scaleX progress to 100 + reveal timeline (GSAP)
  */
 import * as THREE from 'three';
 
 const $ = (id) => document.getElementById(id);
 const loader = $('loader');
-const loadFill = $('loadFill');
+const loaderBg = $('loaderBg');
+const loaderLogo = $('loaderLogo');
+const logoMaskRect = $('logoMaskRect');
+const progressLine = $('progressLine');
+const baselineWords = [...document.querySelectorAll('#baseline > div')];
+const scrollDown = $('scrollDown');
 const loadPct = $('loadPct');
 const chrome = $('chrome');
 const midTitle = $('midTitle');
@@ -454,6 +501,7 @@ const panelText = $('panelText');
 const rail = $('rail');
 const soundBtn = $('soundBtn');
 const menu = $('menu');
+const webglEl = $('webgl');
 
 const chapters = [
   { at: 0.12, title: 'Relief from the plane', text: 'Scroll moves the field. Carving lifts out of plaster — volume from light and depth, not a camera flying into an object.' },
@@ -525,14 +573,100 @@ rim.position.set(0, -1, -3);
 scene.add(rim);
 
 const manager = new THREE.LoadingManager();
-let loadProgress = 0;
+let assetProgress = 0;
 manager.onProgress = (_u, loaded, total) => {
-  loadProgress = loaded / Math.max(total, 1);
-  setLoader(loadProgress * 0.92);
+  assetProgress = loaded / Math.max(total, 1);
 };
 
 const texLoader = new THREE.TextureLoader(manager);
 const asset = (p) => new URL(`./assets/${p}`, import.meta.url).href;
+
+// ——— LOADER TIMELINE (IG 1:1) ———
+const loadState = { p: 0 };
+const MIN_LOAD_MS = 2800;
+const loadStartedAt = performance.now();
+
+function setProgressVisual(p) {
+  const pct = Math.max(0, Math.min(1, p));
+  gsap.set(progressLine, { scaleX: pct });
+  loadPct.textContent = String(Math.round(pct * 100));
+}
+
+// intro reveal (like Ee)
+function playIntroIn() {
+  const tl = gsap.timeline();
+  // logo mask wipe in — quart.out 2.5s (IG: from -66%)
+  gsap.set(loaderLogo.querySelector('svg'), { opacity: 1 });
+  tl.fromTo(
+    logoMaskRect,
+    { attr: { x: -118 } },
+    { attr: { x: 0 }, duration: 2.5, ease: 'quart.out' },
+    0
+  );
+  // words stagger
+  tl.fromTo(
+    baselineWords,
+    { opacity: 0 },
+    { opacity: 1, duration: 1, ease: 'sine.inOut', stagger: 0.1 },
+    0.3
+  );
+  // percent / scroll-down
+  tl.fromTo(scrollDown, { opacity: 0 }, { opacity: 1, duration: 0.8, ease: 'sine.inOut' }, 0.35);
+  return tl;
+}
+
+function playIntroOut(onDone) {
+  // like IG oe()/ce() — progress fades, words stagger out, logo mask out, then bg
+  const tl = gsap.timeline({
+    onComplete: () => {
+      loader.classList.add('is-done');
+      loader.style.visibility = 'hidden';
+      onDone && onDone();
+    },
+  });
+  // number → “Scroll down”
+  tl.to(loadPct, {
+    duration: 0.35,
+    ease: 'sine.inOut',
+    onStart: () => { loadPct.textContent = 'Scroll down'; loadPct.style.opacity = '1'; },
+  }, 0);
+  tl.to(progressLine.parentElement, { opacity: 0, duration: 1.2, ease: 'sine.inOut' }, 0);
+  tl.to(baselineWords, { opacity: 0, duration: 1, ease: 'sine.inOut', stagger: -0.1 }, 0.15);
+  tl.to(logoMaskRect, {
+    attr: { x: -118 },
+    duration: 2,
+    ease: 'quart.inOut',
+  }, 0);
+  tl.to(loaderLogo, { opacity: 0, duration: 0.5, ease: 'sine.inOut' }, 1.9);
+  tl.to(scrollDown, { opacity: 0, duration: 0.8, ease: 'sine.inOut' }, 1.9);
+  tl.to(loaderBg, { opacity: 0, duration: 1.2, ease: 'sine.inOut' }, 2.05);
+  tl.to(webglEl, { opacity: 1, duration: 1.1, ease: 'sine.inOut' }, 2.1);
+  tl.add(() => {
+    chrome.classList.add('is-on');
+    gsap.fromTo(chrome, { opacity: 0 }, { opacity: 1, duration: 0.9, ease: 'sine.inOut' });
+  }, 2.25);
+  return tl;
+}
+
+function tickLoader() {
+  const elapsed = performance.now() - loadStartedAt;
+  const timeP = Math.min(1, elapsed / MIN_LOAD_MS);
+  // smooth approach: never jump, ease toward max(assets, time)
+  const target = Math.min(1, Math.max(assetProgress * 0.97, timeP * 0.92));
+  // when both ready — go to 100
+  const ready = assetProgress >= 1 && elapsed >= MIN_LOAD_MS;
+  const goal = ready ? 1 : target;
+  loadState.p += (goal - loadState.p) * 0.08;
+  if (ready && loadState.p > 0.995) loadState.p = 1;
+  setProgressVisual(loadState.p);
+  if (loadState.p < 1) {
+    requestAnimationFrame(tickLoader);
+  } else {
+    setProgressVisual(1);
+    // hold a beat on 100, then beautiful out
+    gsap.delayedCall(0.45, () => playIntroOut());
+  }
+}
 
 const [plasterMap, reliefMap, depthMap] = await Promise.all([
   texLoader.loadAsync(asset('tex/plaster.jpg')),
@@ -685,33 +819,17 @@ function fit() {
 addEventListener('resize', fit);
 fit();
 
-// ——— loader UX ———
-function setLoader(p) {
-  const pct = Math.max(0, Math.min(1, p));
-  loadFill.style.width = `${(pct * 100).toFixed(2)}%`;
-  loadPct.textContent = String(Math.round(pct * 100));
-}
+// start IG intro-in immediately, progress runs in parallel with assets
+playIntroIn();
+requestAnimationFrame(tickLoader);
 
-// fake tail so load never sticks at 92 visually
-let ready = false;
-function finishLoad() {
-  if (ready) return;
-  ready = true;
-  setLoader(1);
-  setTimeout(() => {
-    loader.classList.add('is-done');
-    chrome.classList.add('is-on');
-    // gentle start displace
-  }, 380);
-}
-
-// ensure textures decoded then finish
+// ensure textures decoded (feeds LoadingManager → assetProgress)
 await Promise.all([
   plasterMap.image.decode?.() ?? Promise.resolve(),
   reliefMap.image.decode?.() ?? Promise.resolve(),
+  document.fonts.ready.catch(() => {}),
 ]);
-setLoader(1);
-finishLoad();
+assetProgress = 1;
 
 // ——— virtual scroll (heavily damped = no shake) ———
 let target = 0;
