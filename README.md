@@ -1,1 +1,7 @@
-Architecture Commission V4 — scroll-driven perspective relief. Open index.html in Safari or Chrome; assets/ must remain beside index.html. Original architectural image requires commercial licensing before production. The depth map is an artistic approximation, not a scanned 3D asset. To deploy, upload the complete folder to an HTTPS static host. Scroll 3-4 viewport heights to explore the orbit and camera dolly. Cursor reveals subtle light interaction.
+OBSERVATORY / RESTORED V7
+
+Open index.html with assets/ alongside it. For best results serve via HTTP (python3 -m http.server 8080).
+
+Restored V2 localized cursor refraction. Scroll now holds scene sticky through three viewport-height chapters, changes camera zoom and orbit plus depth parallax. No CDN dependencies.
+
+Image licensing not established: replace before commercial publication. Depth is approximate 2.5D, not a true 3D reconstruction.
