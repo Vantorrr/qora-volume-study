@@ -10,9 +10,17 @@
   @font-face{font-family:HelveticaNeueRegular;src:url("./assets/fonts/HelveticaNeue.woff2") format("woff2");font-display:swap}
   :root{--bg:#e8e8e8;--ink:#030303}
   *{box-sizing:border-box;margin:0;padding:0}
-  html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);color:var(--ink);
-    font-family:HelveticaNeueRegular,Helvetica,Arial,sans-serif;-webkit-font-smoothing:antialiased;touch-action:none}
-  #webgl{position:fixed;inset:0;width:100%;height:100%;display:block;z-index:1;opacity:0}
+  html.lenis,html.lenis body{height:auto}
+  html,body{width:100%;min-height:100%;background:var(--bg);color:var(--ink);
+    font-family:HelveticaNeueRegular,Helvetica,Arial,sans-serif;-webkit-font-smoothing:antialiased}
+  body{overflow-x:hidden}
+  #webgl{position:fixed;inset:0;width:100%;height:100%;display:block;z-index:1;opacity:0;pointer-events:none}
+  .scroll-spacer{height:420vh;width:1px;pointer-events:none}
+  .sound-cue{position:fixed;left:50%;bottom:max(64px,env(safe-area-inset-bottom));transform:translateX(-50%);
+    z-index:20;font-size:12px;letter-spacing:.2em;text-transform:uppercase;color:rgba(3,3,3,.55);
+    pointer-events:auto;cursor:pointer;background:none;border:0;font:inherit;padding:10px 14px;
+    transition:opacity .5s}
+  .sound-cue.is-hide{opacity:0;pointer-events:none}
 
   /* LOADER — IG */
   .introLoader{position:fixed;inset:0;z-index:1010;color:#030303}
@@ -118,7 +126,9 @@
   </div>
 
   <canvas id="webgl"></canvas>
-  <div class="hint" id="moveHint">Move cursor · scroll to enter</div>
+  <div class="scroll-spacer" aria-hidden="true"></div>
+  <div class="hint" id="moveHint">Scroll to enter</div>
+  <button class="sound-cue" id="soundCue" type="button">Click anywhere for sound</button>
 
   <div class="chrome" id="chrome">
     <button class="sound" id="soundBtn" type="button">Sound off</button>
@@ -151,13 +161,16 @@
 
 <script src="https://cdn.jsdelivr.net/npm/howler@2.2.4/dist/howler.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js"></script>
-<script type="importmap">{ "imports": { "three": "https://unpkg.com/three@0.160.0/build/three.module.js" } }</script>
+<script type="importmap">{ "imports": {
+  "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
+  "lenis": "https://cdn.jsdelivr.net/npm/lenis@1.1.18/+esm"
+} }</script>
 <script type="module">
 /**
- * Immersive Garden core: hidden image revealed by mouse FLUID WAVES
- * (fluidFlowmap: density + velocity splat → distort + reveal)
+ * IG stack: Lenis scroll + Howler ambient + fluid density reveal
  */
 import * as THREE from 'three';
+import Lenis from 'lenis';
 
 const $ = (id) => document.getElementById(id);
 const loader = $('loader');
@@ -186,34 +199,46 @@ const chapters = [
   { at: 0.68, title: 'Your object next', text: 'Facade, interior, Kizhi, Fallingwater — same format on your frames. Pavel Galanté · Qora.' },
 ];
 
-// ——— sound ———
+// ——— sound (IG: first gesture unlocks pleasant ambient) ———
+const soundCue = $('soundCue');
 let soundOn = false;
 const music = new Howl({
   src: ['./assets/sounds/ambient_loop.mp3'],
   loop: true,
   volume: 0,
   preload: true,
-  html5: true,
+  html5: false,
 });
-const tick = new Howl({ src: ['./assets/sounds/click.mp3'], volume: 0.15, preload: true });
+const tick = new Howl({ src: ['./assets/sounds/click.mp3'], volume: 0.18, preload: true });
+const MUSIC_VOL = 0.42;
 function enableSound() {
   if (soundOn) return;
   soundOn = true;
   soundBtn.textContent = 'Sound on';
   soundBtn.classList.add('is-on');
+  soundCue.classList.add('is-hide');
   try { Howler.ctx?.resume?.(); } catch (_) {}
   if (!music.playing()) music.play();
-  music.fade(0, 0.16, 1800); // quiet, not a buzz
+  music.fade(music.volume(), MUSIC_VOL, 1600);
+}
+function disableSound() {
+  if (!soundOn) return;
+  soundOn = false;
+  soundBtn.textContent = 'Sound off';
+  soundBtn.classList.remove('is-on');
+  music.fade(music.volume(), 0, 450);
+  setTimeout(() => { if (!soundOn) music.pause(); }, 500);
 }
 soundBtn.onclick = (e) => {
   e.stopPropagation();
-  if (!soundOn) { tick.play(); enableSound(); }
-  else {
-    tick.play();
-    soundOn = false; soundBtn.textContent = 'Sound off'; soundBtn.classList.remove('is-on');
-    music.fade(music.volume(), 0, 500); setTimeout(() => !soundOn && music.pause(), 520);
-  }
+  tick.play();
+  if (!soundOn) enableSound(); else disableSound();
 };
+soundCue.onclick = (e) => { e.stopPropagation(); tick.play(); enableSound(); };
+// any first gesture starts music (browser autoplay policy)
+const unlock = () => { enableSound(); window.removeEventListener('pointerdown', unlock); window.removeEventListener('keydown', unlock); };
+window.addEventListener('pointerdown', unlock, { once: true });
+window.addEventListener('keydown', unlock, { once: true });
 
 // ——— LOADER ———
 const loadState = { p: 0 };
@@ -244,6 +269,7 @@ function playIntroOut() {
   tl.add(() => {
     chrome.classList.add('is-on');
     gsap.fromTo(chrome, { opacity: 0 }, { opacity: 1, duration: 0.9, ease: 'sine.inOut' });
+    try { lenis.start(); } catch (_) {}
   }, 2.2);
 }
 function tickLoader() {
@@ -483,43 +509,44 @@ const viewMat = new THREE.ShaderMaterial({
     }
 
     void main(){
-      // sealed plaster wall — drifts slightly with scroll
+      // plaster wall pans with Lenis scroll
       vec2 puv = vUv * vec2(uRes.x/uRes.y, 1.0) * 1.55;
-      puv.y += uScroll * 0.1;
+      puv.y += uScroll * 0.55;
       vec3 plaster = texture2D(uPlaster, puv).rgb;
       plaster = mix(plaster, vec3(0.905), 0.5);
 
       float dens = texture2D(uDensity, vUv).r;
       vec2 vel = texture2D(uVelocity, vUv).xy;
 
-      // density → soft liquid reveal (IG)
+      // mouse fluid = soft liquid reveal
       float mask = smoothstep(0.02, 0.22, dens);
       float edge = mask * (1.0 - mask) * 4.0;
 
-      float bandY = mix(1.25, 0.36, clamp(uScroll * 1.1, 0.0, 1.0));
-      float bandH = mix(0.0, 0.46, smoothstep(0.01, 0.48, uScroll));
-      float inBand = 1.0 - smoothstep(bandH, bandH + 0.12, abs(vUv.y - bandY));
-      inBand *= smoothstep(0.0, 0.07, uScroll) * uReveal;
-      float open = max(mask, inBand * 0.95);
+      // SCROLL JOURNEY (IG): relief fills the field as you scroll
+      float scrollOpen = smoothstep(0.02, 0.28, uScroll) * uReveal;
+      scrollOpen = mix(scrollOpen, 1.0, smoothstep(0.28, 0.72, uScroll) * 0.92);
+      float open = max(mask, scrollOpen);
 
       vec2 iuv = coverUv(vUv, 16.0/9.0);
-      float by = clamp((vUv.y - (bandY - bandH)) / max(bandH * 2.15, 0.001), 0.0, 1.0);
-      iuv.y = mix(iuv.y, mix(0.12, 0.9, by), smoothstep(0.02, 0.35, uScroll));
-      iuv.x = clamp((iuv.x - 0.5) / mix(1.12, 1.0, uScroll) + 0.5, 0.0, 1.0);
-      // velocity ripples ONLY the wet edge
+      // image flows down through the frame with scroll
+      iuv.y += uScroll * 0.38;
+      iuv.x = (iuv.x - 0.5) / mix(1.08, 0.92, smoothstep(0.0, 0.8, uScroll)) + 0.5;
       iuv = clamp(iuv - vel * 0.022 * edge, 0.001, 0.999);
 
       vec3 img = texture2D(uImage, iuv).rgb;
       float g = dot(img, vec3(0.299, 0.587, 0.114));
-      img = mix(img, vec3(g * 0.92 + 0.04), 0.18);
+      img = mix(img, vec3(g * 0.92 + 0.04), 0.15);
 
       float dL = texture2D(uDepth, clamp(iuv+vec2(-0.002,0.),0.,1.)).r;
       float dR = texture2D(uDepth, clamp(iuv+vec2( 0.002,0.),0.,1.)).r;
       float dD = texture2D(uDepth, clamp(iuv+vec2(0.,-0.002),0.,1.)).r;
       float dU = texture2D(uDepth, clamp(iuv+vec2(0., 0.002),0.,1.)).r;
-      vec3 N = normalize(vec3(dL-dR, dD-dU, 0.5));
+      vec3 N = normalize(vec3(dL-dR, dD-dU, mix(0.7, 0.35, scrollOpen)));
       vec3 Ldir = normalize(vec3((uMouse.x-0.5)*0.7, (uMouse.y-0.5)*0.7, 1.15));
-      img *= 0.72 + clamp(dot(N, Ldir), 0., 1.) * 0.38;
+      float lit = 0.72 + clamp(dot(N, Ldir), 0., 1.) * 0.38;
+      // volume reading grows with scroll
+      float depthBoost = mix(1.0, 0.78 + texture2D(uDepth, iuv).r * 0.4, scrollOpen);
+      img *= lit * depthBoost;
 
       vec3 col = mix(plaster, img, open);
       col += img * edge * 0.1;
@@ -579,7 +606,25 @@ window.addEventListener('pointerdown', (e) => {
 window.addEventListener('pointerup', () => { pointerDown = false; });
 window.addEventListener('pointerleave', () => { pointerDown = false; paintActive = false; });
 
-let targetScroll = 0, scrollP = 0;
+// ——— Lenis scroll (same stack as Immersive Garden) ———
+let scrollP = 0;
+const lenis = new Lenis({
+  lerp: isMobile ? 0.12 : 0.075,
+  wheelMultiplier: 0.95,
+  touchMultiplier: 1.35,
+  syncTouch: true,
+  smoothWheel: true,
+});
+lenis.stop(); // locked during loader
+lenis.on('scroll', ({ progress }) => {
+  scrollP = THREE.MathUtils.clamp(progress, 0, 1);
+});
+function lenisRaf(time) {
+  lenis.raf(time);
+  requestAnimationFrame(lenisRaf);
+}
+requestAnimationFrame(lenisRaf);
+
 let chapterIdx = -1;
 function applyChapter(p) {
   let idx = -1;
@@ -597,50 +642,15 @@ function applyChapter(p) {
   panel.classList.add('is-on');
 }
 
-window.addEventListener('wheel', (e) => {
-  e.preventDefault();
-  const step = Math.abs(e.deltaY) > 40 ? e.deltaY * 0.00135 : e.deltaY * 0.0011;
-  targetScroll = THREE.MathUtils.clamp(targetScroll + step, 0, 1);
-}, { passive: false });
-
-// mobile: finger paints; mostly-vertical swipe scrolls; rail is a scrubber
-const touchState = { y: 0, x: 0, mode: null }; // null | 'paint' | 'scroll'
-window.addEventListener('touchstart', (e) => {
-  const t = e.touches[0];
-  touchState.x = t.clientX; touchState.y = t.clientY; touchState.mode = null;
-  setPointerUV(t.clientX, t.clientY);
-  prevMouse.copy(mouse);
-}, { passive: true });
-window.addEventListener('touchmove', (e) => {
-  const t = e.touches[0];
-  const dx = t.clientX - touchState.x;
-  const dy = t.clientY - touchState.y;
-  if (!touchState.mode) {
-    if (Math.abs(dx) + Math.abs(dy) < 8) return;
-    // right-edge rail zone OR dominant vertical → scroll; else paint
-    const nearRail = t.clientX > innerWidth * 0.82;
-    touchState.mode = (nearRail || Math.abs(dy) > Math.abs(dx) * 1.35) ? 'scroll' : 'paint';
-  }
-  e.preventDefault();
-  if (touchState.mode === 'scroll') {
-    targetScroll = THREE.MathUtils.clamp(targetScroll + (-dy) * 0.0024, 0, 1);
-    touchState.x = t.clientX; touchState.y = t.clientY;
-  } else {
-    paintActive = true;
-    setPointerUV(t.clientX, t.clientY);
-    touchState.x = t.clientX; touchState.y = t.clientY;
-  }
-}, { passive: false });
-window.addEventListener('touchend', () => { touchState.mode = null; paintActive = false; });
-
-// scrub progress rail on mobile / desktop
+// scrub progress rail
 const botRight = document.querySelector('.bot-right');
 botRight?.addEventListener('pointerdown', (e) => {
   e.stopPropagation();
   const scrub = (ev) => {
     const rect = botRight.getBoundingClientRect();
-    const t = THREE.MathUtils.clamp((ev.clientY - rect.top) / rect.height, 0, 1);
-    targetScroll = t;
+    const t = THREE.MathUtils.clamp((ev.clientY - rect.top) / Math.max(rect.height, 1), 0, 1);
+    const max = Math.max(1, document.documentElement.scrollHeight - innerHeight);
+    lenis.scrollTo(t * max, { immediate: false });
   };
   scrub(e);
   const move = (ev) => scrub(ev);
@@ -652,10 +662,13 @@ botRight?.addEventListener('pointerdown', (e) => {
 $('menuBtn').onclick = () => { tick.play(); menu.classList.add('is-open'); };
 $('menuClose').onclick = () => { tick.play(); menu.classList.remove('is-open'); };
 menu.querySelectorAll('[data-jump]').forEach((b) => b.onclick = () => {
-  tick.play(); targetScroll = +b.dataset.jump; menu.classList.remove('is-open');
+  tick.play();
+  const max = Math.max(1, document.documentElement.scrollHeight - innerHeight);
+  lenis.scrollTo((+b.dataset.jump) * max, { lerp: 0.08 });
+  menu.classList.remove('is-open');
 });
 
-if (isMobile) moveHint.textContent = 'Drag to paint · swipe to scroll';
+if (isMobile) moveHint.textContent = 'Scroll · drag to paint';
 
 const clock = new THREE.Clock();
 const PRESSURE_ITERS = isMobile ? 12 : 18;
@@ -664,7 +677,6 @@ function frame() {
   const dt = Math.min(clock.getDelta(), 0.033);
   const t = clock.elapsedTime;
   mouseSmooth.lerp(mouse, 1 - Math.exp(-dt * 10));
-  scrollP += (targetScroll - scrollP) * (1 - Math.exp(-dt * 3.2));
 
   const force = new THREE.Vector2().subVectors(mouse, prevMouse);
   const speed = Math.min(force.length() * (isMobile ? 55 : 70), 1.2);
@@ -736,7 +748,7 @@ function frame() {
   // keep a tiny idle motion so desktop hover still paints without click
   if (!isMobile) paintActive = true;
 
-  const reveal = THREE.MathUtils.smoothstep(scrollP, 0.02, 0.42);
+  const reveal = THREE.MathUtils.smoothstep(scrollP, 0.01, 0.22);
   viewUniforms.uDensity.value = densityA.texture;
   viewUniforms.uVelocity.value = velA.texture;
   viewUniforms.uMouse.value.copy(mouseSmooth);
@@ -745,7 +757,8 @@ function frame() {
   viewUniforms.uTime.value = t;
 
   rail.style.height = `${(scrollP * 100).toFixed(1)}%`;
-  midScroll.classList.toggle('is-hide', scrollP > 0.04);
+  midScroll.classList.toggle('is-hide', scrollP > 0.03);
+  if (scrollP > 0.02) moveHint.classList.add('is-hide');
   applyChapter(scrollP);
 
   renderer.render(scene, camera);
