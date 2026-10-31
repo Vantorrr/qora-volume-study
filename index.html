@@ -1,820 +1,94 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-<title>Qora · Study</title>
-<meta name="theme-color" content="#e8e8e8" />
-<style>
-  @font-face{font-family:PSTimes;src:url("./assets/fonts/PSTimes.woff2") format("woff2");font-display:swap}
-  @font-face{font-family:HelveticaNeueRegular;src:url("./assets/fonts/HelveticaNeue.woff2") format("woff2");font-display:swap}
-  :root{--bg:#e8e8e8;--ink:#030303}
-  *{box-sizing:border-box;margin:0;padding:0}
-  html.lenis,html.lenis body{height:auto}
-  html,body{width:100%;min-height:100%;background:var(--bg);color:var(--ink);
-    font-family:HelveticaNeueRegular,Helvetica,Arial,sans-serif;-webkit-font-smoothing:antialiased}
-  body{overflow-x:hidden}
-  #webgl{position:fixed;inset:0;width:100%;height:100%;display:block;z-index:1;opacity:0;pointer-events:none}
-  .scroll-spacer{height:420vh;width:1px;pointer-events:none}
-  .sound-cue{position:fixed;left:50%;bottom:max(64px,env(safe-area-inset-bottom));transform:translateX(-50%);
-    z-index:20;font-size:12px;letter-spacing:.2em;text-transform:uppercase;color:rgba(3,3,3,.55);
-    pointer-events:auto;cursor:pointer;background:none;border:0;font:inherit;padding:10px 14px;
-    transition:opacity .5s}
-  .sound-cue.is-hide{opacity:0;pointer-events:none}
-
-  /* LOADER — IG */
-  .introLoader{position:fixed;inset:0;z-index:1010;color:#030303}
-  .introLoader.is-done{pointer-events:none;visibility:hidden}
-  .introLoader__bg{position:absolute;inset:0;background:#e8e8e8}
-  .introLoader__wrapper{position:relative;z-index:2;height:100%;max-width:2088px;margin:0 auto;padding:0 16px;
-    display:grid;grid-template-columns:repeat(12,1fr);column-gap:16px;align-items:center}
-  .introLoader__logo{grid-column:2/4}
-  .introLoader__logo svg{display:block;width:76%;min-width:160px;opacity:0}
-  .introLoader__progressWrapper{grid-column:4/10;position:relative;font-family:PSTimes,serif;
-    font-size:clamp(28px,1.944vw,37px);line-height:1.2}
-  .introLoader__progressBar{position:absolute;top:.5em;left:0;width:100%;height:100%;display:flex;opacity:.2}
-  .introLoader__progressBar>div{width:100%;height:1px;background:currentColor;transform:scaleX(0);transform-origin:0 0}
-  .introLoader__baseline{display:flex;flex-wrap:wrap;gap:.33em;margin-top:-.2em}
-  .introLoader__baseline>div{opacity:0}
-  .introLoader__scrollDown{grid-column:10/13;font-size:14px;opacity:0}
-  .introLoader__scrollDown .num{opacity:.6;font-variant-numeric:tabular-nums}
-  @media(max-width:1024px){
-    .introLoader__logo{grid-column:1/5}
-    .introLoader__progressWrapper,.introLoader__scrollDown{grid-column:1/12}
-  }
-
-  .chrome{position:fixed;inset:0;z-index:10;pointer-events:none;opacity:0}
-  .chrome.is-on{opacity:1}
-  .nav-top{position:absolute;top:clamp(20px,3vw,40px);right:clamp(24px,4vw,56px);pointer-events:auto}
-  .nav-top button,.sound{background:none;border:0;font:inherit;font-size:13px;color:var(--ink);cursor:pointer}
-  .sound{position:absolute;left:clamp(24px,4vw,56px);top:clamp(20px,3vw,40px);pointer-events:auto;
-    font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:rgba(3,3,3,.45)}
-  .sound.is-on{color:var(--ink)}
-  .credit{position:absolute;right:clamp(88px,10vw,140px);top:clamp(22px,3vw,42px);font-size:11px;color:rgba(3,3,3,.4)}
-  .midline{position:absolute;left:0;right:0;top:50%;transform:translateY(-50%);
-    display:flex;align-items:center;justify-content:space-between;padding:0 clamp(24px,4vw,56px);gap:20px}
-  .mid-logo{display:flex;align-items:center;gap:10px;text-decoration:none;color:inherit;pointer-events:auto;min-width:150px}
-  .mid-logo svg{width:28px;height:28px}
-  .mid-logo span{font-size:11px;letter-spacing:.28em;text-transform:uppercase}
-  .mid-title{flex:1;text-align:center;font-family:PSTimes,serif;font-size:clamp(22px,1.944vw,37px);transition:opacity .55s,transform .55s}
-  .mid-title.is-dim{opacity:0;transform:translateY(-10px)}
-  .mid-scroll{min-width:150px;text-align:right;font-size:14px;opacity:.85;transition:opacity .4s}
-  .mid-scroll.is-hide{opacity:0}
-  .panel{position:absolute;left:clamp(24px,4vw,56px);bottom:clamp(88px,14vh,150px);max-width:min(420px,86vw);
-    opacity:0;transform:translateY(16px);transition:opacity .55s,transform .55s;pointer-events:none}
-  .panel.is-on{opacity:1;transform:translateY(0)}
-  .panel h2{font-family:PSTimes,serif;font-size:clamp(28px,3.6vw,40px);font-weight:400;line-height:1.05;margin-bottom:10px}
-  .panel p{font-size:14px;line-height:1.55;color:rgba(3,3,3,.7);max-width:34ch}
-  .bot-left{position:absolute;left:clamp(24px,4vw,56px);bottom:clamp(20px,3vw,40px);pointer-events:auto}
-  .bot-left a{font-size:13px;color:inherit;text-decoration:none}
-  .bot-right{position:absolute;right:clamp(24px,4vw,56px);bottom:clamp(24px,3vw,44px)}
-  .dot{width:5px;height:5px;border-radius:50%;background:#030303;margin-left:auto}
-  .rail{width:1px;height:72px;background:rgba(3,3,3,.12);position:relative;margin-bottom:14px;margin-left:auto}
-  .rail>i{position:absolute;top:0;left:0;width:100%;height:0%;background:#030303}
-  .hint{position:fixed;left:50%;bottom:48px;transform:translateX(-50%);z-index:12;
-    font-size:11px;letter-spacing:.22em;text-transform:uppercase;color:rgba(3,3,3,.35);
-    pointer-events:none;transition:opacity .6s}
-  .hint.is-hide{opacity:0}
-  .menu-sheet{position:fixed;inset:0;z-index:40;background:rgba(232,232,232,.97);
-    display:grid;place-items:center;opacity:0;visibility:hidden;transition:.35s;pointer-events:none}
-  .menu-sheet.is-open{opacity:1;visibility:visible;pointer-events:auto}
-  .menu-sheet a,.menu-sheet button{font-family:PSTimes,serif;font-size:clamp(28px,5vw,44px);
-    color:inherit;background:none;border:0;text-decoration:none;cursor:pointer;display:block;margin:16px auto}
-  .menu-close{position:absolute!important;top:28px;right:40px;font-family:HelveticaNeueRegular,sans-serif!important;font-size:13px!important}
-
-  /* mobile */
-  @media(max-width:768px){
-    .credit{display:none}
-    .sound{letter-spacing:.12em;font-size:10px;left:16px;top:18px}
-    .nav-top{right:16px;top:18px}
-    .midline{top:auto;bottom:42%;padding:0 16px;flex-direction:column;gap:10px;align-items:flex-start}
-    .mid-logo{min-width:0}
-    .mid-title{text-align:left;font-size:clamp(20px,6.2vw,28px);max-width:18ch}
-    .mid-scroll{min-width:0;text-align:left;font-size:13px}
-    .panel{left:16px;right:16px;bottom:110px;max-width:none}
-    .panel h2{font-size:clamp(26px,7vw,34px)}
-    .panel p{font-size:13px;max-width:36ch}
-    .bot-left{left:16px;bottom:18px}
-    .bot-right{right:16px;bottom:22px;pointer-events:auto}
-    .rail{height:88px;width:2px}
-    .hint{bottom:max(28px,env(safe-area-inset-bottom));font-size:10px;letter-spacing:.16em}
-  }
-</style>
-</head>
-<body>
-  <div class="introLoader" id="loader">
-    <div class="introLoader__bg" id="loaderBg"></div>
-    <div class="introLoader__wrapper">
-      <div class="introLoader__logo" id="loaderLogo">
-        <svg viewBox="0 0 180 36" fill="none">
-          <defs><mask id="logoMask"><rect id="logoMaskRect" x="-118" y="0" width="180" height="36" fill="#fff"/></mask></defs>
-          <g mask="url(#logoMask)">
-            <path d="M14 2.5 L26 8.5 V20.5 L14 31.5 L2 20.5 V8.5 Z" stroke="#030303" stroke-width="1.15" fill="none"/>
-            <path d="M9.2 22.2 V12.8 H13.4 C15.55 12.8 16.85 13.95 16.85 15.85 C16.85 17.7 15.55 18.85 13.4 18.85 H11.2 V22.2 H9.2 Z M11.2 17.2 H13.25 C14.35 17.2 14.85 16.75 14.85 15.85 C14.85 14.95 14.35 14.5 13.25 14.5 H11.2 V17.2 Z" fill="#030303"/>
-            <text x="34" y="22.5" fill="#030303" font-family="Helvetica,Arial,sans-serif" font-size="11" letter-spacing="3.2">QORA</text>
-          </g>
-        </svg>
-      </div>
-      <div class="introLoader__progressWrapper">
-        <div class="introLoader__progressBar"><div id="progressLine"></div></div>
-        <div class="introLoader__baseline" id="baseline">
-          <div>Atmospheres</div><div>for</div><div>architecture</div>
-        </div>
-      </div>
-      <div class="introLoader__scrollDown" id="scrollDown"><div><div class="num" id="loadPct">0</div></div></div>
-    </div>
-  </div>
-
-  <canvas id="webgl"></canvas>
-  <div class="scroll-spacer" aria-hidden="true"></div>
-  <div class="hint" id="moveHint">Scroll to enter</div>
-  <button class="sound-cue" id="soundCue" type="button">Click anywhere for sound</button>
-
-  <div class="chrome" id="chrome">
-    <button class="sound" id="soundBtn" type="button">Sound off</button>
-    <div class="credit">Study · for Vadim</div>
-    <div class="nav-top"><button type="button" id="menuBtn">Menu</button></div>
-    <div class="midline">
-      <a class="mid-logo" href="https://qora.group" target="_blank" rel="noopener">
-        <svg viewBox="0 0 32 32" fill="none"><path d="M16 2.5 L27 8.2 V19.5 L16 29.5 L5 19.5 V8.2 Z" stroke="#030303" stroke-width="1.2"/><path d="M11.5 20 V12.5 H15.2 C17.1 12.5 18.2 13.5 18.2 15.1 C18.2 16.7 17.1 17.7 15.2 17.7 H13.2 V20 H11.5 Z M13.2 16.3 H15 C16 16.3 16.5 15.9 16.5 15.1 C16.5 14.3 16 13.9 15 13.9 H13.2 V16.3 Z" fill="#030303"/></svg>
-        <span>Qora</span>
-      </a>
-      <div class="mid-title" id="midTitle">Atmospheres for architecture</div>
-      <div class="mid-scroll" id="midScroll">Scroll down</div>
-    </div>
-    <div class="panel" id="panel">
-      <h2 id="panelTitle">Relief from the plane</h2>
-      <p id="panelText">Scroll moves the carved field into view. Mouse keeps a soft local wave — like Immersive Garden.</p>
-    </div>
-    <div class="bot-left"><a href="https://qora.group" target="_blank" rel="noopener">See the approach →</a></div>
-    <div class="bot-right"><div class="rail"><i id="rail"></i></div><div class="dot"></div></div>
-  </div>
-
-  <div class="menu-sheet" id="menu">
-    <button class="menu-close" type="button" id="menuClose">Close</button>
-    <div>
-      <button type="button" data-jump="0">Home</button>
-      <a href="https://qora.group" target="_blank" rel="noopener">qora.group</a>
-      <a href="https://t.me/pavel_xdev" target="_blank" rel="noopener">@pavel_xdev</a>
-    </div>
-  </div>
-
-<script src="https://cdn.jsdelivr.net/npm/howler@2.2.4/dist/howler.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js"></script>
-<script type="importmap">{ "imports": {
-  "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
-  "lenis": "https://cdn.jsdelivr.net/npm/lenis@1.1.18/+esm"
-} }</script>
-<script type="module">
-/**
- * IG stack: Lenis scroll + Howler ambient + fluid density reveal
- */
-import * as THREE from 'three';
-import Lenis from 'lenis';
-
-const $ = (id) => document.getElementById(id);
-const loader = $('loader');
-const progressLine = $('progressLine');
-const loadPct = $('loadPct');
-const baselineWords = [...document.querySelectorAll('#baseline > div')];
-const scrollDown = $('scrollDown');
-const logoMaskRect = $('logoMaskRect');
-const loaderLogo = $('loaderLogo');
-const loaderBg = $('loaderBg');
-const chrome = $('chrome');
-const webglEl = $('webgl');
-const moveHint = $('moveHint');
-const rail = $('rail');
-const midScroll = $('midScroll');
-const soundBtn = $('soundBtn');
-const menu = $('menu');
-const midTitle = $('midTitle');
-const panel = $('panel');
-const panelTitle = $('panelTitle');
-const panelText = $('panelText');
-
-const chapters = [
-  { at: 0.08, title: 'Relief from the plane', text: 'The carved surface rises into the field as you scroll — presence first, like Immersive Garden.' },
-  { at: 0.38, title: 'Atmosphere as product', text: 'Not a gallery of slides. A space the client enters with the wheel and the cursor.' },
-  { at: 0.68, title: 'Your object next', text: 'Facade, interior, Kizhi, Fallingwater — same format on your frames. Pavel Galanté · Qora.' },
-];
-
-// ——— sound: exact IG home theme (IG_HomePage_v5_v4.mp3) ———
-const soundCue = $('soundCue');
-let soundOn = false;
-const AMBIENT_URL = new URL('./assets/sounds/ambient_loop.mp3', import.meta.url).href;
-const CLICK_URL = new URL('./assets/sounds/click.mp3', import.meta.url).href;
-const MUSIC_VOL = 1;
-
-const music = new Howl({
-  src: [AMBIENT_URL],
-  loop: true,
-  volume: MUSIC_VOL,
-  preload: true,
-  html5: false, // WebAudio — html5 play() was silently failing
-});
-const tick = new Howl({ src: [CLICK_URL], volume: 0.25, preload: true, html5: false });
-
-music.on('loaderror', (_id, err) => console.error('[sound] ambient loaderror', err, AMBIENT_URL));
-music.on('playerror', (_id, err) => console.error('[sound] ambient playerror', err));
-
-function setSoundUI(on) {
-  soundOn = on;
-  soundBtn.textContent = on ? 'Sound on' : 'Sound off';
-  soundBtn.classList.toggle('is-on', on);
-  soundCue.classList.toggle('is-hide', on);
-}
-
-async function enableSound() {
-  setSoundUI(true);
-  try {
-    if (Howler.ctx && Howler.ctx.state !== 'running') await Howler.ctx.resume();
-  } catch (_) {}
-  Howler.mute(false);
-  Howler.volume(1);
-
-  const kick = () => {
-    if (music.playing()) {
-      music.volume(MUSIC_VOL);
-      return;
-    }
-    music.volume(0);
-    const id = music.play();
-    // audible immediately, then ease to full (IG ~2s)
-    if (id == null) {
-      // retry once on next tick (gesture / decode race)
-      requestAnimationFrame(() => {
-        music.volume(MUSIC_VOL);
-        music.play();
-      });
-      return;
-    }
-    music.fade(0, MUSIC_VOL, 2000, id);
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#e8e8e8"><meta name="description" content="QORA — architecture felt before it is seen. An immersive study in sculpted atmosphere."><title>QORA — The material remembers</title><style>
+:root{--paper:#e8e8e8;--ink:#030303}*{box-sizing:border-box}html{background:var(--paper)}body{margin:0;background:var(--paper);color:var(--ink);font-family:Arial,'Helvetica Neue',sans-serif;overflow-x:hidden}button,a{font:inherit;color:inherit}button{cursor:pointer}#webgl{position:fixed;inset:0;z-index:1;pointer-events:none}#grain{position:fixed;inset:0;pointer-events:none;z-index:3;opacity:.14;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 180 180' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.7' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.18'/%3E%3C/svg%3E")}#content{position:relative;z-index:2;pointer-events:none}header{position:fixed;z-index:9;top:0;left:0;width:100%;display:flex;align-items:center;justify-content:space-between;padding:25px 34px;mix-blend-mode:multiply}header .brand{font-family:Georgia,serif;font-size:31px;letter-spacing:-.085em;font-weight:400}header .controls{display:flex;gap:36px}header button{background:none;border:0;font-size:11px;text-transform:uppercase;letter-spacing:.16em;padding:10px 0}.centerlabel{position:fixed;z-index:8;top:38px;left:50%;transform:translateX(-50%);font-size:10px;letter-spacing:.19em;text-transform:uppercase;pointer-events:none}.rail{position:fixed;z-index:8;right:31px;top:50%;transform:translateY(-50%);display:flex;align-items:center;gap:14px}.rail span{font-size:10px}.track{height:115px;width:1px;background:#8886;position:relative}.track i{display:block;position:absolute;top:0;left:0;width:1px;height:0;background:#030303}.scrollprompt{position:fixed;bottom:30px;left:34px;z-index:8;font-size:10px;text-transform:uppercase;letter-spacing:.15em}.index{position:fixed;bottom:30px;right:34px;z-index:8;font-size:10px;letter-spacing:.1em}section{height:145vh;min-height:850px;position:relative;display:flex;align-items:center;padding:0 8vw}section.hero{height:110vh;min-height:650px;align-items:flex-end;padding-bottom:12vh}section .copy{max-width:650px;position:relative}h1,h2{font-family:Georgia,'Times New Roman',serif;font-weight:400;letter-spacing:-.067em;line-height:.91;margin:0}h1{font-size:clamp(74px,12vw,220px)}h2{font-size:clamp(58px,8.6vw,145px)}.eyebrow{font-size:11px;letter-spacing:.16em;text-transform:uppercase;margin:0 0 24px}.description{font-size:clamp(14px,1.25vw,18px);line-height:1.5;max-width:340px;margin:26px 0 0}.hero .copy{margin-left:0}.hero h1{max-width:900px}.chapter-two{justify-content:flex-end;text-align:right}.chapter-two .description{margin-left:auto}.chapter-three{align-items:flex-end;padding-bottom:18vh}.final{height:100vh;min-height:620px;align-items:center;justify-content:center;text-align:center}.final h2{font-size:clamp(75px,12vw,200px)}.final a{pointer-events:auto;display:inline-block;text-decoration:none;border-bottom:1px solid;margin-top:34px;padding-bottom:8px;font-size:12px;letter-spacing:.12em;text-transform:uppercase}.footerline{position:absolute;bottom:35px;left:8vw;right:8vw;display:flex;justify-content:space-between;font-size:10px;letter-spacing:.1em;text-transform:uppercase}#loader{position:fixed;inset:0;background:#e8e8e8;z-index:30;display:flex;flex-direction:column;justify-content:space-between;padding:35px;transition:opacity 1.2s,visibility 1.2s}#loader.hide{opacity:0;visibility:hidden}#loader .loadtop{display:flex;justify-content:space-between;font-size:11px;letter-spacing:.12em;text-transform:uppercase}#loader .loadlogo{font-family:Georgia,serif;font-size:clamp(110px,26vw,450px);letter-spacing:-.1em;line-height:.7;overflow:hidden;align-self:center}#loader .loadlogo span{display:block;transform:translateY(110%);animation:rise 1.5s .15s cubic-bezier(.2,.8,.2,1) forwards}@keyframes rise{to{transform:translateY(0)}}#loader .loadbottom{display:flex;justify-content:space-between;align-items:end}#loader .percent{font-family:Georgia,serif;font-size:60px}#menu{position:fixed;inset:0;z-index:15;background:#e8e8e8;display:flex;align-items:center;justify-content:center;opacity:0;visibility:hidden;transition:.5s}#menu.open{opacity:1;visibility:visible}#menu nav{display:flex;flex-direction:column;align-items:center;gap:12px}#menu a{font:normal clamp(45px,8vw,120px)/1 Georgia,serif;letter-spacing:-.06em;text-decoration:none}#menuClose{position:absolute;right:34px;top:26px;border:0;background:none;font-size:12px;text-transform:uppercase}#soundhint{position:fixed;z-index:8;left:50%;bottom:29px;transform:translateX(-50%);font-size:10px;letter-spacing:.12em;text-transform:uppercase;white-space:nowrap;cursor:pointer;pointer-events:auto}.touchcanvas{position:fixed;inset:0;z-index:4;touch-action:pan-y;pointer-events:none;background:transparent}body.loaded .touchcanvas{pointer-events:none}@media(max-width:700px){header{padding:18px 20px}header .brand{font-size:27px}header .controls{gap:15px}.centerlabel{top:82px;font-size:9px}.scrollprompt{left:20px;bottom:22px}.index{right:20px;bottom:22px}.rail{right:20px}.touchcanvas{touch-action:pan-y}section{padding:0 7vw;min-height:650px;height:125vh}section.hero{min-height:600px;padding-bottom:21vh}h1{font-size:clamp(64px,16vw,110px)}h2{font-size:clamp(56px,13vw,95px)}.chapter-two{align-items:flex-start;padding-top:30vh}.chapter-three{padding-bottom:28vh}.description{max-width:260px}#soundhint{bottom:60px}#loader{padding:20px}#loader .loadlogo{font-size:28vw}}
+@media(prefers-reduced-motion:reduce){*{scroll-behavior:auto!important;animation-duration:.01ms!important;transition-duration:.01ms!important}}
+</style></head><body><canvas id="webgl" aria-hidden="true"></canvas><canvas class="touchcanvas" id="interaction" aria-hidden="true"></canvas><div id="grain"></div><div id="loader"><div class="loadtop"><span>QORA / IMMERSIVE STUDY</span><span>2026</span></div><div class="loadlogo"><span>Qora</span></div><div class="loadbottom"><span>ENTERING THE MATERIAL</span><span class="percent" id="percent">00</span></div></div><header><div class="brand">Qora</div><div class="controls"><button id="sound" aria-label="Toggle sound">Sound off</button><button id="menuButton" aria-label="Open menu">Menu +</button></div></header><div class="centerlabel" id="midtitle">THE MATERIAL REMEMBERS</div><div class="rail"><span id="chapterNumber">01</span><div class="track"><i id="progress"></i></div></div><div class="scrollprompt">↓ &nbsp; Scroll to feel</div><div class="index">QORA — ARCHITECTURE / 001</div><div id="soundhint">Click anywhere for sound</div><div id="menu"><button id="menuClose">Close ×</button><nav><a href="#begin">Beginning</a><a href="#relief">Relief</a><a href="#atmosphere">Atmosphere</a><a href="#next">Your object</a></nav></div><main id="content"><section class="hero" id="begin"><div class="copy"><p class="eyebrow">An architectural experience / No. 001</p><h1>Form is<br>feeling.</h1><p class="description">Before a space is seen, it is felt. A study of matter, light and the quiet presence of architecture.</p></div></section><section id="relief"><div class="copy"><p class="eyebrow">01 — The emergence</p><h2>Relief<br>from the<br>plane.</h2><p class="description">A surface remembers every gesture. Scroll slowly. Watch the invisible become tangible.</p></div></section><section class="chapter-two" id="atmosphere"><div class="copy"><p class="eyebrow">02 — A living surface</p><h2>Atmosphere<br>as product.</h2><p class="description">Not a picture of an object. The sensation of standing in front of it.</p></div></section><section class="chapter-three" id="next"><div class="copy"><p class="eyebrow">03 — An invitation</p><h2>Your object<br>next.</h2><p class="description">Every architectural story deserves its own material language.</p></div></section><section class="final"><div><p class="eyebrow">QORA / AN IMMERSIVE ARCHITECTURAL STUDY</p><h2>Make it<br>felt.</h2><span class="contactnote">A new architectural story begins here.</span></div><div class="footerline"><span>Independent digital study</span><span>© QORA 2026</span></div></section></main><script type="module">
+import * as THREE from 'https://esm.sh/three@0.170.0';import gsap from 'https://esm.sh/gsap@3.12.5';import Lenis from 'https://esm.sh/lenis@1.1.20';import {Howl,Howler} from 'https://esm.sh/howler@2.2.4';
+const reduced=matchMedia('(prefers-reduced-motion: reduce)').matches;const mobile=matchMedia('(max-width: 700px)').matches;const canvas=document.getElementById('webgl');const renderer=new THREE.WebGLRenderer({canvas,alpha:true,antialias:!mobile,powerPreference:'high-performance'});renderer.setPixelRatio(Math.min(devicePixelRatio,mobile?1.5:2));renderer.setSize(innerWidth,innerHeight);renderer.outputColorSpace=THREE.SRGBColorSpace;const scene=new THREE.Scene();const camera=new THREE.OrthographicCamera(-1,1,1,-1,.1,10);camera.position.z=2;const pointer=new THREE.Vector2(-5,-5);let velocity=0,scroll=0,targetScroll=0,clock=0;const uniforms={uTime:{value:0},uScroll:{value:0},uPointer:{value:pointer},uVelocity:{value:0},uAspect:{value:innerWidth/innerHeight},uResolution:{value:new THREE.Vector2(innerWidth,innerHeight)},uTrail:{value:Array.from({length:8},()=>new THREE.Vector3(-10,-10,0))},uEnergy:{value:0}};
+const vertex=`varying vec2 vUv;void main(){vUv=uv;gl_Position=vec4(position,1.);}`;
+const fragment=`precision highp float;varying vec2 vUv;uniform float uTime,uScroll,uVelocity,uAspect;uniform vec2 uPointer,uResolution;uniform vec3 uTrail[8];uniform float uEnergy;
+float hash(vec2 p){return fract(sin(dot(p,vec2(127.1,311.7)))*43758.5453);}float noise(vec2 p){vec2 i=floor(p),f=fract(p);f=f*f*(3.-2.*f);return mix(mix(hash(i),hash(i+vec2(1,0)),f.x),mix(hash(i+vec2(0,1)),hash(i+vec2(1,1)),f.x),f.y);}
+float petal(vec2 p,float angle,float len,float width){vec2 q=mat2(cos(angle),-sin(angle),sin(angle),cos(angle))*p;q.y-=len*.45;return exp(-pow(q.x/width,2.)*2.-pow(q.y/len,2.)*2.);}
+float flower(vec2 p,float scale,float phase){p*=scale;float r=length(p);float a=atan(p.y,p.x);float petals=pow(max(0.,cos(a*6.+phase)),8.)*exp(-pow((r-.65)/.36,2.)*2.);float center=exp(-r*r*22.);return petals*.9+center*.65;}
+float leaf(vec2 p,float a){p=mat2(cos(a),-sin(a),sin(a),cos(a))*p;float shape=exp(-pow(p.x/.18,2.)*2.-pow((p.y-.32)/.52,2.)*2.);return shape;}
+float relief(vec2 p){float h=0.;h+=flower(p-vec2(.45,.08),2.1,.1)*.9;h+=flower(p-vec2(-.5,-.27),2.9,.3)*.7;h+=flower(p-vec2(.03,.63),3.4,.7)*.52;h+=flower(p-vec2(-.82,.62),4.,.3)*.5;h+=flower(p-vec2(.89,-.72),3.2,.9)*.5;for(int i=0;i<7;i++){float fi=float(i);vec2 pos=vec2(sin(fi*2.4)*.85,cos(fi*1.7)*.7);h+=leaf(p-pos,fi*.78)*.26;}float vine=abs(p.x+.13*sin(p.y*4.)-.12);h+=exp(-vine*vine*140.)*.12;h+=noise(p*24.)*.055+noise(p*70.)*.014;return h;}
+void main(){
+ vec2 uv=vUv;vec2 p=(uv-.5)*vec2(uAspect,1.)*2.;
+ vec2 displaced=p;float bloom=0.;float edge=0.;
+ for(int i=0;i<8;i++){
+   vec2 origin=(uTrail[i].xy-.5)*vec2(uAspect,1.)*2.;
+   float d=length(p-origin);float strength=uTrail[i].z;
+   float core=exp(-d*d*15.)*strength;
+   float ring=exp(-pow((d-.24)*12.,2.))*strength;
+   float wave=sin(d*29.-uTime*2.7-float(i)*.42)*exp(-d*3.5)*strength;
+   displaced+=normalize(p-origin+vec2(.00001))*(wave*.014+ring*.008);
+   bloom+=core*.16;edge+=ring;
+ }
+ float progress=smoothstep(.015,.51,uScroll)*(1.-smoothstep(.84,1.,uScroll)*.23);
+ float reveal=clamp(progress+bloom*.75,0.,1.);
+ float h=relief(displaced*1.05);float e=.005;
+ float dx=relief(displaced*1.05+vec2(e,0.))-relief(displaced*1.05-vec2(e,0.));
+ float dy=relief(displaced*1.05+vec2(0.,e))-relief(displaced*1.05-vec2(0.,e));
+ // A narrow diffusion halo is confined to the moving wavefront.
+ float diffusion=clamp(edge*.43,0.,.55);
+ float softX=relief(displaced*1.05+vec2(.019,0.))-relief(displaced*1.05-vec2(.019,0.));
+ float softY=relief(displaced*1.05+vec2(0.,.019))-relief(displaced*1.05-vec2(0.,.019));
+ dx=mix(dx,softX*.26,diffusion);dy=mix(dy,softY*.26,diffusion);
+ vec3 normal=normalize(vec3(-dx*reveal*42.,-dy*reveal*42.,1.));
+ vec3 light=normalize(vec3(-.64,.72,1.));
+ float diffuse=dot(normal,light);
+ float grazing=pow(1.-max(normal.z,0.),1.55);
+ float shadow=(diffuse-.88)*.42*reveal;
+ float cavity=-h*.085*reveal;
+ float highlight=grazing*.14*reveal;
+ float paper=(noise(uv*uResolution.xy*.18)-.5)*.022;
+ float base=.91+paper+shadow+cavity+highlight;
+ base+=edge*.012;
+ float fade=1.-smoothstep(.6,1.28,length(p));
+ gl_FragColor=vec4(vec3(mix(.91,base,fade)),1.);
+}`;
+const material=new THREE.ShaderMaterial({vertexShader:vertex,fragmentShader:fragment,uniforms,depthWrite:false});scene.add(new THREE.Mesh(new THREE.PlaneGeometry(2,2),material));function resize(){camera.left=-1;camera.right=1;camera.top=1;camera.bottom=-1;camera.updateProjectionMatrix();renderer.setSize(innerWidth,innerHeight);uniforms.uAspect.value=innerWidth/innerHeight;uniforms.uResolution.value.set(innerWidth,innerHeight)}addEventListener('resize',resize);
+let lenis;if(!reduced){lenis=new Lenis({duration:1.45,smoothWheel:true,wheelMultiplier:.85,touchMultiplier:1.1});lenis.on('scroll',({progress})=>{targetScroll=progress;});}else{addEventListener('scroll',()=>{targetScroll=scrollY/(document.documentElement.scrollHeight-innerHeight)||0},{passive:true})}
+const touch=document.getElementById('interaction');let last={x:0,y:0,t:0};let trailClock=0;const trail=uniforms.uTrail.value;function point(x,y){const nx=x/innerWidth,ny=1-y/innerHeight;const now=performance.now();const dt=Math.max(now-last.t,16);velocity=Math.min(1.6,Math.hypot(x-last.x,y-last.y)/dt*.12);pointer.set(nx,ny);for(let i=trail.length-1;i>0;i--)trail[i].copy(trail[i-1]);trail[0].set(nx,ny,Math.min(1.5,.35+velocity));trailClock=now;last={x,y,t:now}}window.addEventListener('pointermove',e=>point(e.clientX,e.clientY),{passive:true});window.addEventListener('pointerdown',e=>{point(e.clientX,e.clientY);enableSound()},{passive:true});window.addEventListener('touchmove',e=>{if(e.touches.length)point(e.touches[0].clientX,e.touches[0].clientY)},{passive:true});
+const rail=document.getElementById('progress'),chapterNumber=document.getElementById('chapterNumber'),midtitle=document.getElementById('midtitle');let lastChapter=0;const names=['THE MATERIAL REMEMBERS','RELIEF FROM THE PLANE','ATMOSPHERE AS PRODUCT','YOUR OBJECT NEXT','MAKE IT FELT'];function updateUI(){rail.style.height=(scroll*100)+'%';let n=Math.min(4,Math.floor(scroll*5));if(n!==lastChapter){lastChapter=n;midtitle.textContent=names[n];chapterNumber.textContent=String(n+1).padStart(2,'0')}}function frame(t){if(lenis)lenis.raf(t);clock=t*.001;scroll+=(targetScroll-scroll)*.065;velocity*=.93;for(let i=0;i<trail.length;i++)trail[i].z*=.968;uniforms.uEnergy.value=velocity;uniforms.uTime.value=clock;uniforms.uScroll.value=scroll;uniforms.uVelocity.value=velocity;updateUI();renderer.render(scene,camera);requestAnimationFrame(frame)}requestAnimationFrame(frame);
+let soundOn=false;const soundButton=document.getElementById('sound'),soundHint=document.getElementById('soundhint');
+const AMBIENT_SRC=new URL('./assets/qora-ambient.mp3',import.meta.url).href;
+const ambient=new Howl({src:[AMBIENT_SRC],html5:false,loop:true,volume:0,preload:true});
+ambient.on('loaderror',(_i,e)=>{console.error('[ambient loaderror]',e,AMBIENT_SRC);soundHint.textContent='Audio load error'});
+ambient.on('playerror',(_i,e)=>{console.error('[ambient playerror]',e);soundOn=false;soundButton.textContent='Sound off'});
+function setUI(on){soundOn=on;soundButton.textContent=on?'Sound on':'Sound off';soundHint.style.display=on?'none':''}
+async function enableSound(){
+  try{if(Howler.ctx&&Howler.ctx.state!=='running')await Howler.ctx.resume()}catch(_){}
+  Howler.mute(false);Howler.volume(1);
+  const kick=()=>{
+    if(ambient.playing()){ambient.volume(.85);setUI(true);return}
+    ambient.stop();
+    ambient.play();
+    ambient.volume(.85);
+    setUI(true);
   };
-
-  if (music.state() === 'loaded') kick();
-  else music.once('load', kick);
+  if(ambient.state()==='loaded')kick();
+  else ambient.once('load',kick);
 }
-
-function disableSound() {
-  setSoundUI(false);
-  const v = music.volume();
-  music.fade(typeof v === 'number' ? v : MUSIC_VOL, 0, 400);
-  setTimeout(() => { if (!soundOn) music.stop(); }, 450);
+function disableSound(){
+  setUI(false);
+  const v=ambient.volume();
+  ambient.fade(typeof v==='number'?v:.85,0,400);
+  setTimeout(()=>{if(!soundOn)ambient.stop()},450);
 }
-
-soundBtn.onclick = (e) => {
-  e.preventDefault();
-  e.stopPropagation();
-  if (!soundOn || !music.playing()) {
-    try { tick.play(); } catch (_) {}
-    enableSound();
-  } else {
-    try { tick.play(); } catch (_) {}
-    disableSound();
-  }
-};
-soundCue.onclick = (e) => {
-  e.preventDefault();
-  e.stopPropagation();
-  try { tick.play(); } catch (_) {}
+// stop capture-unlock from flipping Sound off on the same press
+soundButton.addEventListener('pointerdown',e=>e.stopPropagation(),true);
+soundHint.addEventListener('pointerdown',e=>e.stopPropagation(),true);
+soundButton.addEventListener('click',e=>{
+  e.preventDefault();e.stopPropagation();
+  if(soundOn&&ambient.playing())disableSound();else enableSound();
+});
+soundHint.addEventListener('click',e=>{e.preventDefault();e.stopPropagation();enableSound()});
+const unlock=e=>{
+  if(e.target.closest('#sound,#soundhint,#menuButton,#menu,a,button'))return;
   enableSound();
+  window.removeEventListener('pointerdown',unlock,true);
 };
-
-// first real user gesture unlocks audio (IG pattern)
-const unlock = () => {
-  enableSound();
-  window.removeEventListener('pointerdown', unlock, true);
-  window.removeEventListener('keydown', unlock, true);
-};
-window.addEventListener('pointerdown', unlock, { once: true, capture: true });
-window.addEventListener('keydown', unlock, { once: true, capture: true });
-
-// ——— LOADER ———
-const loadState = { p: 0 };
-let assetProgress = 0;
-let outroStarted = false;
-const MIN_LOAD_MS = 3200;
-const t0 = performance.now();
-
-function playIntroIn() {
-  const tl = gsap.timeline();
-  gsap.set(loaderLogo.querySelector('svg'), { opacity: 1 });
-  tl.fromTo(logoMaskRect, { attr: { x: -118 } }, { attr: { x: 0 }, duration: 2.5, ease: 'quart.out' }, 0);
-  tl.fromTo(baselineWords, { opacity: 0 }, { opacity: 1, duration: 1, ease: 'sine.inOut', stagger: 0.1 }, 0.3);
-  tl.fromTo(scrollDown, { opacity: 0 }, { opacity: 1, duration: 0.8, ease: 'sine.inOut' }, 0.35);
-}
-function playIntroOut() {
-  const tl = gsap.timeline({
-    onComplete: () => { loader.classList.add('is-done'); },
-  });
-  tl.add(() => { loadPct.textContent = 'Scroll down'; loadPct.style.opacity = '1'; }, 0);
-  tl.to(progressLine.parentElement, { opacity: 0, duration: 1.2, ease: 'sine.inOut' }, 0);
-  tl.to(baselineWords, { opacity: 0, duration: 1, ease: 'sine.inOut', stagger: -0.1 }, 0.15);
-  tl.to(logoMaskRect, { attr: { x: -118 }, duration: 2, ease: 'quart.inOut' }, 0);
-  tl.to(loaderLogo, { opacity: 0, duration: 0.5, ease: 'sine.inOut' }, 1.9);
-  tl.to(scrollDown, { opacity: 0, duration: 0.8, ease: 'sine.inOut' }, 1.9);
-  tl.to(loaderBg, { opacity: 0, duration: 1.2, ease: 'sine.inOut' }, 2.0);
-  tl.to(webglEl, { opacity: 1, duration: 1.15, ease: 'sine.inOut' }, 2.05);
-  tl.add(() => {
-    chrome.classList.add('is-on');
-    gsap.fromTo(chrome, { opacity: 0 }, { opacity: 1, duration: 0.9, ease: 'sine.inOut' });
-    try { lenis.start(); } catch (_) {}
-  }, 2.2);
-}
-function tickLoader() {
-  const elapsed = performance.now() - t0;
-  const timeP = Math.min(1, elapsed / MIN_LOAD_MS);
-  const ready = assetProgress >= 1 && elapsed >= MIN_LOAD_MS;
-  const goal = ready ? 1 : Math.min(0.97, Math.max(assetProgress * 0.95, timeP * 0.9));
-  loadState.p += (goal - loadState.p) * (ready ? 0.14 : 0.06);
-  if (ready && loadState.p > 0.995) loadState.p = 1;
-  gsap.set(progressLine, { scaleX: loadState.p });
-  if (loadPct.textContent !== 'Scroll down') loadPct.textContent = String(Math.round(loadState.p * 100));
-  if (loadState.p < 1) requestAnimationFrame(tickLoader);
-  else if (!outroStarted) {
-    outroStarted = true;
-    gsap.set(progressLine, { scaleX: 1 });
-    loadPct.textContent = '100';
-    gsap.delayedCall(0.5, playIntroOut);
-  }
-}
-playIntroIn();
-requestAnimationFrame(tickLoader);
-
-// ——— THREE + FLUID FLOWMAP ———
-const canvas = $('webgl');
-const renderer = new THREE.WebGLRenderer({ canvas, antialias: false, powerPreference: 'high-performance' });
-renderer.setClearColor(0xe8e8e8, 1);
-renderer.outputColorSpace = THREE.SRGBColorSpace;
-
-const scene = new THREE.Scene();
-const camera = new THREE.OrthographicCamera(-1, 1, 1, -1, 0, 1);
-
-const loaderTex = new THREE.TextureLoader();
-const A = (p) => new URL(`./assets/${p}`, import.meta.url).href;
-const [plasterMap, reliefMap, depthMap] = await Promise.all([
-  loaderTex.loadAsync(A('tex/plaster.jpg')),
-  loaderTex.loadAsync(A('tex/relief.jpg')),
-  loaderTex.loadAsync(A('tex/relief_depth.png')),
-]);
-assetProgress = 1;
-plasterMap.colorSpace = THREE.SRGBColorSpace;
-reliefMap.colorSpace = THREE.SRGBColorSpace;
-plasterMap.wrapS = plasterMap.wrapT = THREE.RepeatWrapping;
-plasterMap.repeat.set(2.2, 2.2);
-for (const t of [reliefMap, depthMap]) {
-  t.wrapS = t.wrapT = THREE.ClampToEdgeWrapping;
-  t.minFilter = THREE.LinearFilter;
-}
-
-// --- fluid ping-pong (IG-style: density = reveal, velocity = edge ripple) ---
-const isMobile = matchMedia('(max-width:768px), (pointer:coarse)').matches;
-const simRes = isMobile ? 180 : 280;
-const texel = 1 / simRes;
-
-function makeRT() {
-  return new THREE.WebGLRenderTarget(simRes, simRes, {
-    minFilter: THREE.LinearFilter,
-    magFilter: THREE.LinearFilter,
-    depthBuffer: false,
-    type: THREE.HalfFloatType,
-    format: THREE.RGBAFormat,
-  });
-}
-let densityA = makeRT(), densityB = makeRT();
-let velA = makeRT(), velB = makeRT();
-let pressureA = makeRT(), pressureB = makeRT();
-let divergence = makeRT();
-
-const quad = new THREE.PlaneGeometry(2, 2);
-const simScene = new THREE.Scene();
-const simCam = new THREE.OrthographicCamera(-1, 1, 1, -1, 0, 1);
-const simMesh = new THREE.Mesh(quad, new THREE.MeshBasicMaterial());
-simScene.add(simMesh);
-
-const VS = `varying vec2 vUv; void main(){ vUv=uv; gl_Position=vec4(position.xy,0.,1.); }`;
-
-const splatMat = new THREE.ShaderMaterial({
-  uniforms: {
-    uTarget: { value: null },
-    uPoint: { value: new THREE.Vector2() },
-    uPrev: { value: new THREE.Vector2() },
-    uColor: { value: new THREE.Vector3() },
-    uRadius: { value: 0.02 },
-    uAspect: { value: 1 },
-  },
-  vertexShader: VS,
-  fragmentShader: `
-    precision highp float;
-    uniform sampler2D uTarget;
-    uniform vec2 uPoint, uPrev;
-    uniform vec3 uColor;
-    uniform float uRadius, uAspect;
-    varying vec2 vUv;
-    float brush(vec2 uv, vec2 a, vec2 b, float r){
-      vec2 pa = uv - a; vec2 ba = b - a;
-      float h = clamp(dot(pa, ba) / max(dot(ba, ba), 1e-6), 0., 1.);
-      vec2 d = pa - ba * h; d.x *= uAspect;
-      return exp(-dot(d,d) / max(r*r, 1e-8));
-    }
-    void main(){
-      vec4 base = texture2D(uTarget, vUv);
-      float s = brush(vUv, uPrev, uPoint, uRadius);
-      gl_FragColor = vec4(base.rgb + uColor * s, 1.0);
-    }
-  `,
-});
-
-const advectMat = new THREE.ShaderMaterial({
-  uniforms: {
-    uVelocity: { value: null },
-    uSource: { value: null },
-    uDissipation: { value: 0.98 },
-    uDt: { value: 0.016 },
-    uTexel: { value: texel },
-  },
-  vertexShader: VS,
-  fragmentShader: `
-    precision highp float;
-    uniform sampler2D uVelocity, uSource;
-    uniform float uDissipation, uDt, uTexel;
-    varying vec2 vUv;
-    void main(){
-      vec2 vel = texture2D(uVelocity, vUv).xy;
-      vec2 uv = vUv - vel * uDt;
-      // soft clamp
-      uv = clamp(uv, uTexel, 1.0 - uTexel);
-      gl_FragColor = vec4(texture2D(uSource, uv).rgb * uDissipation, 1.0);
-    }
-  `,
-});
-
-const divergenceMat = new THREE.ShaderMaterial({
-  uniforms: { uVelocity: { value: null }, uTexel: { value: texel } },
-  vertexShader: VS,
-  fragmentShader: `
-    precision highp float;
-    uniform sampler2D uVelocity;
-    uniform float uTexel;
-    varying vec2 vUv;
-    void main(){
-      float L = texture2D(uVelocity, vUv - vec2(uTexel, 0.)).x;
-      float R = texture2D(uVelocity, vUv + vec2(uTexel, 0.)).x;
-      float B = texture2D(uVelocity, vUv - vec2(0., uTexel)).y;
-      float T = texture2D(uVelocity, vUv + vec2(0., uTexel)).y;
-      float div = 0.5 * (R - L + T - B);
-      gl_FragColor = vec4(div, 0., 0., 1.);
-    }
-  `,
-});
-
-const pressureMat = new THREE.ShaderMaterial({
-  uniforms: {
-    uPressure: { value: null },
-    uDivergence: { value: null },
-    uTexel: { value: texel },
-  },
-  vertexShader: VS,
-  fragmentShader: `
-    precision highp float;
-    uniform sampler2D uPressure, uDivergence;
-    uniform float uTexel;
-    varying vec2 vUv;
-    void main(){
-      float L = texture2D(uPressure, vUv - vec2(uTexel, 0.)).x;
-      float R = texture2D(uPressure, vUv + vec2(uTexel, 0.)).x;
-      float B = texture2D(uPressure, vUv - vec2(0., uTexel)).x;
-      float T = texture2D(uPressure, vUv + vec2(0., uTexel)).x;
-      float b = texture2D(uDivergence, vUv).x;
-      float p = (L + R + B + T - b) * 0.25;
-      gl_FragColor = vec4(p, 0., 0., 1.);
-    }
-  `,
-});
-
-const gradientMat = new THREE.ShaderMaterial({
-  uniforms: {
-    uPressure: { value: null },
-    uVelocity: { value: null },
-    uTexel: { value: texel },
-  },
-  vertexShader: VS,
-  fragmentShader: `
-    precision highp float;
-    uniform sampler2D uPressure, uVelocity;
-    uniform float uTexel;
-    varying vec2 vUv;
-    void main(){
-      float L = texture2D(uPressure, vUv - vec2(uTexel, 0.)).x;
-      float R = texture2D(uPressure, vUv + vec2(uTexel, 0.)).x;
-      float B = texture2D(uPressure, vUv - vec2(0., uTexel)).x;
-      float T = texture2D(uPressure, vUv + vec2(0., uTexel)).x;
-      vec2 vel = texture2D(uVelocity, vUv).xy;
-      vel -= 0.5 * vec2(R - L, T - B);
-      gl_FragColor = vec4(vel, 0., 1.);
-    }
-  `,
-});
-
-const clearMat = new THREE.ShaderMaterial({
-  uniforms: { uValue: { value: 0 } },
-  vertexShader: VS,
-  fragmentShader: `
-    precision highp float;
-    uniform float uValue; varying vec2 vUv;
-    void main(){ gl_FragColor = vec4(uValue, uValue, uValue, 1.0); }
-  `,
-});
-
-// Composite: plaster sealed / image revealed by density; velocity ripples ONLY the edge (IG)
-const viewUniforms = {
-  uPlaster: { value: plasterMap },
-  uImage: { value: reliefMap },
-  uDepth: { value: depthMap },
-  uDensity: { value: null },
-  uVelocity: { value: null },
-  uMouse: { value: new THREE.Vector2(0.5, 0.5) },
-  uScroll: { value: 0 },
-  uReveal: { value: 0 },
-  uTime: { value: 0 },
-  uRes: { value: new THREE.Vector2(1, 1) },
-};
-const viewMat = new THREE.ShaderMaterial({
-  uniforms: viewUniforms,
-  vertexShader: VS,
-  fragmentShader: `
-    precision highp float;
-    uniform sampler2D uPlaster, uImage, uDepth, uDensity, uVelocity;
-    uniform vec2 uMouse, uRes;
-    uniform float uScroll, uReveal, uTime;
-    varying vec2 vUv;
-
-    vec2 coverUv(vec2 uv, float imgAspect){
-      float aspect = uRes.x / max(uRes.y, 1.0);
-      vec2 iuv = uv;
-      if (aspect > imgAspect) iuv.y = (iuv.y - 0.5) * (imgAspect / aspect) + 0.5;
-      else iuv.x = (iuv.x - 0.5) * (aspect / imgAspect) + 0.5;
-      return iuv;
-    }
-
-    void main(){
-      // plaster wall pans with Lenis scroll
-      vec2 puv = vUv * vec2(uRes.x/uRes.y, 1.0) * 1.55;
-      puv.y += uScroll * 0.55;
-      vec3 plaster = texture2D(uPlaster, puv).rgb;
-      plaster = mix(plaster, vec3(0.905), 0.5);
-
-      float dens = texture2D(uDensity, vUv).r;
-      vec2 vel = texture2D(uVelocity, vUv).xy;
-
-      // mouse fluid = soft liquid reveal
-      float mask = smoothstep(0.02, 0.22, dens);
-      float edge = mask * (1.0 - mask) * 4.0;
-
-      // SCROLL JOURNEY (IG): relief fills the field as you scroll
-      float scrollOpen = smoothstep(0.02, 0.28, uScroll) * uReveal;
-      scrollOpen = mix(scrollOpen, 1.0, smoothstep(0.28, 0.72, uScroll) * 0.92);
-      float open = max(mask, scrollOpen);
-
-      vec2 iuv = coverUv(vUv, 16.0/9.0);
-      // image flows down through the frame with scroll
-      iuv.y += uScroll * 0.38;
-      iuv.x = (iuv.x - 0.5) / mix(1.08, 0.92, smoothstep(0.0, 0.8, uScroll)) + 0.5;
-      iuv = clamp(iuv - vel * 0.022 * edge, 0.001, 0.999);
-
-      vec3 img = texture2D(uImage, iuv).rgb;
-      float g = dot(img, vec3(0.299, 0.587, 0.114));
-      img = mix(img, vec3(g * 0.92 + 0.04), 0.15);
-
-      float dL = texture2D(uDepth, clamp(iuv+vec2(-0.002,0.),0.,1.)).r;
-      float dR = texture2D(uDepth, clamp(iuv+vec2( 0.002,0.),0.,1.)).r;
-      float dD = texture2D(uDepth, clamp(iuv+vec2(0.,-0.002),0.,1.)).r;
-      float dU = texture2D(uDepth, clamp(iuv+vec2(0., 0.002),0.,1.)).r;
-      vec3 N = normalize(vec3(dL-dR, dD-dU, mix(0.7, 0.35, scrollOpen)));
-      vec3 Ldir = normalize(vec3((uMouse.x-0.5)*0.7, (uMouse.y-0.5)*0.7, 1.15));
-      float lit = 0.72 + clamp(dot(N, Ldir), 0., 1.) * 0.38;
-      // volume reading grows with scroll
-      float depthBoost = mix(1.0, 0.78 + texture2D(uDepth, iuv).r * 0.4, scrollOpen);
-      img *= lit * depthBoost;
-
-      vec3 col = mix(plaster, img, open);
-      col += img * edge * 0.1;
-
-      gl_FragColor = vec4(col, 1.0);
-    }
-  `,
-});
-const viewMesh = new THREE.Mesh(quad, viewMat);
-scene.add(viewMesh);
-
-function fit() {
-  const w = innerWidth, h = innerHeight;
-  renderer.setPixelRatio(Math.min(devicePixelRatio, isMobile ? 1.5 : 2));
-  renderer.setSize(w, h, false);
-  viewUniforms.uRes.value.set(w, h);
-  splatMat.uniforms.uAspect.value = w / Math.max(h, 1);
-}
-addEventListener('resize', fit);
-fit();
-
-function runPass(mat, outputRT, update) {
-  simMesh.material = mat;
-  update && update();
-  renderer.setRenderTarget(outputRT);
-  renderer.render(simScene, simCam);
-  renderer.setRenderTarget(null);
-}
-
-// pointer → fluid
-const mouse = new THREE.Vector2(0.5, 0.5);
-const prevMouse = new THREE.Vector2(0.5, 0.5);
-const mouseSmooth = new THREE.Vector2(0.5, 0.5);
-let hasMoved = false;
-let pointerDown = false;
-let paintActive = false;
-
-function setPointerUV(x, y) {
-  prevMouse.copy(mouse);
-  mouse.set(x / innerWidth, 1 - y / innerHeight);
-  if (!hasMoved) {
-    hasMoved = true;
-    moveHint.classList.add('is-hide');
-  }
-}
-
-window.addEventListener('pointermove', (e) => {
-  setPointerUV(e.clientX, e.clientY);
-  if (e.pointerType === 'mouse' || pointerDown) paintActive = true;
-}, { passive: true });
-window.addEventListener('pointerdown', (e) => {
-  pointerDown = true;
-  paintActive = true;
-  setPointerUV(e.clientX, e.clientY);
-  prevMouse.copy(mouse);
-});
-window.addEventListener('pointerup', () => { pointerDown = false; });
-window.addEventListener('pointerleave', () => { pointerDown = false; paintActive = false; });
-
-// ——— Lenis scroll (same stack as Immersive Garden) ———
-let scrollP = 0;
-const lenis = new Lenis({
-  lerp: isMobile ? 0.12 : 0.075,
-  wheelMultiplier: 0.95,
-  touchMultiplier: 1.35,
-  syncTouch: true,
-  smoothWheel: true,
-});
-lenis.stop(); // locked during loader
-lenis.on('scroll', ({ progress }) => {
-  scrollP = THREE.MathUtils.clamp(progress, 0, 1);
-});
-function lenisRaf(time) {
-  lenis.raf(time);
-  requestAnimationFrame(lenisRaf);
-}
-requestAnimationFrame(lenisRaf);
-
-let chapterIdx = -1;
-function applyChapter(p) {
-  let idx = -1;
-  for (let i = 0; i < chapters.length; i++) if (p >= chapters[i].at) idx = i;
-  if (idx === chapterIdx) return;
-  chapterIdx = idx;
-  if (idx < 0) {
-    panel.classList.remove('is-on');
-    midTitle.classList.remove('is-dim');
-    return;
-  }
-  midTitle.classList.add('is-dim');
-  panelTitle.textContent = chapters[idx].title;
-  panelText.textContent = chapters[idx].text;
-  panel.classList.add('is-on');
-}
-
-// scrub progress rail
-const botRight = document.querySelector('.bot-right');
-botRight?.addEventListener('pointerdown', (e) => {
-  e.stopPropagation();
-  const scrub = (ev) => {
-    const rect = botRight.getBoundingClientRect();
-    const t = THREE.MathUtils.clamp((ev.clientY - rect.top) / Math.max(rect.height, 1), 0, 1);
-    const max = Math.max(1, document.documentElement.scrollHeight - innerHeight);
-    lenis.scrollTo(t * max, { immediate: false });
-  };
-  scrub(e);
-  const move = (ev) => scrub(ev);
-  const up = () => { window.removeEventListener('pointermove', move); window.removeEventListener('pointerup', up); };
-  window.addEventListener('pointermove', move);
-  window.addEventListener('pointerup', up);
-});
-
-$('menuBtn').onclick = () => { tick.play(); menu.classList.add('is-open'); };
-$('menuClose').onclick = () => { tick.play(); menu.classList.remove('is-open'); };
-menu.querySelectorAll('[data-jump]').forEach((b) => b.onclick = () => {
-  tick.play();
-  const max = Math.max(1, document.documentElement.scrollHeight - innerHeight);
-  lenis.scrollTo((+b.dataset.jump) * max, { lerp: 0.08 });
-  menu.classList.remove('is-open');
-});
-
-if (isMobile) moveHint.textContent = 'Scroll · drag to paint';
-
-const clock = new THREE.Clock();
-const PRESSURE_ITERS = isMobile ? 12 : 18;
-
-function frame() {
-  const dt = Math.min(clock.getDelta(), 0.033);
-  const t = clock.elapsedTime;
-  mouseSmooth.lerp(mouse, 1 - Math.exp(-dt * 10));
-
-  const force = new THREE.Vector2().subVectors(mouse, prevMouse);
-  const speed = Math.min(force.length() * (isMobile ? 55 : 70), 1.2);
-  const shouldSplat = paintActive && speed > 0.0008;
-
-  // advect velocity
-  runPass(advectMat, velB, () => {
-    advectMat.uniforms.uVelocity.value = velA.texture;
-    advectMat.uniforms.uSource.value = velA.texture;
-    advectMat.uniforms.uDissipation.value = 0.975;
-    advectMat.uniforms.uDt.value = dt;
-  });
-  [velA, velB] = [velB, velA];
-
-  if (shouldSplat) {
-    const fx = force.x * (isMobile ? 1.8 : 2.2);
-    const fy = force.y * (isMobile ? 1.8 : 2.2);
-    runPass(splatMat, velB, () => {
-      splatMat.uniforms.uTarget.value = velA.texture;
-      splatMat.uniforms.uPoint.value.copy(mouse);
-      splatMat.uniforms.uPrev.value.copy(prevMouse);
-      splatMat.uniforms.uColor.value.set(fx, fy, 0);
-      splatMat.uniforms.uRadius.value = isMobile ? 0.034 : 0.026;
-    });
-    [velA, velB] = [velB, velA];
-  }
-
-  // divergence + pressure + gradient (makes liquid trails, not blotches)
-  runPass(divergenceMat, divergence, () => {
-    divergenceMat.uniforms.uVelocity.value = velA.texture;
-  });
-  runPass(clearMat, pressureA, () => {
-    clearMat.uniforms.uValue.value = 0;
-  });
-  for (let i = 0; i < PRESSURE_ITERS; i++) {
-    runPass(pressureMat, pressureB, () => {
-      pressureMat.uniforms.uPressure.value = pressureA.texture;
-      pressureMat.uniforms.uDivergence.value = divergence.texture;
-    });
-    [pressureA, pressureB] = [pressureB, pressureA];
-  }
-  runPass(gradientMat, velB, () => {
-    gradientMat.uniforms.uPressure.value = pressureA.texture;
-    gradientMat.uniforms.uVelocity.value = velA.texture;
-  });
-  [velA, velB] = [velB, velA];
-
-  // density
-  runPass(advectMat, densityB, () => {
-    advectMat.uniforms.uVelocity.value = velA.texture;
-    advectMat.uniforms.uSource.value = densityA.texture;
-    advectMat.uniforms.uDissipation.value = 0.988;
-    advectMat.uniforms.uDt.value = dt;
-  });
-  [densityA, densityB] = [densityB, densityA];
-
-  if (shouldSplat) {
-    runPass(splatMat, densityB, () => {
-      splatMat.uniforms.uTarget.value = densityA.texture;
-      splatMat.uniforms.uPoint.value.copy(mouse);
-      splatMat.uniforms.uPrev.value.copy(prevMouse);
-      splatMat.uniforms.uColor.value.set(1.0, 0, 0);
-      splatMat.uniforms.uRadius.value = isMobile ? 0.036 : 0.028;
-    });
-    [densityA, densityB] = [densityB, densityA];
-  }
-
-  prevMouse.copy(mouse);
-  // keep a tiny idle motion so desktop hover still paints without click
-  if (!isMobile) paintActive = true;
-
-  const reveal = THREE.MathUtils.smoothstep(scrollP, 0.01, 0.22);
-  viewUniforms.uDensity.value = densityA.texture;
-  viewUniforms.uVelocity.value = velA.texture;
-  viewUniforms.uMouse.value.copy(mouseSmooth);
-  viewUniforms.uScroll.value = scrollP;
-  viewUniforms.uReveal.value = reveal;
-  viewUniforms.uTime.value = t;
-
-  rail.style.height = `${(scrollP * 100).toFixed(1)}%`;
-  midScroll.classList.toggle('is-hide', scrollP > 0.03);
-  if (scrollP > 0.02) moveHint.classList.add('is-hide');
-  applyChapter(scrollP);
-
-  renderer.render(scene, camera);
-  requestAnimationFrame(frame);
-}
-frame();
-</script>
-</body>
-</html>
+window.addEventListener('pointerdown',unlock,{once:true,capture:true});
+const menu=document.getElementById('menu');document.getElementById('menuButton').onclick=()=>menu.classList.add('open');document.getElementById('menuClose').onclick=()=>menu.classList.remove('open');menu.querySelectorAll('a').forEach(a=>a.onclick=()=>menu.classList.remove('open'));
+let count=0;const percent=document.getElementById('percent');const loader=document.getElementById('loader');const loadInterval=setInterval(()=>{count=Math.min(100,count+Math.max(1,Math.ceil((100-count)*.15)));percent.textContent=String(count).padStart(2,'0');if(count===100){clearInterval(loadInterval);setTimeout(()=>{loader.classList.add('hide');document.body.classList.add('loaded')},420)}},75);
+</script></body></html>
