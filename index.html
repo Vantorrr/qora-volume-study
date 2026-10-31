@@ -6,957 +6,553 @@
 <title>Qora · Study</title>
 <meta name="theme-color" content="#e8e8e8" />
 <style>
-  @font-face {
-    font-family: PSTimes;
-    font-weight: 400;
-    font-style: normal;
-    font-display: swap;
-    src: url("./assets/fonts/PSTimes.woff2") format("woff2");
-  }
-  @font-face {
-    font-family: HelveticaNeueRegular;
-    font-weight: 400;
-    font-style: normal;
-    font-display: swap;
-    src: url("./assets/fonts/HelveticaNeue.woff2") format("woff2");
-  }
-  :root {
-    --bg: #e8e8e8;
-    --ink: #030303;
-    --mute: rgba(3,3,3,.45);
-  }
-  * { box-sizing: border-box; margin: 0; padding: 0; }
-  html, body {
-    width: 100%;
-    height: 100%;
-    overflow: hidden;
-    background: var(--bg);
-    color: var(--ink);
-    font-family: HelveticaNeueRegular, Helvetica, Arial, sans-serif;
-    font-weight: 400;
-    -webkit-font-smoothing: antialiased;
-    touch-action: none;
-    cursor: default;
+  @font-face{font-family:PSTimes;src:url("./assets/fonts/PSTimes.woff2") format("woff2");font-display:swap}
+  @font-face{font-family:HelveticaNeueRegular;src:url("./assets/fonts/HelveticaNeue.woff2") format("woff2");font-display:swap}
+  :root{--bg:#e8e8e8;--ink:#030303}
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);color:var(--ink);
+    font-family:HelveticaNeueRegular,Helvetica,Arial,sans-serif;-webkit-font-smoothing:antialiased;touch-action:none}
+  #webgl{position:fixed;inset:0;width:100%;height:100%;display:block;z-index:1;opacity:0}
+
+  /* LOADER — IG */
+  .introLoader{position:fixed;inset:0;z-index:1010;color:#030303}
+  .introLoader.is-done{pointer-events:none;visibility:hidden}
+  .introLoader__bg{position:absolute;inset:0;background:#e8e8e8}
+  .introLoader__wrapper{position:relative;z-index:2;height:100%;max-width:2088px;margin:0 auto;padding:0 16px;
+    display:grid;grid-template-columns:repeat(12,1fr);column-gap:16px;align-items:center}
+  .introLoader__logo{grid-column:2/4}
+  .introLoader__logo svg{display:block;width:76%;min-width:160px;opacity:0}
+  .introLoader__progressWrapper{grid-column:4/10;position:relative;font-family:PSTimes,serif;
+    font-size:clamp(28px,1.944vw,37px);line-height:1.2}
+  .introLoader__progressBar{position:absolute;top:.5em;left:0;width:100%;height:100%;display:flex;opacity:.2}
+  .introLoader__progressBar>div{width:100%;height:1px;background:currentColor;transform:scaleX(0);transform-origin:0 0}
+  .introLoader__baseline{display:flex;flex-wrap:wrap;gap:.33em;margin-top:-.2em}
+  .introLoader__baseline>div{opacity:0}
+  .introLoader__scrollDown{grid-column:10/13;font-size:14px;opacity:0}
+  .introLoader__scrollDown .num{opacity:.6;font-variant-numeric:tabular-nums}
+  @media(max-width:1024px){
+    .introLoader__logo{grid-column:1/5}
+    .introLoader__progressWrapper,.introLoader__scrollDown{grid-column:1/12}
   }
 
-  #webgl {
-    position: fixed;
-    inset: 0;
-    width: 100%;
-    height: 100%;
-    display: block;
-    z-index: 1;
-    opacity: 0;
-  }
-
-  /* ——— LOADER 1:1 Immersive Garden ——— */
-  .introLoader {
-    position: fixed;
-    inset: 0;
-    z-index: 1010;
-    height: 100vh;
-    width: 100%;
-    color: #030303;
-    pointer-events: auto;
-    will-change: transform;
-  }
-  .introLoader.is-done {
-    pointer-events: none;
-  }
-  .introLoader__bg {
-    position: absolute;
-    inset: 0;
-    background: #e8e8e8;
-    will-change: opacity;
-  }
-  .introLoader__wrapper {
-    position: relative;
-    z-index: 2;
-    height: 100%;
-    width: 100%;
-    max-width: 2088px;
-    margin: 0 auto;
-    padding: 0 16px;
-    display: grid;
-    grid-template-columns: repeat(12, 1fr);
-    column-gap: 16px;
-    align-items: center;
-    align-content: center;
-  }
-  .introLoader__logo {
-    grid-column: 2 / 4;
-    position: relative;
-    will-change: transform, opacity;
-  }
-  .introLoader__logo svg {
-    display: block;
-    width: 76%;
-    min-width: 170px;
-    height: auto;
-    opacity: 0;
-  }
-  .introLoader__progressWrapper {
-    grid-column: 4 / 10;
-    position: relative;
-    font-family: PSTimes, "Times New Roman", serif;
-    font-size: clamp(28px, 1.944vw, 37.24px);
-    font-weight: 400;
-    line-height: 1.2;
-  }
-  .introLoader__progressBar {
-    position: absolute;
-    top: .5em;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    display: flex;
-    opacity: .2;
-    pointer-events: none;
-  }
-  .introLoader__progressBar > div {
-    width: 100%;
-    height: 1px;
-    background: currentColor;
-    transform: scaleX(0);
-    transform-origin: 0 0;
-    will-change: transform, opacity;
-  }
-  .introLoader__baseline {
-    display: flex;
-    flex-wrap: wrap;
-    gap: .33em;
-    margin-top: -.2em;
-    will-change: transform;
-  }
-  .introLoader__baseline > div {
-    opacity: 0;
-    will-change: opacity;
-  }
-  .introLoader__scrollDown {
-    grid-column: 10 / 13;
-    font-family: HelveticaNeueRegular, Helvetica, Arial, sans-serif;
-    font-size: 14px;
-    line-height: 1.1;
-    opacity: 0;
-    will-change: opacity, transform;
-    text-align: left;
-  }
-  .introLoader__scrollDown .num {
-    opacity: .6;
-    font-variant-numeric: tabular-nums;
-    min-width: 2.2em;
-  }
-  @media (max-width: 1024px) {
-    .introLoader__logo { grid-column: 1 / 5; }
-    .introLoader__progressWrapper,
-    .introLoader__scrollDown { grid-column: 1 / 12; }
-    .introLoader__scrollDown { margin-top: 18px; }
-  }
-
-  /* ——— CHROME (IG home) ——— */
-  .chrome {
-    position: fixed;
-    inset: 0;
-    z-index: 10;
-    pointer-events: none;
-    opacity: 0;
-    transition: opacity 1s ease .15s;
-  }
-  .chrome.is-on { opacity: 1; }
-
-  .nav-top {
-    position: absolute;
-    top: clamp(20px, 3vw, 40px);
-    right: clamp(24px, 4vw, 56px);
-    pointer-events: auto;
-  }
-  .nav-top button {
-    background: none;
-    border: 0;
-    font: inherit;
-    font-size: 13px;
-    color: var(--ink);
-    cursor: pointer;
-    letter-spacing: .02em;
-  }
-  .nav-top button:hover { opacity: .55; }
-
-  .midline {
-    position: absolute;
-    left: 0; right: 0;
-    top: 50%;
-    transform: translateY(-50%);
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 0 clamp(24px, 4vw, 56px);
-    gap: 20px;
-    pointer-events: none;
-  }
-  .mid-logo {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    pointer-events: auto;
-    text-decoration: none;
-    color: inherit;
-    flex: 0 0 auto;
-    min-width: 160px;
-  }
-  .mid-logo svg { width: 28px; height: 28px; display: block; }
-  .mid-logo span {
-    font-size: 11px;
-    letter-spacing: .28em;
-    text-transform: uppercase;
-    font-weight: 500;
-  }
-  .mid-title {
-    flex: 1 1 auto;
-    text-align: center;
-    font-family: PSTimes, "Times New Roman", serif;
-    font-size: clamp(22px, 1.944vw, 37px);
-    font-weight: 400;
-    letter-spacing: -.01em;
-    line-height: 1.15;
-    transition: opacity .5s ease, transform .5s ease;
-  }
-  .mid-title.is-dim { opacity: 0; transform: translateY(-8px); }
-  .mid-scroll {
-    flex: 0 0 auto;
-    min-width: 160px;
-    text-align: right;
-    font-family: HelveticaNeueRegular, Helvetica, Arial, sans-serif;
-    font-size: 14px;
-    color: var(--ink);
-    opacity: .85;
-    transition: opacity .4s ease;
-  }
-  .mid-scroll.is-hide { opacity: 0; }
-
-  .bot-left {
-    position: absolute;
-    left: clamp(24px, 4vw, 56px);
-    bottom: clamp(20px, 3vw, 40px);
-    pointer-events: auto;
-  }
-  .bot-left a {
-    font-size: 13px;
-    color: var(--ink);
-    text-decoration: none;
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-  }
-  .bot-left a:hover { opacity: .55; }
-  .bot-left .arr {
-    display: inline-block;
-    width: 10px;
-    height: 10px;
-    border-right: 1px solid currentColor;
-    border-bottom: 1px solid currentColor;
-    transform: rotate(-45deg);
-    margin-top: -2px;
-  }
-
-  .bot-right {
-    position: absolute;
-    right: clamp(24px, 4vw, 56px);
-    bottom: clamp(24px, 3.2vw, 44px);
-    display: flex;
-    flex-direction: column;
-    align-items: flex-end;
-    gap: 14px;
-  }
-  .dot {
-    width: 5px;
-    height: 5px;
-    border-radius: 50%;
-    background: var(--ink);
-  }
-  .rail {
-    width: 1px;
-    height: 72px;
-    background: rgba(3,3,3,.12);
-    position: relative;
-    overflow: hidden;
-  }
-  .rail > i {
-    position: absolute;
-    top: 0; left: 0;
-    width: 100%;
-    height: 0%;
-    background: var(--ink);
-  }
-
-  .sound {
-    position: absolute;
-    left: clamp(24px, 4vw, 56px);
-    top: clamp(20px, 3vw, 40px);
-    pointer-events: auto;
-    background: none;
-    border: 0;
-    font: inherit;
-    font-size: 11px;
-    letter-spacing: .18em;
-    text-transform: uppercase;
-    color: var(--mute);
-    cursor: pointer;
-  }
-  .sound.is-on { color: var(--ink); }
-  .sound:hover { opacity: .55; }
-
-  .credit {
-    position: absolute;
-    right: clamp(24px, 4vw, 56px);
-    top: clamp(22px, 3vw, 42px);
-    font-size: 11px;
-    letter-spacing: .08em;
-    color: var(--mute);
-    pointer-events: none;
-  }
-
-  .panel {
-    position: absolute;
-    left: clamp(24px, 4vw, 56px);
-    bottom: clamp(88px, 14vh, 160px);
-    max-width: min(420px, 86vw);
-    pointer-events: none;
-    opacity: 0;
-    transform: translateY(16px);
-    transition: opacity .55s ease, transform .55s ease;
-  }
-  .panel.is-on {
-    opacity: 1;
-    transform: translateY(0);
-  }
-  .panel h2 {
-    font-family: PSTimes, "Times New Roman", serif;
-    font-size: clamp(28px, 4vw, 42px);
-    font-weight: 400;
-    line-height: 1.05;
-    margin-bottom: 12px;
-  }
-  .panel p {
-    font-size: 14px;
-    line-height: 1.55;
-    color: rgba(3,3,3,.72);
-    max-width: 34ch;
-  }
-
-  .menu-sheet {
-    position: fixed;
-    inset: 0;
-    z-index: 40;
-    background: rgba(232,232,232,.96);
-    display: grid;
-    place-items: center;
-    opacity: 0;
-    visibility: hidden;
-    transition: opacity .35s ease, visibility .35s ease;
-    pointer-events: none;
-  }
-  .menu-sheet.is-open {
-    opacity: 1;
-    visibility: visible;
-    pointer-events: auto;
-  }
-  .menu-sheet ul { list-style: none; text-align: center; }
-  .menu-sheet li { margin: 18px 0; }
-  .menu-sheet a, .menu-sheet button {
-    font-family: PSTimes, "Times New Roman", serif;
-    font-size: clamp(28px, 5vw, 44px);
-    color: var(--ink);
-    text-decoration: none;
-    background: none;
-    border: 0;
-    cursor: pointer;
-  }
-  .menu-sheet a:hover, .menu-sheet button:hover { opacity: .45; }
-  .menu-close {
-    position: absolute;
-    top: clamp(20px, 3vw, 40px);
-    right: clamp(24px, 4vw, 56px);
-    font-family: Inter, sans-serif !important;
-    font-size: 13px !important;
-  }
-
-  @media (max-width: 820px) {
-    .introLoader__baseline, .introLoader__fill > span, .mid-title {
-      white-space: normal;
-      font-size: 22px;
-    }
-    .mid-logo span { display: none; }
-    .mid-scroll { min-width: auto; }
-    .introLoader__pct { display: none; }
-  }
+  .chrome{position:fixed;inset:0;z-index:10;pointer-events:none;opacity:0}
+  .chrome.is-on{opacity:1}
+  .nav-top{position:absolute;top:clamp(20px,3vw,40px);right:clamp(24px,4vw,56px);pointer-events:auto}
+  .nav-top button,.sound{background:none;border:0;font:inherit;font-size:13px;color:var(--ink);cursor:pointer}
+  .sound{position:absolute;left:clamp(24px,4vw,56px);top:clamp(20px,3vw,40px);pointer-events:auto;
+    font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:rgba(3,3,3,.45)}
+  .sound.is-on{color:var(--ink)}
+  .credit{position:absolute;right:clamp(24px,4vw,56px);top:clamp(22px,3vw,42px);font-size:11px;color:rgba(3,3,3,.4)}
+  .midline{position:absolute;left:0;right:0;top:50%;transform:translateY(-50%);
+    display:flex;align-items:center;justify-content:space-between;padding:0 clamp(24px,4vw,56px);gap:20px}
+  .mid-logo{display:flex;align-items:center;gap:10px;text-decoration:none;color:inherit;pointer-events:auto;min-width:150px}
+  .mid-logo svg{width:28px;height:28px}
+  .mid-logo span{font-size:11px;letter-spacing:.28em;text-transform:uppercase}
+  .mid-title{flex:1;text-align:center;font-family:PSTimes,serif;font-size:clamp(22px,1.944vw,37px)}
+  .mid-scroll{min-width:150px;text-align:right;font-size:14px;opacity:.85;transition:opacity .4s}
+  .mid-scroll.is-hide{opacity:0}
+  .bot-left{position:absolute;left:clamp(24px,4vw,56px);bottom:clamp(20px,3vw,40px);pointer-events:auto}
+  .bot-left a{font-size:13px;color:inherit;text-decoration:none}
+  .bot-right{position:absolute;right:clamp(24px,4vw,56px);bottom:clamp(24px,3vw,44px)}
+  .dot{width:5px;height:5px;border-radius:50%;background:#030303;margin-left:auto}
+  .rail{width:1px;height:72px;background:rgba(3,3,3,.12);position:relative;margin-bottom:14px;margin-left:auto}
+  .rail>i{position:absolute;top:0;left:0;width:100%;height:0%;background:#030303}
+  .hint{position:fixed;left:50%;bottom:48px;transform:translateX(-50%);z-index:12;
+    font-size:11px;letter-spacing:.22em;text-transform:uppercase;color:rgba(3,3,3,.35);
+    pointer-events:none;transition:opacity .6s}
+  .hint.is-hide{opacity:0}
+  .menu-sheet{position:fixed;inset:0;z-index:40;background:rgba(232,232,232,.97);
+    display:grid;place-items:center;opacity:0;visibility:hidden;transition:.35s;pointer-events:none}
+  .menu-sheet.is-open{opacity:1;visibility:visible;pointer-events:auto}
+  .menu-sheet a,.menu-sheet button{font-family:PSTimes,serif;font-size:clamp(28px,5vw,44px);
+    color:inherit;background:none;border:0;text-decoration:none;cursor:pointer;display:block;margin:16px auto}
+  .menu-close{position:absolute!important;top:28px;right:40px;font-family:HelveticaNeueRegular,sans-serif!important;font-size:13px!important}
 </style>
 </head>
 <body>
-  <!-- LOADER — Immersive Garden 1:1 structure -->
-  <div class="introLoader main" id="loader">
+  <div class="introLoader" id="loader">
     <div class="introLoader__bg" id="loaderBg"></div>
     <div class="introLoader__wrapper">
       <div class="introLoader__logo" id="loaderLogo">
-        <svg viewBox="0 0 180 36" fill="none" aria-hidden="true">
-          <defs>
-            <mask id="logoMask">
-              <rect id="logoMaskRect" x="-118" y="0" width="180" height="36" fill="#fff"/>
-            </mask>
-          </defs>
+        <svg viewBox="0 0 180 36" fill="none">
+          <defs><mask id="logoMask"><rect id="logoMaskRect" x="-118" y="0" width="180" height="36" fill="#fff"/></mask></defs>
           <g mask="url(#logoMask)">
             <path d="M14 2.5 L26 8.5 V20.5 L14 31.5 L2 20.5 V8.5 Z" stroke="#030303" stroke-width="1.15" fill="none"/>
             <path d="M9.2 22.2 V12.8 H13.4 C15.55 12.8 16.85 13.95 16.85 15.85 C16.85 17.7 15.55 18.85 13.4 18.85 H11.2 V22.2 H9.2 Z M11.2 17.2 H13.25 C14.35 17.2 14.85 16.75 14.85 15.85 C14.85 14.95 14.35 14.5 13.25 14.5 H11.2 V17.2 Z" fill="#030303"/>
-            <text x="34" y="22.5" fill="#030303" font-family="HelveticaNeueRegular, Helvetica, Arial, sans-serif" font-size="11" letter-spacing="3.2">QORA</text>
+            <text x="34" y="22.5" fill="#030303" font-family="Helvetica,Arial,sans-serif" font-size="11" letter-spacing="3.2">QORA</text>
           </g>
         </svg>
       </div>
       <div class="introLoader__progressWrapper">
         <div class="introLoader__progressBar"><div id="progressLine"></div></div>
         <div class="introLoader__baseline" id="baseline">
-          <div>Atmospheres</div>
-          <div>for</div>
-          <div>architecture</div>
+          <div>Atmospheres</div><div>for</div><div>architecture</div>
         </div>
       </div>
-      <div class="introLoader__scrollDown" id="scrollDown">
-        <div><div class="num" id="loadPct">0</div></div>
-      </div>
+      <div class="introLoader__scrollDown" id="scrollDown"><div><div class="num" id="loadPct">0</div></div></div>
     </div>
   </div>
 
   <canvas id="webgl"></canvas>
+  <div class="hint" id="moveHint">Move your cursor</div>
 
   <div class="chrome" id="chrome">
     <button class="sound" id="soundBtn" type="button">Sound off</button>
     <div class="credit">Study · for Vadim</div>
-
-    <div class="nav-top">
-      <button type="button" id="menuBtn">Menu</button>
-    </div>
-
+    <div class="nav-top"><button type="button" id="menuBtn">Menu</button></div>
     <div class="midline">
       <a class="mid-logo" href="https://qora.group" target="_blank" rel="noopener">
-        <svg viewBox="0 0 32 32" fill="none" aria-hidden="true">
-          <path d="M16 2.5 L27 8.2 V19.5 L16 29.5 L5 19.5 V8.2 Z" stroke="#030303" stroke-width="1.2"/>
-          <path d="M11.5 20 V12.5 H15.2 C17.1 12.5 18.2 13.5 18.2 15.1 C18.2 16.7 17.1 17.7 15.2 17.7 H13.2 V20 H11.5 Z M13.2 16.3 H15 C16 16.3 16.5 15.9 16.5 15.1 C16.5 14.3 16 13.9 15 13.9 H13.2 V16.3 Z" fill="#030303"/>
-        </svg>
+        <svg viewBox="0 0 32 32" fill="none"><path d="M16 2.5 L27 8.2 V19.5 L16 29.5 L5 19.5 V8.2 Z" stroke="#030303" stroke-width="1.2"/><path d="M11.5 20 V12.5 H15.2 C17.1 12.5 18.2 13.5 18.2 15.1 C18.2 16.7 17.1 17.7 15.2 17.7 H13.2 V20 H11.5 Z M13.2 16.3 H15 C16 16.3 16.5 15.9 16.5 15.1 C16.5 14.3 16 13.9 15 13.9 H13.2 V16.3 Z" fill="#030303"/></svg>
         <span>Qora</span>
       </a>
-      <div class="mid-title" id="midTitle">Atmospheres for architecture</div>
+      <div class="mid-title">Atmospheres for architecture</div>
       <div class="mid-scroll" id="midScroll">Scroll down</div>
     </div>
-
-    <div class="panel" id="panel">
-      <h2 id="panelTitle">Relief from the plane</h2>
-      <p id="panelText">As you scroll, the carved surface gains volume — light, depth and parallax, the way Immersive Garden builds presence from a single field.</p>
-    </div>
-
-    <div class="bot-left">
-      <a href="https://qora.group" target="_blank" rel="noopener" id="projectsLink">See the approach <span class="arr"></span></a>
-    </div>
-    <div class="bot-right">
-      <div class="rail"><i id="rail"></i></div>
-      <div class="dot" aria-hidden="true"></div>
-    </div>
+    <div class="bot-left"><a href="https://qora.group" target="_blank" rel="noopener">See the approach →</a></div>
+    <div class="bot-right"><div class="rail"><i id="rail"></i></div><div class="dot"></div></div>
   </div>
 
   <div class="menu-sheet" id="menu">
     <button class="menu-close" type="button" id="menuClose">Close</button>
-    <ul>
-      <li><button type="button" data-jump="0">Home</button></li>
-      <li><button type="button" data-jump="0.35">Volume</button></li>
-      <li><button type="button" data-jump="0.7">For architecture</button></li>
-      <li><a href="https://qora.group" target="_blank" rel="noopener">qora.group</a></li>
-      <li><a href="https://t.me/pavel_xdev" target="_blank" rel="noopener">@pavel_xdev</a></li>
-    </ul>
+    <div>
+      <button type="button" data-jump="0">Home</button>
+      <a href="https://qora.group" target="_blank" rel="noopener">qora.group</a>
+      <a href="https://t.me/pavel_xdev" target="_blank" rel="noopener">@pavel_xdev</a>
+    </div>
   </div>
 
 <script src="https://cdn.jsdelivr.net/npm/howler@2.2.4/dist/howler.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js"></script>
-<script type="importmap">
-{ "imports": { "three": "https://unpkg.com/three@0.160.0/build/three.module.js" } }
-</script>
+<script type="importmap">{ "imports": { "three": "https://unpkg.com/three@0.160.0/build/three.module.js" } }</script>
 <script type="module">
 /**
- * Immersive Garden–faithful study
- * Loader: word stagger + scaleX progress to 100 + reveal timeline (GSAP)
+ * Immersive Garden core: hidden image revealed by mouse FLUID WAVES
+ * (fluidFlowmap: density + velocity splat → distort + reveal)
  */
 import * as THREE from 'three';
 
 const $ = (id) => document.getElementById(id);
 const loader = $('loader');
-const loaderBg = $('loaderBg');
-const loaderLogo = $('loaderLogo');
-const logoMaskRect = $('logoMaskRect');
 const progressLine = $('progressLine');
+const loadPct = $('loadPct');
 const baselineWords = [...document.querySelectorAll('#baseline > div')];
 const scrollDown = $('scrollDown');
-const loadPct = $('loadPct');
+const logoMaskRect = $('logoMaskRect');
+const loaderLogo = $('loaderLogo');
+const loaderBg = $('loaderBg');
 const chrome = $('chrome');
-const midTitle = $('midTitle');
-const midScroll = $('midScroll');
-const panel = $('panel');
-const panelTitle = $('panelTitle');
-const panelText = $('panelText');
+const webglEl = $('webgl');
+const moveHint = $('moveHint');
 const rail = $('rail');
+const midScroll = $('midScroll');
 const soundBtn = $('soundBtn');
 const menu = $('menu');
-const webglEl = $('webgl');
 
-const chapters = [
-  { at: 0.12, title: 'Relief from the plane', text: 'Scroll moves the field. Carving lifts out of plaster — volume from light and depth, not a camera flying into an object.' },
-  { at: 0.4, title: 'Atmosphere as the product', text: 'The same craft Immersive Garden uses for maisons: presence first. Architecture felt before it is explained.' },
-  { at: 0.68, title: 'Your object. This format.', text: 'Facade, interior, Kizhi, Fallingwater — we rebuild this study on your frames. Pavel Galanté · Qora.' },
-];
-
-// ——— SOUND ———
+// ——— sound ———
 let soundOn = false;
-const music = new Howl({
-  src: ['./assets/sounds/ambient.wav'],
-  loop: true,
-  volume: 0,
-  preload: true,
-  html5: false,
-});
-const tick = new Howl({
-  src: ['./assets/sounds/click.mp3', './assets/sounds/pop.ogg'],
-  volume: 0.28,
-  preload: true,
-});
-
+const music = new Howl({ src: ['./assets/sounds/ambient.wav'], loop: true, volume: 0, preload: true });
+const tick = new Howl({ src: ['./assets/sounds/click.mp3'], volume: 0.25, preload: true });
 function enableSound() {
   if (soundOn) return;
   soundOn = true;
   soundBtn.textContent = 'Sound on';
   soundBtn.classList.add('is-on');
-  // unlock AudioContext then play
-  try { Howler.ctx && Howler.ctx.resume && Howler.ctx.resume(); } catch (_) {}
+  try { Howler.ctx?.resume?.(); } catch (_) {}
   if (!music.playing()) music.play();
-  music.fade(music.volume(), 0.42, 1400);
+  music.fade(0, 0.4, 1200);
 }
-function toggleSound() {
-  tick.play();
-  if (!soundOn) { enableSound(); return; }
-  soundOn = false;
-  soundBtn.textContent = 'Sound off';
-  soundBtn.classList.remove('is-on');
-  const v = music.volume();
-  music.fade(v, 0, 450);
-  setTimeout(() => { if (!soundOn) music.pause(); }, 480);
-}
-soundBtn.addEventListener('click', (e) => { e.stopPropagation(); toggleSound(); });
-
-// ——— THREE ———
-const canvas = $('webgl');
-const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, powerPreference: 'high-performance' });
-renderer.setClearColor(0xe8e8e8, 1);
-renderer.outputColorSpace = THREE.SRGBColorSpace;
-renderer.toneMapping = THREE.ACESFilmicToneMapping;
-renderer.toneMappingExposure = 1.05;
-
-const scene = new THREE.Scene();
-scene.fog = new THREE.Fog(0xe8e8e8, 4.5, 11);
-
-const camera = new THREE.PerspectiveCamera(32, 1, 0.05, 40);
-camera.position.set(0, 0, 6.2);
-
-const hemi = new THREE.HemisphereLight(0xffffff, 0xb0b0b0, 0.85);
-scene.add(hemi);
-const key = new THREE.DirectionalLight(0xffffff, 1.15);
-key.position.set(-2.8, 3.4, 4.2);
-scene.add(key);
-const fill = new THREE.DirectionalLight(0xdde2ea, 0.35);
-fill.position.set(3.5, 0.5, 2);
-scene.add(fill);
-const rim = new THREE.DirectionalLight(0xffffff, 0.25);
-rim.position.set(0, -1, -3);
-scene.add(rim);
-
-const manager = new THREE.LoadingManager();
-let assetProgress = 0;
-manager.onProgress = (_u, loaded, total) => {
-  assetProgress = loaded / Math.max(total, 1);
+soundBtn.onclick = (e) => {
+  e.stopPropagation(); tick.play();
+  if (!soundOn) enableSound();
+  else {
+    soundOn = false; soundBtn.textContent = 'Sound off'; soundBtn.classList.remove('is-on');
+    music.fade(music.volume(), 0, 400); setTimeout(() => !soundOn && music.pause(), 420);
+  }
 };
 
-const texLoader = new THREE.TextureLoader(manager);
-const asset = (p) => new URL(`./assets/${p}`, import.meta.url).href;
-
-// ——— LOADER TIMELINE (IG 1:1) ———
+// ——— LOADER ———
 const loadState = { p: 0 };
-const MIN_LOAD_MS = 3400;
-const loadStartedAt = performance.now();
+let assetProgress = 0;
+let outroStarted = false;
+const MIN_LOAD_MS = 3200;
+const t0 = performance.now();
 
-function setProgressVisual(p) {
-  const pct = Math.max(0, Math.min(1, p));
-  gsap.set(progressLine, { scaleX: pct });
-  loadPct.textContent = String(Math.round(pct * 100));
-}
-
-// intro reveal (like Ee)
 function playIntroIn() {
   const tl = gsap.timeline();
-  // logo mask wipe in — quart.out 2.5s (IG: from -66%)
   gsap.set(loaderLogo.querySelector('svg'), { opacity: 1 });
-  tl.fromTo(
-    logoMaskRect,
-    { attr: { x: -118 } },
-    { attr: { x: 0 }, duration: 2.5, ease: 'quart.out' },
-    0
-  );
-  // words stagger
-  tl.fromTo(
-    baselineWords,
-    { opacity: 0 },
-    { opacity: 1, duration: 1, ease: 'sine.inOut', stagger: 0.1 },
-    0.3
-  );
-  // percent / scroll-down
+  tl.fromTo(logoMaskRect, { attr: { x: -118 } }, { attr: { x: 0 }, duration: 2.5, ease: 'quart.out' }, 0);
+  tl.fromTo(baselineWords, { opacity: 0 }, { opacity: 1, duration: 1, ease: 'sine.inOut', stagger: 0.1 }, 0.3);
   tl.fromTo(scrollDown, { opacity: 0 }, { opacity: 1, duration: 0.8, ease: 'sine.inOut' }, 0.35);
-  return tl;
 }
-
-function playIntroOut(onDone) {
-  // like IG oe()/ce() — progress fades, words stagger out, logo mask out, then bg
+function playIntroOut() {
   const tl = gsap.timeline({
-    onComplete: () => {
-      loader.classList.add('is-done');
-      loader.style.visibility = 'hidden';
-      onDone && onDone();
-    },
+    onComplete: () => { loader.classList.add('is-done'); },
   });
-  // number → “Scroll down”
-  tl.to(loadPct, {
-    duration: 0.35,
-    ease: 'sine.inOut',
-    onStart: () => { loadPct.textContent = 'Scroll down'; loadPct.style.opacity = '1'; },
-  }, 0);
+  tl.add(() => { loadPct.textContent = 'Scroll down'; loadPct.style.opacity = '1'; }, 0);
   tl.to(progressLine.parentElement, { opacity: 0, duration: 1.2, ease: 'sine.inOut' }, 0);
   tl.to(baselineWords, { opacity: 0, duration: 1, ease: 'sine.inOut', stagger: -0.1 }, 0.15);
-  tl.to(logoMaskRect, {
-    attr: { x: -118 },
-    duration: 2,
-    ease: 'quart.inOut',
-  }, 0);
+  tl.to(logoMaskRect, { attr: { x: -118 }, duration: 2, ease: 'quart.inOut' }, 0);
   tl.to(loaderLogo, { opacity: 0, duration: 0.5, ease: 'sine.inOut' }, 1.9);
   tl.to(scrollDown, { opacity: 0, duration: 0.8, ease: 'sine.inOut' }, 1.9);
-  tl.to(loaderBg, { opacity: 0, duration: 1.2, ease: 'sine.inOut' }, 2.05);
-  tl.to(webglEl, { opacity: 1, duration: 1.1, ease: 'sine.inOut' }, 2.1);
+  tl.to(loaderBg, { opacity: 0, duration: 1.2, ease: 'sine.inOut' }, 2.0);
+  tl.to(webglEl, { opacity: 1, duration: 1.15, ease: 'sine.inOut' }, 2.05);
   tl.add(() => {
     chrome.classList.add('is-on');
     gsap.fromTo(chrome, { opacity: 0 }, { opacity: 1, duration: 0.9, ease: 'sine.inOut' });
-  }, 2.25);
-  return tl;
+  }, 2.2);
 }
-
-let outroStarted = false;
 function tickLoader() {
-  const elapsed = performance.now() - loadStartedAt;
+  const elapsed = performance.now() - t0;
   const timeP = Math.min(1, elapsed / MIN_LOAD_MS);
-  // smooth approach: never jump, ease toward max(assets, time)
-  const target = Math.min(1, Math.max(assetProgress * 0.97, timeP * 0.92));
-  // when both ready — go to 100
   const ready = assetProgress >= 1 && elapsed >= MIN_LOAD_MS;
-  const goal = ready ? 1 : Math.min(0.97, target);
-  loadState.p += (goal - loadState.p) * (ready ? 0.12 : 0.065);
+  const goal = ready ? 1 : Math.min(0.97, Math.max(assetProgress * 0.95, timeP * 0.9));
+  loadState.p += (goal - loadState.p) * (ready ? 0.14 : 0.06);
   if (ready && loadState.p > 0.995) loadState.p = 1;
-  setProgressVisual(loadState.p);
-  if (loadState.p < 1) {
-    requestAnimationFrame(tickLoader);
-  } else if (!outroStarted) {
+  gsap.set(progressLine, { scaleX: loadState.p });
+  if (loadPct.textContent !== 'Scroll down') loadPct.textContent = String(Math.round(loadState.p * 100));
+  if (loadState.p < 1) requestAnimationFrame(tickLoader);
+  else if (!outroStarted) {
     outroStarted = true;
-    setProgressVisual(1);
-    // hold on 100, then beautiful out
-    gsap.delayedCall(0.55, () => playIntroOut());
+    gsap.set(progressLine, { scaleX: 1 });
+    loadPct.textContent = '100';
+    gsap.delayedCall(0.5, playIntroOut);
   }
 }
-
-// Start IG loader IMMEDIATELY (before heavy assets await)
 playIntroIn();
 requestAnimationFrame(tickLoader);
 
+// ——— THREE + FLUID FLOWMAP ———
+const canvas = $('webgl');
+const renderer = new THREE.WebGLRenderer({ canvas, antialias: false, powerPreference: 'high-performance' });
+renderer.setClearColor(0xe8e8e8, 1);
+renderer.outputColorSpace = THREE.SRGBColorSpace;
+
+const scene = new THREE.Scene();
+const camera = new THREE.OrthographicCamera(-1, 1, 1, -1, 0, 1);
+
+const loaderTex = new THREE.TextureLoader();
+const A = (p) => new URL(`./assets/${p}`, import.meta.url).href;
 const [plasterMap, reliefMap, depthMap] = await Promise.all([
-  texLoader.loadAsync(asset('tex/plaster.jpg')),
-  texLoader.loadAsync(asset('tex/relief.jpg')),
-  texLoader.loadAsync(asset('tex/relief_depth.png')),
+  loaderTex.loadAsync(A('tex/plaster.jpg')),
+  loaderTex.loadAsync(A('tex/relief.jpg')),
+  loaderTex.loadAsync(A('tex/relief_depth.png')),
 ]);
-assetProgress = Math.max(assetProgress, 0.99);
-
-for (const t of [plasterMap, reliefMap]) {
-  t.colorSpace = THREE.SRGBColorSpace;
-  t.wrapS = t.wrapT = THREE.RepeatWrapping;
-  t.anisotropy = Math.min(8, renderer.capabilities.getMaxAnisotropy());
+assetProgress = 1;
+plasterMap.colorSpace = THREE.SRGBColorSpace;
+reliefMap.colorSpace = THREE.SRGBColorSpace;
+plasterMap.wrapS = plasterMap.wrapT = THREE.RepeatWrapping;
+plasterMap.repeat.set(2.2, 2.2);
+for (const t of [reliefMap, depthMap]) {
+  t.wrapS = t.wrapT = THREE.ClampToEdgeWrapping;
+  t.minFilter = THREE.LinearFilter;
 }
-plasterMap.repeat.set(2.4, 2.4);
-depthMap.minFilter = THREE.LinearFilter;
-depthMap.magFilter = THREE.LinearFilter;
-depthMap.wrapS = depthMap.wrapT = THREE.ClampToEdgeWrapping;
-reliefMap.wrapS = reliefMap.wrapT = THREE.ClampToEdgeWrapping;
 
-// Full-field plaster wall
-const wallMat = new THREE.MeshStandardMaterial({
-  map: plasterMap,
-  roughness: 0.92,
-  metalness: 0.0,
-  color: 0xf2f2f2,
-});
-const wall = new THREE.Mesh(new THREE.PlaneGeometry(18, 12), wallMat);
-wall.position.z = -0.4;
-scene.add(wall);
+// --- fluid ping-pong ---
+const simRes = 256;
+function makeRT() {
+  return new THREE.WebGLRenderTarget(simRes, simRes, {
+    type: THREE.HalfFloatType,
+    minFilter: THREE.LinearFilter,
+    magFilter: THREE.LinearFilter,
+    depthBuffer: false,
+  });
+}
+let densityA = makeRT(), densityB = makeRT();
+let velA = makeRT(), velB = makeRT();
 
-// Bas-relief — smooth parallax + lit normals (no fract / no vertex shake)
-const uniforms = {
-  uMap: { value: reliefMap },
-  uDepth: { value: depthMap },
-  uDisplace: { value: 0.22 },
-  uScroll: { value: 0 },
-  uMouse: { value: new THREE.Vector2() },
-  uLightDir: { value: new THREE.Vector3(-0.4, 0.72, 0.6).normalize() },
-  uParallax: { value: 0.045 },
-};
+const quad = new THREE.PlaneGeometry(2, 2);
+const simScene = new THREE.Scene();
+const simCam = new THREE.OrthographicCamera(-1, 1, 1, -1, 0, 1);
+const simMesh = new THREE.Mesh(quad, new THREE.MeshBasicMaterial());
+simScene.add(simMesh);
 
-const reliefMat = new THREE.ShaderMaterial({
-  uniforms,
-  lights: false,
-  vertexShader: /* glsl */`
-    uniform sampler2D uDepth;
-    uniform float uDisplace;
-    uniform float uScroll;
+const splatMat = new THREE.ShaderMaterial({
+  uniforms: {
+    uTarget: { value: null },
+    uPoint: { value: new THREE.Vector2(0.5, 0.5) },
+    uPrev: { value: new THREE.Vector2(0.5, 0.5) },
+    uColor: { value: new THREE.Vector3(1, 0, 0) },
+    uRadius: { value: 0.035 },
+    uAspect: { value: 1 },
+  },
+  vertexShader: `varying vec2 vUv; void main(){ vUv=uv; gl_Position=vec4(position.xy,0.,1.); }`,
+  fragmentShader: `
+    precision highp float;
+    uniform sampler2D uTarget;
+    uniform vec2 uPoint, uPrev;
+    uniform vec3 uColor;
+    uniform float uRadius, uAspect;
     varying vec2 vUv;
-    varying float vD;
-    varying vec3 vN;
-    varying vec3 vW;
-
-    vec2 scrollUv(vec2 uv) {
-      // soft pan down — NO fract (fract = тряска на шве)
-      return clamp(uv + vec2(0.0, uScroll), 0.002, 0.998);
+    float splat(vec2 uv, vec2 p){
+      vec2 d = uv - p; d.x *= uAspect;
+      return exp(-dot(d,d) / uRadius);
     }
-
-    void main() {
-      vUv = uv;
-      vec2 duv = scrollUv(uv);
-      float d = texture2D(uDepth, duv).r;
-      vD = d;
-
-      float texel = 1.0 / 700.0;
-      float dL = texture2D(uDepth, scrollUv(uv + vec2(-texel, 0.0))).r;
-      float dR = texture2D(uDepth, scrollUv(uv + vec2( texel, 0.0))).r;
-      float dD = texture2D(uDepth, scrollUv(uv + vec2(0.0, -texel))).r;
-      float dU = texture2D(uDepth, scrollUv(uv + vec2(0.0,  texel))).r;
-      vec3 n = normalize(vec3((dL - dR) * uDisplace * 14.0, (dD - dU) * uDisplace * 14.0, 1.0));
-      vN = normalize(normalMatrix * n);
-
-      vec3 pos = position;
-      pos.z += (d - 0.32) * uDisplace;
-
-      vec4 mv = modelViewMatrix * vec4(pos, 1.0);
-      vW = mv.xyz;
-      gl_Position = projectionMatrix * mv;
+    void main(){
+      vec4 base = texture2D(uTarget, vUv);
+      float s = max(splat(vUv, uPoint), splat(vUv, mix(uPrev, uPoint, 0.5)) * 0.85);
+      // soft capsule along mouse segment
+      vec2 pa = vUv - uPrev; vec2 ba = uPoint - uPrev;
+      float h = clamp(dot(pa, ba) / max(dot(ba, ba), 1e-5), 0., 1.);
+      vec2 d = pa - ba * h; d.x *= uAspect;
+      s = max(s, exp(-dot(d,d) / (uRadius * 0.85)));
+      gl_FragColor = vec4(base.rgb + uColor * s, 1.0);
     }
   `,
-  fragmentShader: /* glsl */`
-    uniform sampler2D uMap;
-    uniform sampler2D uDepth;
-    uniform float uScroll;
-    uniform vec2 uMouse;
-    uniform vec3 uLightDir;
-    uniform float uDisplace;
-    uniform float uParallax;
+});
+
+const fadeMat = new THREE.ShaderMaterial({
+  uniforms: {
+    uTex: { value: null },
+    uDissipation: { value: 0.987 },
+  },
+  vertexShader: `varying vec2 vUv; void main(){ vUv=uv; gl_Position=vec4(position.xy,0.,1.); }`,
+  fragmentShader: `
+    precision highp float;
+    uniform sampler2D uTex;
+    uniform float uDissipation;
     varying vec2 vUv;
-    varying float vD;
-    varying vec3 vN;
-    varying vec3 vW;
-
-    vec2 scrollUv(vec2 uv) {
-      return clamp(uv + vec2(0.0, uScroll), 0.002, 0.998);
+    void main(){
+      gl_FragColor = texture2D(uTex, vUv) * uDissipation;
     }
+  `,
+});
 
-    void main() {
-      // mouse moves the carved layer (depth parallax) — плавно меняет «эту часть»
-      float d0 = texture2D(uDepth, scrollUv(vUv)).r;
-      vec2 parallax = uMouse * (d0 - 0.2) * uParallax;
-      vec2 duv = scrollUv(vUv + parallax);
+const advectMat = new THREE.ShaderMaterial({
+  uniforms: {
+    uVelocity: { value: null },
+    uSource: { value: null },
+    uDissipation: { value: 0.98 },
+    uDt: { value: 0.016 },
+  },
+  vertexShader: `varying vec2 vUv; void main(){ vUv=uv; gl_Position=vec4(position.xy,0.,1.); }`,
+  fragmentShader: `
+    precision highp float;
+    uniform sampler2D uVelocity, uSource;
+    uniform float uDissipation, uDt;
+    varying vec2 vUv;
+    void main(){
+      vec2 vel = texture2D(uVelocity, vUv).xy;
+      vec2 uv = vUv - vel * uDt;
+      gl_FragColor = texture2D(uSource, uv) * uDissipation;
+    }
+  `,
+});
 
-      vec3 albedo = texture2D(uMap, duv).rgb;
-      float g = dot(albedo, vec3(0.299, 0.587, 0.114));
-      albedo = mix(albedo, vec3(g), 0.32);
-      albedo = mix(albedo, vec3(0.89), 0.16);
+// Final display: plaster always; HIDDEN image revealed + waved by fluid
+const viewUniforms = {
+  uPlaster: { value: plasterMap },
+  uImage: { value: reliefMap },
+  uDepth: { value: depthMap },
+  uDensity: { value: null },
+  uVelocity: { value: null },
+  uMouse: { value: new THREE.Vector2(0.5, 0.5) },
+  uScroll: { value: 0 },
+  uTime: { value: 0 },
+  uRes: { value: new THREE.Vector2(1, 1) },
+  uWave: { value: 0.045 },
+};
+const viewMat = new THREE.ShaderMaterial({
+  uniforms: viewUniforms,
+  vertexShader: `varying vec2 vUv; void main(){ vUv=uv; gl_Position=vec4(position.xy,0.,1.); }`,
+  fragmentShader: `
+    precision highp float;
+    uniform sampler2D uPlaster, uImage, uDepth, uDensity, uVelocity;
+    uniform vec2 uMouse, uRes;
+    uniform float uScroll, uTime, uWave;
+    varying vec2 vUv;
 
-      float d = texture2D(uDepth, duv).r;
-      // refresh normal with parallaxed depth
-      float texel = 1.0 / 700.0;
-      float dL = texture2D(uDepth, clamp(duv + vec2(-texel, 0.0), 0.002, 0.998)).r;
-      float dR = texture2D(uDepth, clamp(duv + vec2( texel, 0.0), 0.002, 0.998)).r;
-      float dDn = texture2D(uDepth, clamp(duv + vec2(0.0, -texel), 0.002, 0.998)).r;
-      float dUp = texture2D(uDepth, clamp(duv + vec2(0.0,  texel), 0.002, 0.998)).r;
-      vec3 nTex = normalize(vec3((dL - dR) * uDisplace * 14.0, (dDn - dUp) * uDisplace * 14.0, 1.0));
-      vec3 N = normalize(mix(normalize(vN), nTex, 0.65));
+    void main(){
+      // paper field
+      vec2 puv = vUv * vec2(uRes.x/uRes.y, 1.0) * 1.6;
+      vec3 plaster = texture2D(uPlaster, puv + uScroll * 0.02).rgb;
+      plaster = mix(plaster, vec3(0.91), 0.35);
 
-      vec3 L = normalize(uLightDir);
-      float diff = clamp(dot(N, L), 0.0, 1.0);
-      vec3 V = normalize(-vW);
-      vec3 H = normalize(L + V);
-      float spec = pow(clamp(dot(N, H), 0.0, 1.0), 48.0) * 0.2 * smoothstep(0.25, 0.85, d);
+      // fluid
+      vec4 dens = texture2D(uDensity, vUv);
+      vec2 vel = texture2D(uVelocity, vUv).xy;
+      float reveal = smoothstep(0.02, 0.55, dens.r);
+      // soft residual so trails linger like IG
+      reveal = clamp(reveal * 1.25, 0.0, 1.0);
 
-      float ao = mix(0.74, 1.0, pow(d, 0.9));
-      vec3 col = albedo * (0.52 + diff * 0.58) * ao + vec3(spec);
-      col = mix(col, vec3(0.91), 0.05);
+      // wave distortion from velocity + density gradient
+      float texel = 1.0 / 256.0;
+      float dL = texture2D(uDensity, vUv + vec2(-texel,0.)).r;
+      float dR = texture2D(uDensity, vUv + vec2( texel,0.)).r;
+      float dD = texture2D(uDensity, vUv + vec2(0.,-texel)).r;
+      float dU = texture2D(uDensity, vUv + vec2(0., texel)).r;
+      vec2 grad = vec2(dR - dL, dU - dD);
+      vec2 warp = vel * uWave * 2.2 + grad * uWave * 1.4;
+
+      // image UV — mostly centered cover, slight scroll
+      vec2 iuv = vUv;
+      float aspect = uRes.x / uRes.y;
+      float imgAspect = 16.0/9.0;
+      if (aspect > imgAspect) {
+        float s = imgAspect / aspect;
+        iuv.y = (iuv.y - 0.5) * s + 0.5;
+      } else {
+        float s = aspect / imgAspect;
+        iuv.x = (iuv.x - 0.5) * s + 0.5;
+      }
+      iuv.y += uScroll * 0.12;
+      iuv = clamp(iuv + warp, 0.001, 0.999);
+
+      vec3 img = texture2D(uImage, iuv).rgb;
+      float depth = texture2D(uDepth, iuv).r;
+      // lit relief feel
+      float dL2 = texture2D(uDepth, clamp(iuv+vec2(-0.002,0.),0.,1.)).r;
+      float dR2 = texture2D(uDepth, clamp(iuv+vec2( 0.002,0.),0.,1.)).r;
+      float dD2 = texture2D(uDepth, clamp(iuv+vec2(0.,-0.002),0.,1.)).r;
+      float dU2 = texture2D(uDepth, clamp(iuv+vec2(0., 0.002),0.,1.)).r;
+      vec3 N = normalize(vec3(dL2-dR2, dD2-dU2, 0.35));
+      // light follows mouse a bit
+      vec3 L = normalize(vec3(uMouse.x*2.-1., uMouse.y*2.-1., 0.85));
+      float diff = clamp(dot(N, L), 0., 1.);
+      float g = dot(img, vec3(0.299,0.587,0.114));
+      img = mix(img, vec3(g), 0.28);
+      img = img * (0.55 + diff * 0.55);
+      img = mix(img, plaster, 0.12);
+
+      // HIDDEN until mouse waves reveal
+      vec3 col = mix(plaster, img, reveal);
+
+      // subtle shimmer in waves
+      col += vel.xyx * 0.015 * reveal;
+
+      // vignette
+      float vig = smoothstep(1.2, 0.25, length(vUv - 0.5));
+      col *= mix(0.92, 1.0, vig);
 
       gl_FragColor = vec4(col, 1.0);
     }
   `,
 });
-
-const relief = new THREE.Mesh(
-  new THREE.PlaneGeometry(7.6, 3.8, 200, 110),
-  reliefMat
-);
-relief.position.set(0, -0.35, 0.15);
-scene.add(relief);
+const viewMesh = new THREE.Mesh(quad, viewMat);
+scene.add(viewMesh);
 
 function fit() {
   const w = innerWidth, h = innerHeight;
   renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
   renderer.setSize(w, h, false);
-  camera.aspect = w / h;
-  camera.updateProjectionMatrix();
-  // keep relief readable across ratios
-  const s = w / h < 1 ? 0.72 : 1;
-  relief.scale.set(s, s, 1);
+  viewUniforms.uRes.value.set(w, h);
+  splatMat.uniforms.uAspect.value = w / h;
 }
 addEventListener('resize', fit);
 fit();
 
-// textures ready — allow loader to finish to 100 after MIN_LOAD_MS
-await Promise.all([
-  plasterMap.image.decode?.() ?? Promise.resolve(),
-  reliefMap.image.decode?.() ?? Promise.resolve(),
-  document.fonts.ready.catch(() => {}),
-]);
-assetProgress = 1;
+// mouse → fluid
+const mouse = new THREE.Vector2(0.5, 0.5);
+const prevMouse = new THREE.Vector2(0.5, 0.5);
+const mouseSmooth = new THREE.Vector2(0.5, 0.5);
+let hasMoved = false;
 
-// ——— virtual scroll (heavily damped = no shake) ———
-let target = 0;
-let progress = 0;
-let scrollU = 0;
-let displaceU = 0.22;
-const mouse = new THREE.Vector2();
-const mouseS = new THREE.Vector2();
-const cam = new THREE.Vector3(0, 0, 6.2);
-const look = new THREE.Vector3(0, -0.35, 0);
-const lightS = new THREE.Vector3(-0.4, 0.72, 0.6);
-
-function onWheel(e) {
-  e.preventDefault();
-  enableSound();
-  target = THREE.MathUtils.clamp(target + e.deltaY * 0.00055, 0, 1);
+function setMouse(e) {
+  prevMouse.copy(mouse);
+  mouse.set(e.clientX / innerWidth, 1 - e.clientY / innerHeight);
+  if (!hasMoved) {
+    hasMoved = true;
+    moveHint.classList.add('is-hide');
+    enableSound();
+  }
 }
-addEventListener('wheel', onWheel, { passive: false });
+window.addEventListener('pointermove', setMouse);
+window.addEventListener('pointerdown', (e) => { setMouse(e); enableSound(); });
 
-let touchY = null;
-addEventListener('touchstart', (e) => { touchY = e.touches[0].clientY; }, { passive: true });
-addEventListener('touchmove', (e) => {
-  if (touchY == null) return;
+let targetScroll = 0, scrollP = 0;
+window.addEventListener('wheel', (e) => {
   e.preventDefault();
   enableSound();
-  const dy = touchY - e.touches[0].clientY;
-  touchY = e.touches[0].clientY;
-  target = THREE.MathUtils.clamp(target + dy * 0.0018, 0, 1);
+  targetScroll = THREE.MathUtils.clamp(targetScroll + e.deltaY * 0.0005, 0, 1);
 }, { passive: false });
 
-addEventListener('pointermove', (e) => {
-  mouse.set((e.clientX / innerWidth) * 2 - 1, -(e.clientY / innerHeight) * 2 + 1);
+$('menuBtn').onclick = () => { tick.play(); menu.classList.add('is-open'); };
+$('menuClose').onclick = () => { tick.play(); menu.classList.remove('is-open'); };
+menu.querySelectorAll('[data-jump]').forEach((b) => b.onclick = () => {
+  tick.play(); targetScroll = +b.dataset.jump; menu.classList.remove('is-open');
 });
-addEventListener('pointerdown', () => enableSound(), { once: true });
 
-// menu
-$('menuBtn').addEventListener('click', () => { tick.play(); menu.classList.add('is-open'); });
-$('menuClose').addEventListener('click', () => { tick.play(); menu.classList.remove('is-open'); });
-menu.querySelectorAll('[data-jump]').forEach((btn) => {
-  btn.addEventListener('click', () => {
-    tick.play();
-    target = +btn.dataset.jump;
-    menu.classList.remove('is-open');
-  });
-});
-$('projectsLink').addEventListener('mouseenter', () => { if (soundOn) tick.play(); });
-
-let chapter = -1;
-function syncChapter(p) {
-  let idx = -1;
-  for (let i = 0; i < chapters.length; i++) if (p >= chapters[i].at) idx = i;
-  if (idx === chapter) return;
-  chapter = idx;
-  if (idx < 0) {
-    panel.classList.remove('is-on');
-    midTitle.classList.remove('is-dim');
-    return;
-  }
-  midTitle.classList.add('is-dim');
-  panel.classList.remove('is-on');
-  setTimeout(() => {
-    panelTitle.textContent = chapters[idx].title;
-    panelText.textContent = chapters[idx].text;
-    panel.classList.add('is-on');
-  }, 220);
+function runPass(mat, inputRT, outputRT, update) {
+  simMesh.material = mat;
+  update && update();
+  renderer.setRenderTarget(outputRT);
+  renderer.render(simScene, simCam);
+  renderer.setRenderTarget(null);
 }
 
 const clock = new THREE.Clock();
-function damp(current, next, speed, dt) {
-  return current + (next - current) * (1 - Math.exp(-speed * dt));
-}
-
 function frame() {
   const dt = Math.min(clock.getDelta(), 0.033);
+  const t = clock.elapsedTime;
 
-  // soft scroll
-  progress = damp(progress, target, 2.4, dt);
-  const p = progress;
+  mouseSmooth.lerp(mouse, 1 - Math.exp(-dt * 8));
+  scrollP += (targetScroll - scrollP) * (1 - Math.exp(-dt * 2.4));
 
-  const scrollTarget = p * 0.18; // small pan, no wrap
-  const displaceTarget = THREE.MathUtils.lerp(0.2, 0.55, THREE.MathUtils.smoothstep(p, 0.0, 0.6));
-  scrollU = damp(scrollU, scrollTarget, 2.2, dt);
-  displaceU = damp(displaceU, displaceTarget, 2.0, dt);
-  uniforms.uScroll.value = scrollU;
-  uniforms.uDisplace.value = displaceU;
+  // velocity splat (xy) + density splat
+  const force = new THREE.Vector2().subVectors(mouse, prevMouse);
+  const speed = Math.min(force.length() * 80.0, 1.2);
 
-  // mouse: very smooth — меняет свет + parallax кусок рельефа
-  mouseS.x = damp(mouseS.x, mouse.x, 3.2, dt);
-  mouseS.y = damp(mouseS.y, mouse.y, 3.2, dt);
-  uniforms.uMouse.value.set(mouseS.x, mouseS.y);
+  // fade velocity
+  runPass(fadeMat, velA, velB, () => {
+    fadeMat.uniforms.uTex.value = velA.texture;
+    fadeMat.uniforms.uDissipation.value = 0.92;
+  });
+  [velA, velB] = [velB, velA];
 
-  lightS.x = damp(lightS.x, -0.4 + mouseS.x * 0.55, 2.8, dt);
-  lightS.y = damp(lightS.y, 0.72 + mouseS.y * 0.28, 2.8, dt);
-  lightS.z = 0.6;
-  uniforms.uLightDir.value.copy(lightS).normalize();
-
-  // camera barely breathes — no shake
-  cam.x = damp(cam.x, mouseS.x * 0.045, 2.5, dt);
-  cam.y = damp(cam.y, mouseS.y * 0.025, 2.5, dt);
-  cam.z = 6.2;
-  look.x = damp(look.x, mouseS.x * 0.02, 2.5, dt);
-  look.y = damp(look.y, -0.35 + mouseS.y * 0.02 - p * 0.08, 2.2, dt);
-  camera.position.copy(cam);
-  camera.lookAt(look);
-
-  relief.position.y = damp(relief.position.y, THREE.MathUtils.lerp(-0.2, 0.15, p), 2.0, dt);
-  wall.position.y = damp(wall.position.y, p * -0.12, 2.0, dt);
-
-  rail.style.height = `${(p * 100).toFixed(1)}%`;
-  midScroll.classList.toggle('is-hide', p > 0.05);
-  syncChapter(p);
-
-  if (soundOn && music.playing()) {
-    const want = 0.34 + p * 0.1;
-    const cur = music.volume();
-    if (Math.abs(cur - want) > 0.02) music.volume(damp(cur, want, 1.2, dt));
+  // splat velocity
+  if (speed > 0.002) {
+    runPass(splatMat, velA, velB, () => {
+      splatMat.uniforms.uTarget.value = velA.texture;
+      splatMat.uniforms.uPoint.value.copy(mouse);
+      splatMat.uniforms.uPrev.value.copy(prevMouse);
+      splatMat.uniforms.uColor.value.set(force.x * 2.5, force.y * 2.5, 0);
+      splatMat.uniforms.uRadius.value = 0.028 + speed * 0.02;
+    });
+    [velA, velB] = [velB, velA];
   }
+
+  // fade + advect density
+  runPass(fadeMat, densityA, densityB, () => {
+    fadeMat.uniforms.uTex.value = densityA.texture;
+    fadeMat.uniforms.uDissipation.value = 0.988;
+  });
+  [densityA, densityB] = [densityB, densityA];
+
+  runPass(advectMat, densityA, densityB, () => {
+    advectMat.uniforms.uVelocity.value = velA.texture;
+    advectMat.uniforms.uSource.value = densityA.texture;
+    advectMat.uniforms.uDissipation.value = 0.995;
+    advectMat.uniforms.uDt.value = dt * 0.35;
+  });
+  [densityA, densityB] = [densityB, densityA];
+
+  // density splat along mouse
+  if (speed > 0.0015 || hasMoved) {
+    runPass(splatMat, densityA, densityB, () => {
+      splatMat.uniforms.uTarget.value = densityA.texture;
+      splatMat.uniforms.uPoint.value.copy(mouse);
+      splatMat.uniforms.uPrev.value.copy(prevMouse);
+      splatMat.uniforms.uColor.value.set(0.55 + speed * 0.5, 0, 0);
+      splatMat.uniforms.uRadius.value = 0.04 + speed * 0.03;
+    });
+    [densityA, densityB] = [densityB, densityA];
+  }
+
+  prevMouse.copy(mouse);
+
+  viewUniforms.uDensity.value = densityA.texture;
+  viewUniforms.uVelocity.value = velA.texture;
+  viewUniforms.uMouse.value.copy(mouseSmooth);
+  viewUniforms.uScroll.value = scrollP;
+  viewUniforms.uTime.value = t;
+  viewUniforms.uWave.value = 0.04 + scrollP * 0.02;
+
+  rail.style.height = `${(scrollP * 100).toFixed(1)}%`;
+  midScroll.classList.toggle('is-hide', scrollP > 0.05);
 
   renderer.render(scene, camera);
   requestAnimationFrame(frame);
 }
 frame();
-
-window.__ig = (v) => { target = THREE.MathUtils.clamp(+v, 0, 1); };
 </script>
 </body>
 </html>
