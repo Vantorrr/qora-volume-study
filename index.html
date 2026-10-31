@@ -202,15 +202,16 @@ const chapters = [
 // ——— sound (IG: first gesture unlocks pleasant ambient) ———
 const soundCue = $('soundCue');
 let soundOn = false;
+// 1:1 IG home theme: /sounds/general/IG_HomePage_v5_v4.mp3
 const music = new Howl({
   src: ['./assets/sounds/ambient_loop.mp3'],
   loop: true,
   volume: 0,
   preload: true,
-  html5: false,
+  html5: true,
 });
-const tick = new Howl({ src: ['./assets/sounds/click.mp3'], volume: 0.18, preload: true });
-const MUSIC_VOL = 0.42;
+const tick = new Howl({ src: ['./assets/sounds/click.mp3'], volume: 0.22, preload: true });
+const MUSIC_VOL = 1; // IG Bde.IG_HomePage_v5_v4 = 1
 function enableSound() {
   if (soundOn) return;
   soundOn = true;
@@ -219,7 +220,7 @@ function enableSound() {
   soundCue.classList.add('is-hide');
   try { Howler.ctx?.resume?.(); } catch (_) {}
   if (!music.playing()) music.play();
-  music.fade(music.volume(), MUSIC_VOL, 1600);
+  music.fade(music.volume(), MUSIC_VOL, 2000); // IG P3 = 2000ms
 }
 function disableSound() {
   if (!soundOn) return;
