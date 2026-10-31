@@ -1,0 +1,510 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Qora · Study for Vadim — форма и атмосфера</title>
+<meta name="description" content="Скролл: картинка уходит вниз и набирает объём. Study by Павел Галантэ / Qora." />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;1,400&family=Manrope:wght@300;400;500&display=swap" rel="stylesheet" />
+<style>
+  :root {
+    --paper: #ece7df;
+    --mute: rgba(236,231,223,.48);
+    --ink: #0a0908;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body {
+    background: var(--ink);
+    color: var(--paper);
+    font-family: Manrope, system-ui, sans-serif;
+    font-weight: 300;
+    -webkit-font-smoothing: antialiased;
+  }
+  body { overflow: hidden; height: 100%; }
+
+  #world {
+    position: fixed;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    display: block;
+    z-index: 0;
+  }
+
+  .veil {
+    position: fixed;
+    inset: 0;
+    z-index: 1;
+    pointer-events: none;
+    background:
+      radial-gradient(ellipse 90% 75% at 50% 42%, transparent 18%, rgba(8,7,6,.42) 100%),
+      linear-gradient(180deg, rgba(8,7,6,.3) 0%, transparent 22%, transparent 68%, rgba(8,7,6,.62) 100%);
+  }
+  .grain {
+    position: fixed;
+    inset: 0;
+    z-index: 2;
+    pointer-events: none;
+    opacity: .07;
+    mix-blend-mode: overlay;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  }
+
+  .ui {
+    position: fixed;
+    inset: 0;
+    z-index: 3;
+    pointer-events: none;
+    padding: clamp(18px, 3vw, 40px);
+    display: grid;
+    grid-template-rows: auto 1fr auto;
+  }
+
+  .nav {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 16px;
+    font-size: 10px;
+    letter-spacing: .3em;
+    text-transform: uppercase;
+    color: var(--mute);
+  }
+  .nav b {
+    color: rgba(236,231,223,.78);
+    font-weight: 500;
+    letter-spacing: .24em;
+  }
+
+  .hero-copy {
+    align-self: center;
+    max-width: min(640px, 92vw);
+    margin-top: -4vh;
+  }
+  .eyebrow {
+    font-size: 11px;
+    letter-spacing: .34em;
+    text-transform: uppercase;
+    color: rgba(236,231,223,.5);
+    margin-bottom: 18px;
+  }
+  h1 {
+    font-family: "Cormorant Garamond", Georgia, serif;
+    font-weight: 400;
+    font-size: clamp(44px, 7.2vw, 84px);
+    line-height: .94;
+    letter-spacing: -.025em;
+    text-shadow: 0 18px 50px rgba(0,0,0,.45);
+  }
+  h1 em {
+    font-style: italic;
+    color: #f3e6d2;
+  }
+  .lede {
+    margin-top: 20px;
+    max-width: 38ch;
+    font-size: clamp(14px, 1.4vw, 17px);
+    line-height: 1.65;
+    color: rgba(236,231,223,.72);
+  }
+
+  .foot {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    gap: 20px;
+  }
+  .scroll-hint {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-size: 10px;
+    letter-spacing: .26em;
+    text-transform: uppercase;
+    color: var(--mute);
+  }
+  .scroll-hint .line {
+    width: 1px;
+    height: 40px;
+    background: rgba(236,231,223,.35);
+    animation: breath 1.9s ease-in-out infinite;
+    transform-origin: center bottom;
+  }
+  @keyframes breath {
+    0%, 100% { opacity: .25; transform: scaleY(.55); }
+    50% { opacity: 1; transform: scaleY(1); }
+  }
+
+  .progress {
+    width: 2px;
+    height: 120px;
+    background: rgba(236,231,223,.12);
+    position: relative;
+  }
+  .progress > i {
+    position: absolute;
+    top: 0; left: 0;
+    width: 100%;
+    height: 0%;
+    background: linear-gradient(180deg, #f3e6d2, #b8572a);
+  }
+
+  .credit {
+    position: fixed;
+    right: clamp(18px, 3vw, 40px);
+    bottom: clamp(18px, 3vw, 40px);
+    z-index: 4;
+    text-align: right;
+    font-size: 12px;
+    line-height: 1.55;
+    color: rgba(236,231,223,.42);
+    pointer-events: none;
+  }
+  .credit b { color: rgba(236,231,223,.78); font-weight: 500; }
+
+  .cta {
+    position: fixed;
+    left: clamp(18px, 3vw, 40px);
+    bottom: clamp(18px, 3vw, 40px);
+    z-index: 5;
+    pointer-events: auto;
+    font-size: 11px;
+    letter-spacing: .2em;
+    text-transform: uppercase;
+    color: rgba(236,231,223,.55);
+    text-decoration: none;
+    border-bottom: 1px solid rgba(236,231,223,.25);
+    padding-bottom: 4px;
+    transition: color .25s ease, border-color .25s ease;
+  }
+  .cta:hover {
+    color: rgba(236,231,223,.95);
+    border-color: rgba(236,231,223,.7);
+  }
+
+  .loader {
+    position: fixed;
+    inset: 0;
+    z-index: 20;
+    background: #0a0908;
+    display: grid;
+    place-items: center;
+    transition: opacity .7s ease;
+  }
+  .loader span {
+    font-size: 11px;
+    letter-spacing: .35em;
+    text-transform: uppercase;
+    color: rgba(236,231,223,.4);
+  }
+  .loader.is-done { opacity: 0; pointer-events: none; }
+
+  .chapters { position: absolute; width: 1px; height: 1px; overflow: hidden; }
+</style>
+</head>
+<body>
+<div class="loader" id="loader"><span>Qora</span></div>
+<canvas id="world"></canvas>
+<div class="veil"></div>
+<div class="grain"></div>
+
+<div class="ui">
+  <div class="nav">
+    <div>Case study · atmosphere</div>
+    <div><b>QORA</b> · for Vadim</div>
+  </div>
+
+  <div class="hero-copy">
+    <p class="eyebrow" id="eyebrow">Не слайд — пространство</p>
+    <h1 id="title">Картинка едет вниз.<br /><em>И становится объёмом.</em></h1>
+    <p class="lede" id="lede">Как на immersive-референсах: скролл ведёт кадр, а глубина выдавливает передний план из плоскости. Атмосфера вместо презентации.</p>
+  </div>
+
+  <div class="foot">
+    <div class="scroll-hint"><span class="line"></span>Scroll</div>
+    <div class="progress" aria-hidden="true"><i id="bar"></i></div>
+  </div>
+</div>
+
+<a class="cta" href="https://qora.group" target="_blank" rel="noopener">qora.group</a>
+<div class="credit">Павел <b>Галантэ</b><br />@pavel_xdev</div>
+
+<script type="importmap">
+{ "imports": { "three": "https://unpkg.com/three@0.160.0/build/three.module.js" } }
+</script>
+<script type="module">
+import * as THREE from 'three';
+
+/**
+ * Immersive-style scroll:
+ * - wheel drives virtual progress (smooth)
+ * - IMAGE offset moves DOWN with progress
+ * - depth-map displacement grows → flat photo becomes relief / 3D
+ */
+
+const canvas = document.getElementById('world');
+const bar = document.getElementById('bar');
+const loader = document.getElementById('loader');
+const eyebrow = document.getElementById('eyebrow');
+const title = document.getElementById('title');
+const lede = document.getElementById('lede');
+
+const chapters = [
+  {
+    t: 0,
+    eyebrow: 'Не слайд — пространство',
+    title: 'Картинка едет вниз.<br /><em>И становится объёмом.</em>',
+    lede: 'Как на immersive-референсах: скролл ведёт кадр, а глубина выдавливает передний план из плоскости. Атмосфера вместо презентации.',
+  },
+  {
+    t: 0.28,
+    eyebrow: 'Передний план · даль',
+    title: 'Скалы ближе.<br /><em>Горы — дальше.</em>',
+    lede: 'Слои живут с разной скоростью. Глаз читает объём — без полёта камеры «в объект».',
+  },
+  {
+    t: 0.58,
+    eyebrow: 'Для архитектуры',
+    title: 'Твой объект.<br /><em>Тот же приём.</em>',
+    lede: 'Подставим фасад, интерьер, Кижи, Fallingwater — заказчик скроллит и чувствует место, а не смотрит галерею.',
+  },
+  {
+    t: 0.82,
+    eyebrow: 'Следующий шаг',
+    title: 'Соберём<br /><em>на твоём материале.</em>',
+    lede: 'Пришли 3–5 сильных кадров объекта — сделаем такой же вход в атмосферу под бриф.',
+  },
+];
+
+const renderer = new THREE.WebGLRenderer({
+  canvas,
+  antialias: true,
+  powerPreference: 'high-performance',
+});
+renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+renderer.setClearColor(0x0a0908, 1);
+renderer.outputColorSpace = THREE.SRGBColorSpace;
+
+const scene = new THREE.Scene();
+const camera = new THREE.PerspectiveCamera(38, 1, 0.05, 50);
+camera.position.z = 2.2;
+
+const loaderTex = new THREE.TextureLoader();
+const base = new URL('./assets/', import.meta.url);
+
+const [map, depth] = await Promise.all([
+  loaderTex.loadAsync(new URL('hero.jpg', base).href),
+  loaderTex.loadAsync(new URL('hero_depth.png', base).href),
+]);
+map.colorSpace = THREE.SRGBColorSpace;
+map.anisotropy = renderer.capabilities.getMaxAnisotropy();
+depth.minFilter = THREE.LinearFilter;
+depth.magFilter = THREE.LinearFilter;
+
+const imgAspect = map.image.width / map.image.height;
+
+const uniforms = {
+  uMap: { value: map },
+  uDepth: { value: depth },
+  uDisplace: { value: 0 },
+  uScroll: { value: 0 },
+  uMouse: { value: new THREE.Vector2() },
+  uCover: { value: new THREE.Vector2(1, 1) },
+  uTime: { value: 0 },
+  uFocus: { value: 0.35 },
+};
+
+const mat = new THREE.ShaderMaterial({
+  uniforms,
+  transparent: true,
+  vertexShader: /* glsl */`
+    uniform sampler2D uDepth;
+    uniform float uDisplace;
+    uniform float uScroll;
+    uniform vec2 uMouse;
+    uniform vec2 uCover;
+    varying vec2 vUv;
+    varying float vD;
+
+    void main() {
+      vUv = uv;
+      vec2 uvC = (uv - 0.5) * uCover + 0.5;
+      // image travels DOWN with scroll
+      uvC.y += uScroll;
+      uvC = clamp(uvC, 0.001, 0.999);
+
+      float d = texture2D(uDepth, uvC).r;
+      vD = d;
+
+      vec3 p = position;
+      // relief from depth map
+      p.z += (d - 0.2) * uDisplace;
+      // parallax shift by depth + mouse
+      p.xy += uMouse * d * uDisplace * 0.55;
+
+      gl_Position = projectionMatrix * modelViewMatrix * vec4(p, 1.0);
+    }
+  `,
+  fragmentShader: /* glsl */`
+    uniform sampler2D uMap;
+    uniform sampler2D uDepth;
+    uniform float uDisplace;
+    uniform float uScroll;
+    uniform vec2 uCover;
+    uniform float uTime;
+    uniform float uFocus;
+    varying vec2 vUv;
+    varying float vD;
+
+    void main() {
+      vec2 uv = (vUv - 0.5) * uCover + 0.5;
+      uv.y += uScroll;
+
+      float inFrame = step(0.0, uv.x) * step(uv.x, 1.0) * step(0.0, uv.y) * step(uv.y, 1.0);
+      uv = clamp(uv, 0.001, 0.999);
+
+      vec3 col = texture2D(uMap, uv).rgb;
+      float d = texture2D(uDepth, uv).r;
+
+      // ambient occlusion in valleys when volume is on
+      float vol = clamp(uDisplace * 1.8, 0.0, 1.0);
+      float ao = mix(1.0, mix(0.68, 1.08, d), vol);
+      col *= ao;
+
+      // slight warm lift near sun side as we deepen
+      col = mix(col, col * vec3(1.05, 1.01, 0.95), vol * 0.35);
+
+      // soft film vignette
+      float vig = smoothstep(1.2, 0.25, length(vUv - 0.5));
+      col *= mix(0.82, 1.0, vig);
+
+      // shimmer / «перелив» when becoming 3D
+      float wave = sin(uTime * 1.1 + d * 14.0 + uScroll * 18.0) * 0.012 * vol;
+      col *= 1.0 + wave;
+
+      // edge fade if scroll exposes void
+      float edge = smoothstep(0.0, 0.03, uv.x) * smoothstep(1.0, 0.97, uv.x)
+                 * smoothstep(0.0, 0.03, uv.y) * smoothstep(1.0, 0.97, uv.y);
+
+      gl_FragColor = vec4(col, edge * inFrame);
+    }
+  `,
+});
+
+const plane = new THREE.Mesh(new THREE.PlaneGeometry(1, 1, 320, 180), mat);
+scene.add(plane);
+
+const voidPlane = new THREE.Mesh(
+  new THREE.PlaneGeometry(6, 6),
+  new THREE.MeshBasicMaterial({ color: 0x0a0908 })
+);
+voidPlane.position.z = -0.85;
+scene.add(voidPlane);
+
+function fit() {
+  const w = innerWidth, h = innerHeight;
+  renderer.setSize(w, h, false);
+  camera.aspect = w / h;
+  camera.updateProjectionMatrix();
+
+  const dist = camera.position.z;
+  const vFov = THREE.MathUtils.degToRad(camera.fov);
+  const viewH = 2 * Math.tan(vFov / 2) * dist;
+  const viewW = viewH * camera.aspect;
+  plane.scale.set(viewW * 1.04, viewH * 1.04, 1);
+
+  const va = w / h;
+  if (va > imgAspect) uniforms.uCover.value.set(1, va / imgAspect);
+  else uniforms.uCover.value.set(imgAspect / va, 1);
+}
+addEventListener('resize', fit);
+fit();
+
+// --- smooth virtual scroll (IG style) ---
+let target = 0;
+let progress = 0;
+const mouse = new THREE.Vector2();
+const mouseS = new THREE.Vector2();
+
+addEventListener('wheel', (e) => {
+  e.preventDefault();
+  target = THREE.MathUtils.clamp(target + e.deltaY * 0.0007, 0, 1);
+}, { passive: false });
+
+let touchY = null;
+addEventListener('touchstart', (e) => { touchY = e.touches[0].clientY; }, { passive: true });
+addEventListener('touchmove', (e) => {
+  if (touchY == null) return;
+  const dy = touchY - e.touches[0].clientY;
+  touchY = e.touches[0].clientY;
+  target = THREE.MathUtils.clamp(target + dy * 0.0025, 0, 1);
+}, { passive: true });
+
+addEventListener('pointermove', (e) => {
+  mouse.set((e.clientX / innerWidth) * 2 - 1, -(e.clientY / innerHeight) * 2 + 1);
+});
+
+let lastChapter = -1;
+function setChapter(p) {
+  let idx = 0;
+  for (let i = 0; i < chapters.length; i++) {
+    if (p >= chapters[i].t) idx = i;
+  }
+  if (idx === lastChapter) return;
+  lastChapter = idx;
+  const c = chapters[idx];
+  const box = document.querySelector('.hero-copy');
+  box.style.transition = 'opacity .4s ease, transform .4s ease';
+  box.style.opacity = '0';
+  box.style.transform = 'translateY(18px)';
+  setTimeout(() => {
+    eyebrow.textContent = c.eyebrow;
+    title.innerHTML = c.title;
+    lede.textContent = c.lede;
+    box.style.opacity = '1';
+    box.style.transform = 'translateY(0)';
+  }, 240);
+}
+
+loader.classList.add('is-done');
+setTimeout(() => loader.remove(), 800);
+
+const clock = new THREE.Clock();
+function frame() {
+  const dt = Math.min(clock.getDelta(), 0.05);
+  const t = clock.elapsedTime;
+
+  progress += (target - progress) * (1 - Math.exp(-dt * 3.4));
+  const p = progress;
+
+  // 1) picture flows DOWN
+  uniforms.uScroll.value = p * 0.48;
+
+  // 2) flat → volumetric relief
+  const rise = THREE.MathUtils.smoothstep(p, 0.02, 0.7);
+  uniforms.uDisplace.value = THREE.MathUtils.lerp(0.02, 0.95, rise);
+
+  mouseS.lerp(mouse, 1 - Math.exp(-dt * 5));
+  uniforms.uMouse.value.copy(mouseS).multiplyScalar(0.12);
+  uniforms.uTime.value = t;
+
+  // tiny camera sway — not flying into subject
+  camera.position.x = mouseS.x * 0.035;
+  camera.position.y = mouseS.y * 0.02;
+  camera.lookAt(mouseS.x * 0.02, mouseS.y * 0.01, 0);
+
+  bar.style.height = `${(p * 100).toFixed(1)}%`;
+  setChapter(p);
+
+  renderer.render(scene, camera);
+  requestAnimationFrame(frame);
+}
+frame();
+
+// debug helper
+window.__volume = (v) => { target = THREE.MathUtils.clamp(+v, 0, 1); };
+</script>
+</body>
+</html>
