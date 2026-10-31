@@ -583,7 +583,7 @@ const asset = (p) => new URL(`./assets/${p}`, import.meta.url).href;
 
 // ——— LOADER TIMELINE (IG 1:1) ———
 const loadState = { p: 0 };
-const MIN_LOAD_MS = 2800;
+const MIN_LOAD_MS = 3400;
 const loadStartedAt = performance.now();
 
 function setProgressVisual(p) {
@@ -648,6 +648,7 @@ function playIntroOut(onDone) {
   return tl;
 }
 
+let outroStarted = false;
 function tickLoader() {
   const elapsed = performance.now() - loadStartedAt;
   const timeP = Math.min(1, elapsed / MIN_LOAD_MS);
@@ -655,24 +656,30 @@ function tickLoader() {
   const target = Math.min(1, Math.max(assetProgress * 0.97, timeP * 0.92));
   // when both ready — go to 100
   const ready = assetProgress >= 1 && elapsed >= MIN_LOAD_MS;
-  const goal = ready ? 1 : target;
-  loadState.p += (goal - loadState.p) * 0.08;
+  const goal = ready ? 1 : Math.min(0.97, target);
+  loadState.p += (goal - loadState.p) * (ready ? 0.12 : 0.065);
   if (ready && loadState.p > 0.995) loadState.p = 1;
   setProgressVisual(loadState.p);
   if (loadState.p < 1) {
     requestAnimationFrame(tickLoader);
-  } else {
+  } else if (!outroStarted) {
+    outroStarted = true;
     setProgressVisual(1);
-    // hold a beat on 100, then beautiful out
-    gsap.delayedCall(0.45, () => playIntroOut());
+    // hold on 100, then beautiful out
+    gsap.delayedCall(0.55, () => playIntroOut());
   }
 }
+
+// Start IG loader IMMEDIATELY (before heavy assets await)
+playIntroIn();
+requestAnimationFrame(tickLoader);
 
 const [plasterMap, reliefMap, depthMap] = await Promise.all([
   texLoader.loadAsync(asset('tex/plaster.jpg')),
   texLoader.loadAsync(asset('tex/relief.jpg')),
   texLoader.loadAsync(asset('tex/relief_depth.png')),
 ]);
+assetProgress = Math.max(assetProgress, 0.99);
 
 for (const t of [plasterMap, reliefMap]) {
   t.colorSpace = THREE.SRGBColorSpace;
@@ -819,11 +826,7 @@ function fit() {
 addEventListener('resize', fit);
 fit();
 
-// start IG intro-in immediately, progress runs in parallel with assets
-playIntroIn();
-requestAnimationFrame(tickLoader);
-
-// ensure textures decoded (feeds LoadingManager → assetProgress)
+// textures ready — allow loader to finish to 100 after MIN_LOAD_MS
 await Promise.all([
   plasterMap.image.decode?.() ?? Promise.resolve(),
   reliefMap.image.decode?.() ?? Promise.resolve(),
