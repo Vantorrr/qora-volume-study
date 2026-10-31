@@ -549,7 +549,7 @@ function frame() {
 
   // flat → strong relief
   const rise = THREE.MathUtils.smoothstep(p, 0.0, 0.65);
-  uniforms.uDisplace.value = THREE.MathUtils.lerp(0.04, 1.15, rise);
+  uniforms.uDisplace.value = THREE.MathUtils.lerp(0.03, 0.88, rise);
   uniforms.uProgress.value = p;
   uniforms.uTime.value = t;
 
