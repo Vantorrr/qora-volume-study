@@ -250,12 +250,21 @@ for (const t of [reliefMap, depthMap]) {
 // --- fluid ping-pong ---
 const simRes = 256;
 function makeRT() {
-  return new THREE.WebGLRenderTarget(simRes, simRes, {
-    type: THREE.HalfFloatType,
+  const params = {
     minFilter: THREE.LinearFilter,
     magFilter: THREE.LinearFilter,
     depthBuffer: false,
-  });
+    type: THREE.UnsignedByteType,
+    format: THREE.RGBAFormat,
+  };
+  // prefer float if available for smoother waves
+  try {
+    const gl = renderer.getContext();
+    if (gl.getExtension('EXT_color_buffer_float') || gl.getExtension('EXT_color_buffer_half_float')) {
+      params.type = THREE.HalfFloatType;
+    }
+  } catch (_) {}
+  return new THREE.WebGLRenderTarget(simRes, simRes, params);
 }
 let densityA = makeRT(), densityB = makeRT();
 let velA = makeRT(), velB = makeRT();
@@ -370,9 +379,9 @@ const viewMat = new THREE.ShaderMaterial({
       // fluid
       vec4 dens = texture2D(uDensity, vUv);
       vec2 vel = texture2D(uVelocity, vUv).xy;
-      float reveal = smoothstep(0.02, 0.55, dens.r);
+      float reveal = smoothstep(0.008, 0.28, dens.r);
       // soft residual so trails linger like IG
-      reveal = clamp(reveal * 1.25, 0.0, 1.0);
+      reveal = clamp(pow(reveal, 0.85) * 1.35, 0.0, 1.0);
 
       // wave distortion from velocity + density gradient
       float texel = 1.0 / 256.0;
@@ -494,45 +503,45 @@ function frame() {
   // fade velocity
   runPass(fadeMat, velA, velB, () => {
     fadeMat.uniforms.uTex.value = velA.texture;
-    fadeMat.uniforms.uDissipation.value = 0.92;
+    fadeMat.uniforms.uDissipation.value = 0.94;
   });
   [velA, velB] = [velB, velA];
 
   // splat velocity
-  if (speed > 0.002) {
+  if (speed > 0.0008) {
     runPass(splatMat, velA, velB, () => {
       splatMat.uniforms.uTarget.value = velA.texture;
       splatMat.uniforms.uPoint.value.copy(mouse);
       splatMat.uniforms.uPrev.value.copy(prevMouse);
-      splatMat.uniforms.uColor.value.set(force.x * 2.5, force.y * 2.5, 0);
-      splatMat.uniforms.uRadius.value = 0.028 + speed * 0.02;
+      splatMat.uniforms.uColor.value.set(force.x * 4.0, force.y * 4.0, 0);
+      splatMat.uniforms.uRadius.value = 0.045 + speed * 0.04;
     });
     [velA, velB] = [velB, velA];
   }
 
-  // fade + advect density
+  // fade + advect density (slower fade = longer waves like IG)
   runPass(fadeMat, densityA, densityB, () => {
     fadeMat.uniforms.uTex.value = densityA.texture;
-    fadeMat.uniforms.uDissipation.value = 0.988;
+    fadeMat.uniforms.uDissipation.value = 0.993;
   });
   [densityA, densityB] = [densityB, densityA];
 
   runPass(advectMat, densityA, densityB, () => {
     advectMat.uniforms.uVelocity.value = velA.texture;
     advectMat.uniforms.uSource.value = densityA.texture;
-    advectMat.uniforms.uDissipation.value = 0.995;
-    advectMat.uniforms.uDt.value = dt * 0.35;
+    advectMat.uniforms.uDissipation.value = 0.997;
+    advectMat.uniforms.uDt.value = dt * 0.55;
   });
   [densityA, densityB] = [densityB, densityA];
 
-  // density splat along mouse
-  if (speed > 0.0015 || hasMoved) {
+  // density splat along mouse — always while moving
+  if (speed > 0.0004 || hasMoved) {
     runPass(splatMat, densityA, densityB, () => {
       splatMat.uniforms.uTarget.value = densityA.texture;
       splatMat.uniforms.uPoint.value.copy(mouse);
       splatMat.uniforms.uPrev.value.copy(prevMouse);
-      splatMat.uniforms.uColor.value.set(0.55 + speed * 0.5, 0, 0);
-      splatMat.uniforms.uRadius.value = 0.04 + speed * 0.03;
+      splatMat.uniforms.uColor.value.set(0.9 + speed * 0.6, 0, 0);
+      splatMat.uniforms.uRadius.value = 0.06 + speed * 0.05;
     });
     [densityA, densityB] = [densityB, densityA];
   }
@@ -544,7 +553,7 @@ function frame() {
   viewUniforms.uMouse.value.copy(mouseSmooth);
   viewUniforms.uScroll.value = scrollP;
   viewUniforms.uTime.value = t;
-  viewUniforms.uWave.value = 0.04 + scrollP * 0.02;
+  viewUniforms.uWave.value = 0.07 + scrollP * 0.03;
 
   rail.style.height = `${(scrollP * 100).toFixed(1)}%`;
   midScroll.classList.toggle('is-hide', scrollP > 0.05);
