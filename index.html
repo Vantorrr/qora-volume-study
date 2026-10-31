@@ -1,94 +1,114 @@
-<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#e8e8e8"><meta name="description" content="QORA — architecture felt before it is seen. An immersive study in sculpted atmosphere."><title>QORA — The material remembers</title><style>
-:root{--paper:#e8e8e8;--ink:#030303}*{box-sizing:border-box}html{background:var(--paper)}body{margin:0;background:var(--paper);color:var(--ink);font-family:Arial,'Helvetica Neue',sans-serif;overflow-x:hidden}button,a{font:inherit;color:inherit}button{cursor:pointer}#webgl{position:fixed;inset:0;z-index:1;pointer-events:none}#grain{position:fixed;inset:0;pointer-events:none;z-index:3;opacity:.14;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 180 180' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.7' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.18'/%3E%3C/svg%3E")}#content{position:relative;z-index:2;pointer-events:none}header{position:fixed;z-index:9;top:0;left:0;width:100%;display:flex;align-items:center;justify-content:space-between;padding:25px 34px;mix-blend-mode:multiply}header .brand{font-family:Georgia,serif;font-size:31px;letter-spacing:-.085em;font-weight:400}header .controls{display:flex;gap:36px}header button{background:none;border:0;font-size:11px;text-transform:uppercase;letter-spacing:.16em;padding:10px 0}.centerlabel{position:fixed;z-index:8;top:38px;left:50%;transform:translateX(-50%);font-size:10px;letter-spacing:.19em;text-transform:uppercase;pointer-events:none}.rail{position:fixed;z-index:8;right:31px;top:50%;transform:translateY(-50%);display:flex;align-items:center;gap:14px}.rail span{font-size:10px}.track{height:115px;width:1px;background:#8886;position:relative}.track i{display:block;position:absolute;top:0;left:0;width:1px;height:0;background:#030303}.scrollprompt{position:fixed;bottom:30px;left:34px;z-index:8;font-size:10px;text-transform:uppercase;letter-spacing:.15em}.index{position:fixed;bottom:30px;right:34px;z-index:8;font-size:10px;letter-spacing:.1em}section{height:145vh;min-height:850px;position:relative;display:flex;align-items:center;padding:0 8vw}section.hero{height:110vh;min-height:650px;align-items:flex-end;padding-bottom:12vh}section .copy{max-width:650px;position:relative}h1,h2{font-family:Georgia,'Times New Roman',serif;font-weight:400;letter-spacing:-.067em;line-height:.91;margin:0}h1{font-size:clamp(74px,12vw,220px)}h2{font-size:clamp(58px,8.6vw,145px)}.eyebrow{font-size:11px;letter-spacing:.16em;text-transform:uppercase;margin:0 0 24px}.description{font-size:clamp(14px,1.25vw,18px);line-height:1.5;max-width:340px;margin:26px 0 0}.hero .copy{margin-left:0}.hero h1{max-width:900px}.chapter-two{justify-content:flex-end;text-align:right}.chapter-two .description{margin-left:auto}.chapter-three{align-items:flex-end;padding-bottom:18vh}.final{height:100vh;min-height:620px;align-items:center;justify-content:center;text-align:center}.final h2{font-size:clamp(75px,12vw,200px)}.final a{pointer-events:auto;display:inline-block;text-decoration:none;border-bottom:1px solid;margin-top:34px;padding-bottom:8px;font-size:12px;letter-spacing:.12em;text-transform:uppercase}.footerline{position:absolute;bottom:35px;left:8vw;right:8vw;display:flex;justify-content:space-between;font-size:10px;letter-spacing:.1em;text-transform:uppercase}#loader{position:fixed;inset:0;background:#e8e8e8;z-index:30;display:flex;flex-direction:column;justify-content:space-between;padding:35px;transition:opacity 1.2s,visibility 1.2s}#loader.hide{opacity:0;visibility:hidden}#loader .loadtop{display:flex;justify-content:space-between;font-size:11px;letter-spacing:.12em;text-transform:uppercase}#loader .loadlogo{font-family:Georgia,serif;font-size:clamp(110px,26vw,450px);letter-spacing:-.1em;line-height:.7;overflow:hidden;align-self:center}#loader .loadlogo span{display:block;transform:translateY(110%);animation:rise 1.5s .15s cubic-bezier(.2,.8,.2,1) forwards}@keyframes rise{to{transform:translateY(0)}}#loader .loadbottom{display:flex;justify-content:space-between;align-items:end}#loader .percent{font-family:Georgia,serif;font-size:60px}#menu{position:fixed;inset:0;z-index:15;background:#e8e8e8;display:flex;align-items:center;justify-content:center;opacity:0;visibility:hidden;transition:.5s}#menu.open{opacity:1;visibility:visible}#menu nav{display:flex;flex-direction:column;align-items:center;gap:12px}#menu a{font:normal clamp(45px,8vw,120px)/1 Georgia,serif;letter-spacing:-.06em;text-decoration:none}#menuClose{position:absolute;right:34px;top:26px;border:0;background:none;font-size:12px;text-transform:uppercase}#soundhint{position:fixed;z-index:8;left:50%;bottom:29px;transform:translateX(-50%);font-size:10px;letter-spacing:.12em;text-transform:uppercase;white-space:nowrap;cursor:pointer;pointer-events:auto}.touchcanvas{position:fixed;inset:0;z-index:4;touch-action:pan-y;pointer-events:none;background:transparent}body.loaded .touchcanvas{pointer-events:none}@media(max-width:700px){header{padding:18px 20px}header .brand{font-size:27px}header .controls{gap:15px}.centerlabel{top:82px;font-size:9px}.scrollprompt{left:20px;bottom:22px}.index{right:20px;bottom:22px}.rail{right:20px}.touchcanvas{touch-action:pan-y}section{padding:0 7vw;min-height:650px;height:125vh}section.hero{min-height:600px;padding-bottom:21vh}h1{font-size:clamp(64px,16vw,110px)}h2{font-size:clamp(56px,13vw,95px)}.chapter-two{align-items:flex-start;padding-top:30vh}.chapter-three{padding-bottom:28vh}.description{max-width:260px}#soundhint{bottom:60px}#loader{padding:20px}#loader .loadlogo{font-size:28vw}}
-@media(prefers-reduced-motion:reduce){*{scroll-behavior:auto!important;animation-duration:.01ms!important;transition-duration:.01ms!important}}
-</style></head><body><canvas id="webgl" aria-hidden="true"></canvas><canvas class="touchcanvas" id="interaction" aria-hidden="true"></canvas><div id="grain"></div><div id="loader"><div class="loadtop"><span>QORA / IMMERSIVE STUDY</span><span>2026</span></div><div class="loadlogo"><span>Qora</span></div><div class="loadbottom"><span>ENTERING THE MATERIAL</span><span class="percent" id="percent">00</span></div></div><header><div class="brand">Qora</div><div class="controls"><button id="sound" aria-label="Toggle sound">Sound off</button><button id="menuButton" aria-label="Open menu">Menu +</button></div></header><div class="centerlabel" id="midtitle">THE MATERIAL REMEMBERS</div><div class="rail"><span id="chapterNumber">01</span><div class="track"><i id="progress"></i></div></div><div class="scrollprompt">↓ &nbsp; Scroll to feel</div><div class="index">QORA — ARCHITECTURE / 001</div><div id="soundhint">Click anywhere for sound</div><div id="menu"><button id="menuClose">Close ×</button><nav><a href="#begin">Beginning</a><a href="#relief">Relief</a><a href="#atmosphere">Atmosphere</a><a href="#next">Your object</a></nav></div><main id="content"><section class="hero" id="begin"><div class="copy"><p class="eyebrow">An architectural experience / No. 001</p><h1>Form is<br>feeling.</h1><p class="description">Before a space is seen, it is felt. A study of matter, light and the quiet presence of architecture.</p></div></section><section id="relief"><div class="copy"><p class="eyebrow">01 — The emergence</p><h2>Relief<br>from the<br>plane.</h2><p class="description">A surface remembers every gesture. Scroll slowly. Watch the invisible become tangible.</p></div></section><section class="chapter-two" id="atmosphere"><div class="copy"><p class="eyebrow">02 — A living surface</p><h2>Atmosphere<br>as product.</h2><p class="description">Not a picture of an object. The sensation of standing in front of it.</p></div></section><section class="chapter-three" id="next"><div class="copy"><p class="eyebrow">03 — An invitation</p><h2>Your object<br>next.</h2><p class="description">Every architectural story deserves its own material language.</p></div></section><section class="final"><div><p class="eyebrow">QORA / AN IMMERSIVE ARCHITECTURAL STUDY</p><h2>Make it<br>felt.</h2><span class="contactnote">A new architectural story begins here.</span></div><div class="footerline"><span>Independent digital study</span><span>© QORA 2026</span></div></section></main><script type="module">
-import * as THREE from 'https://esm.sh/three@0.170.0';import gsap from 'https://esm.sh/gsap@3.12.5';import Lenis from 'https://esm.sh/lenis@1.1.20';import {Howl,Howler} from 'https://esm.sh/howler@2.2.4';
-const reduced=matchMedia('(prefers-reduced-motion: reduce)').matches;const mobile=matchMedia('(max-width: 700px)').matches;const canvas=document.getElementById('webgl');const renderer=new THREE.WebGLRenderer({canvas,alpha:true,antialias:!mobile,powerPreference:'high-performance'});renderer.setPixelRatio(Math.min(devicePixelRatio,mobile?1.5:2));renderer.setSize(innerWidth,innerHeight);renderer.outputColorSpace=THREE.SRGBColorSpace;const scene=new THREE.Scene();const camera=new THREE.OrthographicCamera(-1,1,1,-1,.1,10);camera.position.z=2;const pointer=new THREE.Vector2(-5,-5);let velocity=0,scroll=0,targetScroll=0,clock=0;const uniforms={uTime:{value:0},uScroll:{value:0},uPointer:{value:pointer},uVelocity:{value:0},uAspect:{value:innerWidth/innerHeight},uResolution:{value:new THREE.Vector2(innerWidth,innerHeight)},uTrail:{value:Array.from({length:8},()=>new THREE.Vector3(-10,-10,0))},uEnergy:{value:0}};
-const vertex=`varying vec2 vUv;void main(){vUv=uv;gl_Position=vec4(position,1.);}`;
-const fragment=`precision highp float;varying vec2 vUv;uniform float uTime,uScroll,uVelocity,uAspect;uniform vec2 uPointer,uResolution;uniform vec3 uTrail[8];uniform float uEnergy;
-float hash(vec2 p){return fract(sin(dot(p,vec2(127.1,311.7)))*43758.5453);}float noise(vec2 p){vec2 i=floor(p),f=fract(p);f=f*f*(3.-2.*f);return mix(mix(hash(i),hash(i+vec2(1,0)),f.x),mix(hash(i+vec2(0,1)),hash(i+vec2(1,1)),f.x),f.y);}
-float petal(vec2 p,float angle,float len,float width){vec2 q=mat2(cos(angle),-sin(angle),sin(angle),cos(angle))*p;q.y-=len*.45;return exp(-pow(q.x/width,2.)*2.-pow(q.y/len,2.)*2.);}
-float flower(vec2 p,float scale,float phase){p*=scale;float r=length(p);float a=atan(p.y,p.x);float petals=pow(max(0.,cos(a*6.+phase)),8.)*exp(-pow((r-.65)/.36,2.)*2.);float center=exp(-r*r*22.);return petals*.9+center*.65;}
-float leaf(vec2 p,float a){p=mat2(cos(a),-sin(a),sin(a),cos(a))*p;float shape=exp(-pow(p.x/.18,2.)*2.-pow((p.y-.32)/.52,2.)*2.);return shape;}
-float relief(vec2 p){float h=0.;h+=flower(p-vec2(.45,.08),2.1,.1)*.9;h+=flower(p-vec2(-.5,-.27),2.9,.3)*.7;h+=flower(p-vec2(.03,.63),3.4,.7)*.52;h+=flower(p-vec2(-.82,.62),4.,.3)*.5;h+=flower(p-vec2(.89,-.72),3.2,.9)*.5;for(int i=0;i<7;i++){float fi=float(i);vec2 pos=vec2(sin(fi*2.4)*.85,cos(fi*1.7)*.7);h+=leaf(p-pos,fi*.78)*.26;}float vine=abs(p.x+.13*sin(p.y*4.)-.12);h+=exp(-vine*vine*140.)*.12;h+=noise(p*24.)*.055+noise(p*70.)*.014;return h;}
-void main(){
- vec2 uv=vUv;vec2 p=(uv-.5)*vec2(uAspect,1.)*2.;
- vec2 displaced=p;float bloom=0.;float edge=0.;
- for(int i=0;i<8;i++){
-   vec2 origin=(uTrail[i].xy-.5)*vec2(uAspect,1.)*2.;
-   float d=length(p-origin);float strength=uTrail[i].z;
-   float core=exp(-d*d*15.)*strength;
-   float ring=exp(-pow((d-.24)*12.,2.))*strength;
-   float wave=sin(d*29.-uTime*2.7-float(i)*.42)*exp(-d*3.5)*strength;
-   displaced+=normalize(p-origin+vec2(.00001))*(wave*.014+ring*.008);
-   bloom+=core*.16;edge+=ring;
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#e9e8e4"><title>Observatory House — A study of depth</title><style>
+:root{--bg:#e9e8e4;--ink:#292923;--muted:#77776d;--progress:0}*{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;background:var(--bg);color:var(--ink);font-family:Arial,Helvetica,sans-serif;overflow-x:hidden}button{font:inherit;cursor:pointer}a{color:inherit}#intro{position:fixed;inset:0;z-index:20;background:var(--bg);display:grid;place-items:center;transition:opacity .8s,visibility .8s}#intro.off{opacity:0;visibility:hidden}#intro strong{font:normal clamp(48px,8vw,130px)/.9 Georgia,serif;letter-spacing:-.07em}#intro small{display:block;text-align:center;margin-top:30px;letter-spacing:.24em;font-size:10px;text-transform:uppercase}.top{position:fixed;z-index:12;top:0;left:0;right:0;padding:28px 4.5vw;display:flex;justify-content:space-between;align-items:center;mix-blend-mode:multiply}.brand{font:italic 25px Georgia,serif;text-decoration:none}.top .right{display:flex;gap:25px;align-items:center}.top button{border:0;background:none;text-transform:uppercase;font-size:10px;letter-spacing:.16em;padding:10px 0}.top .index{font-size:10px;letter-spacing:.16em}.hero{height:100vh;min-height:580px;position:sticky;top:0;overflow:hidden;background:#d9d9d5}.scene{position:absolute;inset:0;overflow:hidden}.scene img,.scene canvas{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center 46%}.scene img{filter:grayscale(1) contrast(.75) brightness(1.2);transform:scale(1.03)}.scene canvas{z-index:2;opacity:0;transition:opacity .8s}.scene.webgl canvas{opacity:1}.scene.webgl img{opacity:0}.scene.canvas-mode img{opacity:0}.scene.canvas-mode .depth-fallback{opacity:1;z-index:2;filter:grayscale(.35)}.ripple-layer{position:absolute;inset:0;z-index:3;pointer-events:none;opacity:1!important;filter:none!important}.wash{position:absolute;inset:0;z-index:3;pointer-events:none;background:linear-gradient(90deg,rgba(233,232,228,.78),transparent 38%,rgba(233,232,228,.04)),linear-gradient(0deg,rgba(233,232,228,.68),transparent 19%)}.hero-title{position:absolute;z-index:4;left:5vw;top:30%;pointer-events:none;transition:opacity .2s;will-change:opacity}.eyebrow{font-size:10px;letter-spacing:.24em;text-transform:uppercase}.hero-title h1{font:normal clamp(60px,8vw,125px)/.88 Georgia,serif;letter-spacing:-.085em;margin:25px 0}.hero-title h1 em{font-weight:normal}.hero-title p{font-size:13px;line-height:1.7;max-width:280px}.bottom{position:absolute;z-index:4;bottom:34px;left:5vw;right:5vw;display:flex;justify-content:space-between;align-items:end;text-transform:uppercase;font-size:10px;letter-spacing:.15em}.bottom span{line-height:1.8}.progress{width:110px;height:1px;background:#aaa;margin-top:12px}.progress:before{content:'';display:block;width:calc(var(--progress)*100%);height:100%;background:#292923}.story{position:relative;z-index:5;height:330vh;pointer-events:none}.moment{height:110vh;display:flex;align-items:center;padding:0 7vw}.moment:first-child{padding-top:25vh}.moment:nth-child(2){justify-content:flex-end}.moment .copy{max-width:380px;background:rgba(233,232,228,.91);padding:30px 34px;backdrop-filter:blur(15px)}.moment h2{font:normal clamp(42px,5vw,80px)/1 Georgia,serif;letter-spacing:-.06em;margin:17px 0}.moment p{font-size:13px;line-height:1.75}.closing{min-height:85vh;background:var(--bg);position:relative;z-index:6;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:80px 25px}.closing h2{font:normal clamp(54px,9vw,145px)/.93 Georgia,serif;letter-spacing:-.075em;max-width:1100px;margin:24px auto}.closing p{font-size:13px;line-height:1.8;max-width:490px}.credit{font-size:10px;color:var(--muted);margin-top:65px;line-height:1.8}.hint{position:fixed;z-index:7;bottom:20px;left:50%;transform:translateX(-50%);font-size:10px;letter-spacing:.15em;pointer-events:none;text-transform:uppercase}#fallback{position:fixed;right:16px;bottom:15px;z-index:10;font-size:10px;color:#555;display:none}@media(max-width:700px){.top{padding:20px}.top .index{display:none}.hero-title{left:7vw;top:25%}.hero-title h1{font-size:15vw}.hero-title p{max-width:230px}.moment{padding:0 5vw}.moment .copy{padding:22px}.wash{background:linear-gradient(90deg,rgba(233,232,228,.7),transparent 80%),linear-gradient(0deg,rgba(233,232,228,.8),transparent 30%)}.bottom{left:7vw;right:7vw}.hint{display:none}}@media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}#intro{display:none}}
+</style></head><body><div id="intro"><div><strong>Observatory.</strong><small>Architecture / A study in depth</small></div></div><header class="top"><a href="#top" class="brand">Observatory.</a><div class="right"><span class="index">Architectural material study / 001</span><button id="audio" aria-pressed="false">Sound off</button></div></header><main id="top"><section class="hero"><div class="scene" id="scene"><img src="assets/hero.jpg" alt="Photograph of the observatory building used for the architectural depth study"></div><div class="wash"></div><div class="hero-title"><span class="eyebrow">A real building / A digital encounter</span><h1>Stone.<br><em>Light.</em><br>Depth.</h1><p>A domed masonry building, held between the surface of a photograph and the space it suggests.</p></div><div class="bottom"><span>Architectural photograph / Domed façade<br>Study in photographic relief</span><span>Scroll to sculpt<div class="progress"></div></span></div></section><div class="story"><section class="moment"><div class="copy"><span class="eyebrow">01 / The photograph</span><h2>A building, not a pattern.</h2><p>Brick, vertical window bays and a domed roof. Every movement begins with the photographed structure itself.</p></div></section><section class="moment"><div class="copy"><span class="eyebrow">02 / The relief</span><h2>From image to presence.</h2><p>An approximate hand-authored depth study separates the sky, the building, its window recesses and surrounding trees. Scroll brings that layered space forward.</p></div></section><section class="moment"><div class="copy"><span class="eyebrow">03 / The light</span><h2>Architecture changes with light.</h2><p>Move the cursor across the façade: local highlights follow its geometry, revealing a different reading of the same frame.</p></div></section></div><section class="closing"><span class="eyebrow">The same method, your architecture</span><h2>From photograph<br><em>to architectural presence.</em></h2><p>On your architectural photographs, the same pipeline applies: image preparation, depth mapping, interactive light and scroll-directed relief.</p><div class="credit">Proof of concept using an existing architectural photograph.<br>Depth is artist-authored and approximate, not a LiDAR scan or measured 3D reconstruction.<br>Reference photo from a locally available university documentation asset. Licensing is not established; replace before commercial publication.</div></section></main><div class="hint">Move to light · Scroll to reveal</div><div id="fallback">Local depth renderer active</div>
+<script>
+// Local cursor-driven architectural refraction. No external dependency.
+(()=>{
+ const host=document.getElementById('scene');const source=host.querySelector('img');
+ const ripple=document.createElement('canvas');ripple.className='ripple-layer';ripple.setAttribute('aria-hidden','true');host.appendChild(ripple);
+ const ctx=ripple.getContext('2d',{alpha:true});if(!ctx)return;
+ const depth=new Image();depth.src='assets/depth.png';const depthCanvas=document.createElement('canvas');depthCanvas.width=96;depthCanvas.height=64;
+ const dc=depthCanvas.getContext('2d',{willReadFrequently:true});let depthPixels=null;
+ depth.onload=()=>{try{dc.drawImage(depth,0,0,96,64);depthPixels=dc.getImageData(0,0,96,64).data}catch(e){}};
+ let x=0,y=0,tx=0,ty=0,energy=0,active=false,last=0,phase=0,w=0,h=0,dpr=1;
+ function resize(){const b=host.getBoundingClientRect();dpr=Math.min(devicePixelRatio||1,1.5);w=b.width;h=b.height;ripple.width=Math.round(w*dpr);ripple.height=Math.round(h*dpr);ripple.style.width=w+'px';ripple.style.height=h+'px'}
+ window.addEventListener('resize',resize,{passive:true});resize();
+ host.addEventListener('pointermove',e=>{const b=host.getBoundingClientRect();tx=e.clientX-b.left;ty=e.clientY-b.top;if(!active){x=tx;y=ty}active=true;energy=Math.min(1,energy+.21);last=performance.now()},{passive:true});
+ host.addEventListener('pointerleave',()=>{active=false},{passive:true});
+ const reduce=matchMedia('(prefers-reduced-motion: reduce)').matches;
+ function draw(t){requestAnimationFrame(draw);if(!source.complete||!source.naturalWidth||!w||!h)return;
+  x+=(tx-x)*.16;y+=(ty-y)*.16;const idle=t-last;if(!active||idle>130)energy*=.968;
+  ctx.setTransform(dpr,0,0,dpr,0,0);ctx.clearRect(0,0,w,h);if(energy<.012)return;
+  phase+=reduce?.014:.11;
+  const R=Math.min(Math.max(w*.22,155),300),strength=energy;
+  const iw=source.naturalWidth,ih=source.naturalHeight;
+  const cover=Math.max(w/iw,h/ih)*1.03,visibleW=w/cover,visibleH=h/cover;
+  const ox=(iw-visibleW)/2,oy=(ih-visibleH)/2;
+  ctx.save();ctx.beginPath();ctx.arc(x,y,R,0,Math.PI*2);ctx.clip();
+  // Dense small patches create a localized lens-like wave while retaining actual photo detail.
+  const cell=reduce?17:11;
+  const startX=Math.floor(Math.max(0,x-R)/cell)*cell,endX=Math.min(w,x+R+cell);
+  const startY=Math.floor(Math.max(0,y-R)/cell)*cell,endY=Math.min(h,y+R+cell);
+  for(let py=startY;py<endY;py+=cell)for(let px=startX;px<endX;px+=cell){
+   const cx=px+cell/2,cy=py+cell/2,dx=cx-x,dy=cy-y,dist=Math.hypot(dx,dy);if(dist>R+cell)continue;
+   const u=cx/w,v=cy/h,di=depthPixels?depthPixels[(Math.min(63,Math.max(0,Math.floor((1-v)*64)))*96+Math.min(95,Math.max(0,Math.floor(u*96))))*4]/255:.5;
+   const envelope=Math.pow(Math.max(0,1-dist/R),1.35);
+   const wave=Math.sin(dist*.057-phase)*Math.cos(dist*.018-phase*.3);
+   const amount=wave*envelope*strength*(10+di*13);
+   const nx=dx/(dist+1),ny=dy/(dist+1);
+   const sx=ox+(px+nx*amount)/cover,sy=oy+(py+ny*amount)/cover;
+   ctx.drawImage(source,sx,sy,(cell+1.5)/cover,(cell+1.5)/cover,px,py,cell+1.4,cell+1.4);
+  }
+  ctx.restore();
+  const glow=ctx.createRadialGradient(x,y,R*.1,x,y,R);
+  glow.addColorStop(0,`rgba(255,252,237,${.19*strength})`);
+  glow.addColorStop(.45,`rgba(255,252,237,${.055*strength})`);
+  glow.addColorStop(1,'rgba(255,252,237,0)');ctx.fillStyle=glow;ctx.beginPath();ctx.arc(x,y,R,0,Math.PI*2);ctx.fill();
+  for(let k=0;k<2;k++){const radius=(.34+k*.27)*R;ctx.beginPath();ctx.arc(x,y,radius+Math.sin(phase*.6+k)*9,0,Math.PI*2);ctx.strokeStyle=`rgba(255,255,245,${(.20-k*.065)*strength})`;ctx.lineWidth=1.2;ctx.stroke()}
  }
- float progress=smoothstep(.015,.51,uScroll)*(1.-smoothstep(.84,1.,uScroll)*.23);
- float reveal=clamp(progress+bloom*.75,0.,1.);
- float h=relief(displaced*1.05);float e=.005;
- float dx=relief(displaced*1.05+vec2(e,0.))-relief(displaced*1.05-vec2(e,0.));
- float dy=relief(displaced*1.05+vec2(0.,e))-relief(displaced*1.05-vec2(0.,e));
- // A narrow diffusion halo is confined to the moving wavefront.
- float diffusion=clamp(edge*.43,0.,.55);
- float softX=relief(displaced*1.05+vec2(.019,0.))-relief(displaced*1.05-vec2(.019,0.));
- float softY=relief(displaced*1.05+vec2(0.,.019))-relief(displaced*1.05-vec2(0.,.019));
- dx=mix(dx,softX*.26,diffusion);dy=mix(dy,softY*.26,diffusion);
- vec3 normal=normalize(vec3(-dx*reveal*42.,-dy*reveal*42.,1.));
- vec3 light=normalize(vec3(-.64,.72,1.));
- float diffuse=dot(normal,light);
- float grazing=pow(1.-max(normal.z,0.),1.55);
- float shadow=(diffuse-.88)*.42*reveal;
- float cavity=-h*.085*reveal;
- float highlight=grazing*.14*reveal;
- float paper=(noise(uv*uResolution.xy*.18)-.5)*.022;
- float base=.91+paper+shadow+cavity+highlight;
- base+=edge*.012;
- float fade=1.-smoothstep(.6,1.28,length(p));
- gl_FragColor=vec4(vec3(mix(.91,base,fade)),1.);
-}`;
-const material=new THREE.ShaderMaterial({vertexShader:vertex,fragmentShader:fragment,uniforms,depthWrite:false});scene.add(new THREE.Mesh(new THREE.PlaneGeometry(2,2),material));function resize(){camera.left=-1;camera.right=1;camera.top=1;camera.bottom=-1;camera.updateProjectionMatrix();renderer.setSize(innerWidth,innerHeight);uniforms.uAspect.value=innerWidth/innerHeight;uniforms.uResolution.value.set(innerWidth,innerHeight)}addEventListener('resize',resize);
-let lenis;if(!reduced){lenis=new Lenis({duration:1.45,smoothWheel:true,wheelMultiplier:.85,touchMultiplier:1.1});lenis.on('scroll',({progress})=>{targetScroll=progress;});}else{addEventListener('scroll',()=>{targetScroll=scrollY/(document.documentElement.scrollHeight-innerHeight)||0},{passive:true})}
-const touch=document.getElementById('interaction');let last={x:0,y:0,t:0};let trailClock=0;const trail=uniforms.uTrail.value;function point(x,y){const nx=x/innerWidth,ny=1-y/innerHeight;const now=performance.now();const dt=Math.max(now-last.t,16);velocity=Math.min(1.6,Math.hypot(x-last.x,y-last.y)/dt*.12);pointer.set(nx,ny);for(let i=trail.length-1;i>0;i--)trail[i].copy(trail[i-1]);trail[0].set(nx,ny,Math.min(1.5,.35+velocity));trailClock=now;last={x,y,t:now}}window.addEventListener('pointermove',e=>point(e.clientX,e.clientY),{passive:true});window.addEventListener('pointerdown',e=>{point(e.clientX,e.clientY);enableSound()},{passive:true});window.addEventListener('touchmove',e=>{if(e.touches.length)point(e.touches[0].clientX,e.touches[0].clientY)},{passive:true});
-const rail=document.getElementById('progress'),chapterNumber=document.getElementById('chapterNumber'),midtitle=document.getElementById('midtitle');let lastChapter=0;const names=['THE MATERIAL REMEMBERS','RELIEF FROM THE PLANE','ATMOSPHERE AS PRODUCT','YOUR OBJECT NEXT','MAKE IT FELT'];function updateUI(){rail.style.height=(scroll*100)+'%';let n=Math.min(4,Math.floor(scroll*5));if(n!==lastChapter){lastChapter=n;midtitle.textContent=names[n];chapterNumber.textContent=String(n+1).padStart(2,'0')}}function frame(t){if(lenis)lenis.raf(t);clock=t*.001;scroll+=(targetScroll-scroll)*.065;velocity*=.93;for(let i=0;i<trail.length;i++)trail[i].z*=.968;uniforms.uEnergy.value=velocity;uniforms.uTime.value=clock;uniforms.uScroll.value=scroll;uniforms.uVelocity.value=velocity;updateUI();renderer.render(scene,camera);requestAnimationFrame(frame)}requestAnimationFrame(frame);
-let soundOn=false;const soundButton=document.getElementById('sound'),soundHint=document.getElementById('soundhint');
-const AMBIENT_SRC=new URL('./assets/qora-ambient.mp3',import.meta.url).href;
-const ambient=new Howl({src:[AMBIENT_SRC],html5:false,loop:true,volume:0,preload:true});
-ambient.on('loaderror',(_i,e)=>{console.error('[ambient loaderror]',e,AMBIENT_SRC);soundHint.textContent='Audio load error'});
-ambient.on('playerror',(_i,e)=>{console.error('[ambient playerror]',e);soundOn=false;soundButton.textContent='Sound off'});
-function setUI(on){soundOn=on;soundButton.textContent=on?'Sound on':'Sound off';soundHint.style.display=on?'none':''}
-async function enableSound(){
-  try{if(Howler.ctx&&Howler.ctx.state!=='running')await Howler.ctx.resume()}catch(_){}
-  Howler.mute(false);Howler.volume(1);
-  const kick=()=>{
-    if(ambient.playing()){ambient.volume(.85);setUI(true);return}
-    ambient.stop();
-    ambient.play();
-    ambient.volume(.85);
-    setUI(true);
-  };
-  if(ambient.state()==='loaded')kick();
-  else ambient.once('load',kick);
+ requestAnimationFrame(draw);
+})();
+</script>
+<script type="module">
+const root=document.documentElement,scene=document.getElementById('scene'),intro=document.getElementById('intro');const introTimer=setTimeout(()=>intro.classList.add('off'),1100);document.addEventListener('keydown',e=>{if(e.key==='Escape')intro.classList.add('off')});
+const reduce=matchMedia('(prefers-reduced-motion: reduce)').matches;
+let progress=0,target=0,mouse={x:.5,y:.5},soundOn=false,howl=null;
+function onMove(e){mouse.x=e.clientX/innerWidth;mouse.y=1-e.clientY/innerHeight}addEventListener('pointermove',onMove,{passive:true});
+function updateScroll(){const max=document.querySelector('.story').offsetHeight;target=Math.max(0,Math.min(1,scrollY/Math.max(1,max)));root.style.setProperty('--progress',target.toFixed(4));document.querySelector('.hero-title').style.opacity=String(Math.max(0,1-scrollY/(innerHeight*.48)));document.querySelector('.hero .bottom').style.opacity=String(Math.max(0,1-scrollY/(innerHeight*.55)))}addEventListener('scroll',updateScroll,{passive:true});updateScroll();
+let THREE,renderer,material,camera,mesh,gsap,lenis;
+// Fully local photographic depth fallback: retains interactive relief when CDN/WebGL is unavailable.
+let fallbackStarted=false;
+function initCanvasFallback(){
+ if(fallbackStarted)return;fallbackStarted=true;
+ const img=new Image(),map=new Image();img.src='assets/hero.jpg';map.src='assets/depth.png';
+ const canvas=document.createElement('canvas');canvas.className='depth-fallback';canvas.setAttribute('aria-hidden','true');
+ scene.appendChild(canvas);const ctx=canvas.getContext('2d',{alpha:false});
+ if(!ctx)return;
+ const sample=document.createElement('canvas');sample.width=48;sample.height=32;
+ const sc=sample.getContext('2d',{willReadFrequently:true});let depths=null,ready=false;
+ function prepare(){if(!img.complete||!img.naturalWidth||!map.complete||!map.naturalWidth)return;
+  sc.drawImage(map,0,0,48,32);const pixels=sc.getImageData(0,0,48,32).data;
+  depths=Array.from({length:48*32},(_,i)=>pixels[i*4]/255);ready=true;
+ }
+ img.onload=prepare;map.onload=prepare;prepare();
+ function resize(){const dpr=Math.min(devicePixelRatio||1,1.5);canvas.width=Math.round(innerWidth*dpr);canvas.height=Math.round(innerHeight*dpr);canvas.style.width='100%';canvas.style.height='100%'}
+ addEventListener('resize',resize,{passive:true});resize();scene.classList.add('canvas-mode');
+ let smooth=.0,mx=.5,my=.5,last=0;
+ function frame(now){requestAnimationFrame(frame);if(now-last<30)return;last=now;
+  const w=canvas.width,h=canvas.height;if(!w||!h)return;
+  smooth+=(target-smooth)*.07;mx+=(mouse.x-mx)*.1;my+=(mouse.y-my)*.1;
+  ctx.fillStyle='#e9e8e4';ctx.fillRect(0,0,w,h);
+  if(!ready)return;
+  const ratio=img.naturalWidth/img.naturalHeight,cover=Math.max(w/img.naturalWidth,h/img.naturalHeight)*1.06;
+  const sw=w/cover,sh=h/cover,ox=(img.naturalWidth-sw)/2,oy=(img.naturalHeight-sh)/2;
+  const cols=48,rows=32,cw=w/cols,ch=h/rows;
+  const lift=smooth*22*Math.min(w/1280,1.7);
+  // Each source tile is displaced according to the matching depth-map tile.
+  for(let j=0;j<rows;j++)for(let i=0;i<cols;i++){
+   const k=j*cols+i,d=depths[k];
+   const sx=ox+i*sw/cols,sy=oy+j*sh/rows;
+   const dx=i*cw+(d-.48)*lift*(mx-.5)*1.1;
+   const dy=j*ch-(d-.48)*lift*(.75+(my-.5)*.6);
+   ctx.drawImage(img,sx,sy,sw/cols+1,sh/rows+1,dx,dy,cw+1.5,ch+1.5);
+  }
+  ctx.fillStyle=`rgba(233,232,228,${(.28-smooth*.23).toFixed(3)})`;ctx.fillRect(0,0,w,h);
+  const lx=mx*w,ly=(1-my)*h,r=Math.max(w,h)*.62;
+  const g=ctx.createRadialGradient(lx,ly,0,lx,ly,r);
+  g.addColorStop(0,`rgba(255,250,235,${(.12+smooth*.13).toFixed(3)})`);g.addColorStop(1,'rgba(255,250,235,0)');
+  ctx.fillStyle=g;ctx.fillRect(0,0,w,h);
+ }
+ requestAnimationFrame(frame);
 }
-function disableSound(){
-  setUI(false);
-  const v=ambient.volume();
-  ambient.fade(typeof v==='number'?v:.85,0,400);
-  setTimeout(()=>{if(!soundOn)ambient.stop()},450);
-}
-// stop capture-unlock from flipping Sound off on the same press
-soundButton.addEventListener('pointerdown',e=>e.stopPropagation(),true);
-soundHint.addEventListener('pointerdown',e=>e.stopPropagation(),true);
-soundButton.addEventListener('click',e=>{
-  e.preventDefault();e.stopPropagation();
-  if(soundOn&&ambient.playing())disableSound();else enableSound();
-});
-soundHint.addEventListener('click',e=>{e.preventDefault();e.stopPropagation();enableSound()});
-const unlock=e=>{
-  if(e.target.closest('#sound,#soundhint,#menuButton,#menu,a,button'))return;
-  enableSound();
-  window.removeEventListener('pointerdown',unlock,true);
-};
-window.addEventListener('pointerdown',unlock,{once:true,capture:true});
-const menu=document.getElementById('menu');document.getElementById('menuButton').onclick=()=>menu.classList.add('open');document.getElementById('menuClose').onclick=()=>menu.classList.remove('open');menu.querySelectorAll('a').forEach(a=>a.onclick=()=>menu.classList.remove('open'));
-let count=0;const percent=document.getElementById('percent');const loader=document.getElementById('loader');const loadInterval=setInterval(()=>{count=Math.min(100,count+Math.max(1,Math.ceil((100-count)*.15)));percent.textContent=String(count).padStart(2,'0');if(count===100){clearInterval(loadInterval);setTimeout(()=>{loader.classList.add('hide');document.body.classList.add('loaded')},420)}},75);
+
+try{
+ const mods=await Promise.all([import('https://esm.sh/three@0.170.0'),import('https://esm.sh/gsap@3.12.5'),import('https://esm.sh/lenis@1.1.20'),import('https://esm.sh/howler@2.2.4')]);THREE=mods[0];gsap=mods[1].gsap;const Lenis=mods[2].default;const Howl=mods[3].Howl;
+ if(!reduce){lenis=new Lenis({duration:1.2,smoothWheel:true});function smooth(t){lenis.raf(t);requestAnimationFrame(smooth)}requestAnimationFrame(smooth)}
+ const load=new THREE.TextureLoader();const [color,depth]=await Promise.all([new Promise((res,rej)=>load.load('assets/hero.jpg',res,undefined,rej)),new Promise((res,rej)=>load.load('assets/depth.png',res,undefined,rej))]);color.colorSpace=THREE.SRGBColorSpace;
+ renderer=new THREE.WebGLRenderer({alpha:true,antialias:true,powerPreference:'high-performance'});renderer.setPixelRatio(Math.min(devicePixelRatio,1.6));renderer.setSize(innerWidth,innerHeight);renderer.outputColorSpace=THREE.SRGBColorSpace;scene.appendChild(renderer.domElement);camera=new THREE.PerspectiveCamera(32,innerWidth/innerHeight,.1,100);camera.position.z=4;
+ const geo=new THREE.PlaneGeometry(4.9,3.267,180,120);material=new THREE.ShaderMaterial({transparent:false,uniforms:{uColor:{value:color},uDepth:{value:depth},uScroll:{value:0},uMouse:{value:new THREE.Vector2(.5,.5)},uAspect:{value:innerWidth/innerHeight}},vertexShader:`varying vec2 vUv;varying float vDepth;uniform sampler2D uDepth;uniform float uScroll;void main(){vUv=uv;float d=texture2D(uDepth,uv).r;vDepth=d;vec3 p=position;p.z+=(d-.48)*uScroll*.78;gl_Position=projectionMatrix*modelViewMatrix*vec4(p,1.);}`,fragmentShader:`varying vec2 vUv;varying float vDepth;uniform sampler2D uColor;uniform sampler2D uDepth;uniform float uScroll;uniform vec2 uMouse;void main(){vec3 col=texture2D(uColor,vUv).rgb;float gray=dot(col,vec3(.299,.587,.114));col=mix(vec3(gray),col,.1+uScroll*.45);float dx=texture2D(uDepth,vUv+vec2(.003,0.)).r-texture2D(uDepth,vUv-vec2(.003,0.)).r;float dy=texture2D(uDepth,vUv+vec2(0.,.003)).r-texture2D(uDepth,vUv-vec2(0.,.003)).r;vec3 n=normalize(vec3(-dx*22.,-dy*22.,1.));vec2 light=uMouse;vec3 l=normalize(vec3((light-vUv)*2.,.7));float shade=max(dot(n,l),0.);float falloff=exp(-dot((vUv-light)*vec2(1.5,1.),(vUv-light)*vec2(1.5,1.))*3.);col*=mix(1.,.65+shade*.58*falloff,uScroll);col=mix(vec3(.91,.9,.87),col,.72+uScroll*.28);gl_FragColor=vec4(col,1.);}`});mesh=new THREE.Mesh(geo,material);scene.addEventListener('webglcontextlost',e=>{e.preventDefault();scene.classList.remove('webgl');initCanvasFallback()},{once:true});const world=new THREE.Scene();world.add(mesh);
+ function resize(){renderer.setSize(innerWidth,innerHeight);camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix();const viewH=2*Math.tan(THREE.MathUtils.degToRad(camera.fov/2))*camera.position.z;const viewW=viewH*camera.aspect;const ratio=1920/1280;const scale=Math.max(viewW/4.9,viewH/3.267);mesh.scale.setScalar(scale*1.04)}addEventListener('resize',resize);resize();scene.classList.add('webgl');
+ let px=.5,py=.5;function frame(){progress+=(target-progress)*.055;px+=(mouse.x-px)*.06;py+=(mouse.y-py)*.06;material.uniforms.uScroll.value=reduce?target:progress;material.uniforms.uMouse.value.set(px,py);mesh.rotation.y=(px-.5)*progress*.09;mesh.rotation.x=(py-.5)*progress*.05;renderer.render(world,camera);requestAnimationFrame(frame)}frame();
+ howl=new Howl({src:['assets/ambient.mp3'],loop:true,volume:.0,html5:false});
+}catch(err){console.warn('WebGL enhancement unavailable; photographic fallback active:',err);initCanvasFallback();}
+document.getElementById('audio').addEventListener('click',async()=>{if(!howl){const AudioContext=window.AudioContext||window.webkitAudioContext;if(!AudioContext)return;window._ambientCtx??=new AudioContext();const ctx=window._ambientCtx;if(!window._osc){window._osc=ctx.createOscillator();window._gain=ctx.createGain();window._osc.frequency.value=55;window._osc.connect(window._gain);window._gain.connect(ctx.destination);window._osc.start()}await ctx.resume();soundOn=!soundOn;window._gain.gain.setTargetAtTime(soundOn?.025:0,ctx.currentTime,.3)}else{soundOn=!soundOn;if(soundOn){howl.play();howl.fade(0,.25,1200)}else howl.fade(.25,0,700)}const btn=document.getElementById('audio');btn.textContent=soundOn?'Sound on':'Sound off';btn.setAttribute('aria-pressed',String(soundOn))});
 </script></body></html>

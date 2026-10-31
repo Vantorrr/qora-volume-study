@@ -1,23 +1,20 @@
-# QORA / Immersive Architecture Study
+# Observatory — architectural photo + depth study
 
-Original static immersive architecture concept with Three.js shader, Lenis scrolling, GSAP, cursor/touch interaction, loading sequence, navigation, and an original locally bundled ambient audio loop. This is not a copy of Immersive Garden's code or proprietary artwork.
+Open via a local web server (e.g. `python3 -m http.server 8080`), then http://localhost:8080. The photo fallback works without CDN, but the WebGL scene uses Three.js, GSAP, Lenis and Howler from esm.sh and requires internet. Do not open the file directly if you need reliable module and asset loading.
 
-## Preview
+## Assets
+- `assets/hero.jpg`: actual photograph of an observatory-like building, taken from a bundled unverified archival LaTeX template asset (`uantwerpendocs/Images/uantwerpen-01.jpg`). **Rights have not been independently verified**; for private concept evaluation only. Replace before public/commercial launch with client-owned/licensed material.
+- `assets/depth.png`: artist-directed, approximate grayscale depth map created for THIS photograph. White=foreground; dark=background. It is not true measured depth.
+- `assets/ambient.mp3`: original ambient drone generated for the prototype.
 
-Run `python3 -m http.server 8080` from this folder and visit `http://localhost:8080`. Requires network access to load Three.js, GSAP, Lenis and Howler from esm.sh.
+## Important limitations
+This is a **real photograph**, not a procedural illustration, but it is **not Sagrada Família**, nor a full 3D model. Geometry is a single subdivided plane displaced by a hand-authored depth map; it does not recreate occluded surfaces. The reference photograph and map must be replaced with client's assets for delivery. No claims of client association or rights.
 
-## Publish on GitHub Pages
 
-Upload `index.html` and `assets/` to repository root, enable Settings > Pages > Deploy from branch > main / root. Live URL is created by GitHub, not included here.
+## Robustness update
+The main page includes an inlined Canvas 2D depth renderer that starts if CDN imports or WebGL initialization fail. It uses the actual `assets/hero.jpg` and `assets/depth.png` rather than an abstract shader. This fallback is interactive but less physically accurate than WebGL. For commercial deployment, replace the reference photograph with client-owned/licensed assets and validate in a browser.
 
-## Important release checks
+## Browser validation (31 October 2026)
+The actual Chromium engine was used through Playwright with the HTML and image assets embedded into the test page to bypass restrictions on local file/HTTP navigation. For this isolated **Canvas fallback** test, CDN imports were deliberately disabled. Screenshots at 1440x900 and 390x844 were reviewed; image/depth rendered, the scroll-progress value changed, the headline faded, the sound control toggled, and no JavaScript page errors or mobile horizontal overflow were observed. This **does not validate the Three.js WebGL path**, external CDN loading, or the real site's HTTP deployment.
 
-The WebGL shader has not been verified across real browsers or mobile devices in this environment. Dependencies currently load from CDN. Verify WebGL, scrolling, audio autoplay restrictions, mobile performance, and accessibility. The CTA uses placeholder `hello@qora.studio` and **must be replaced with an approved contact** before production. The relief is procedural rather than a photogrammetry-derived architectural 3D model.
-
-## Validation performed (2026-10-31)
-- JavaScript module passed Node.js syntax check.
-- ZIP archive passed CRC/integrity validation.
-- Bundled MP3 was recognized as MPEG audio.
-- Unapproved placeholder email removed from the CTA.
-- Automated Chromium screenshot attempt timed out; visual/browser/mobile testing remains outstanding.
-- No public deployment has been performed.
+The demo remains an evaluation study, not a production release. The photograph's license is unverified, and the scene has not been evaluated against the client's actual photographs.
