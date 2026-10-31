@@ -150,8 +150,14 @@ const menu = $('menu');
 
 // ——— sound ———
 let soundOn = false;
-const music = new Howl({ src: ['./assets/sounds/ambient.wav'], loop: true, volume: 0, preload: true });
-const tick = new Howl({ src: ['./assets/sounds/click.mp3'], volume: 0.25, preload: true });
+const music = new Howl({
+  src: ['./assets/sounds/ambient_loop.mp3'],
+  loop: true,
+  volume: 0,
+  preload: true,
+  html5: true,
+});
+const tick = new Howl({ src: ['./assets/sounds/click.mp3'], volume: 0.15, preload: true });
 function enableSound() {
   if (soundOn) return;
   soundOn = true;
@@ -159,14 +165,15 @@ function enableSound() {
   soundBtn.classList.add('is-on');
   try { Howler.ctx?.resume?.(); } catch (_) {}
   if (!music.playing()) music.play();
-  music.fade(0, 0.4, 1200);
+  music.fade(0, 0.16, 1800); // quiet, not a buzz
 }
 soundBtn.onclick = (e) => {
-  e.stopPropagation(); tick.play();
-  if (!soundOn) enableSound();
+  e.stopPropagation();
+  if (!soundOn) { tick.play(); enableSound(); }
   else {
+    tick.play();
     soundOn = false; soundBtn.textContent = 'Sound off'; soundBtn.classList.remove('is-on');
-    music.fade(music.volume(), 0, 400); setTimeout(() => !soundOn && music.pause(), 420);
+    music.fade(music.volume(), 0, 500); setTimeout(() => !soundOn && music.pause(), 520);
   }
 };
 
@@ -446,16 +453,14 @@ function setMouse(e) {
   if (!hasMoved) {
     hasMoved = true;
     moveHint.classList.add('is-hide');
-    enableSound();
   }
 }
 window.addEventListener('pointermove', setMouse);
-window.addEventListener('pointerdown', (e) => { setMouse(e); enableSound(); });
+window.addEventListener('pointerdown', (e) => { setMouse(e); });
 
 let targetScroll = 0, scrollP = 0;
 window.addEventListener('wheel', (e) => {
   e.preventDefault();
-  enableSound();
   targetScroll = THREE.MathUtils.clamp(targetScroll + e.deltaY * 0.0005, 0, 1);
 }, { passive: false });
 
