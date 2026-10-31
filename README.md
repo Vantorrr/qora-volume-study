@@ -18,3 +18,10 @@ The main page includes an inlined Canvas 2D depth renderer that starts if CDN im
 The actual Chromium engine was used through Playwright with the HTML and image assets embedded into the test page to bypass restrictions on local file/HTTP navigation. For this isolated **Canvas fallback** test, CDN imports were deliberately disabled. Screenshots at 1440x900 and 390x844 were reviewed; image/depth rendered, the scroll-progress value changed, the headline faded, the sound control toggled, and no JavaScript page errors or mobile horizontal overflow were observed. This **does not validate the Three.js WebGL path**, external CDN loading, or the real site's HTTP deployment.
 
 The demo remains an evaluation study, not a production release. The photograph's license is unverified, and the scene has not been evaluated against the client's actual photographs.
+
+## Revision V2 — cursor and performance
+- Added seven-point smoothed cursor trail to the WebGL photo-displacement shader.
+- Added an independent, resolution-capped 2D canvas cursor-displacement fallback when WebGL cannot initialize.
+- Render loop caps approximate GPU frame rate and internal resolution; reduced-motion preference preserves static photograph.
+- Tested Chromium page rendering via embedded assets at desktop 1440×900 and mobile 390×844: canvas active, no JavaScript exceptions, no horizontal overflow. This is not an M4/Safari performance certification.
+- The photographic stand-in does not have verified redistribution/commercial licensing. Replace with client-owned or appropriately licensed image before commercial publishing.
