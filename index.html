@@ -73,6 +73,24 @@
   .menu-sheet a,.menu-sheet button{font-family:PSTimes,serif;font-size:clamp(28px,5vw,44px);
     color:inherit;background:none;border:0;text-decoration:none;cursor:pointer;display:block;margin:16px auto}
   .menu-close{position:absolute!important;top:28px;right:40px;font-family:HelveticaNeueRegular,sans-serif!important;font-size:13px!important}
+
+  /* mobile */
+  @media(max-width:768px){
+    .credit{display:none}
+    .sound{letter-spacing:.12em;font-size:10px;left:16px;top:18px}
+    .nav-top{right:16px;top:18px}
+    .midline{top:auto;bottom:42%;padding:0 16px;flex-direction:column;gap:10px;align-items:flex-start}
+    .mid-logo{min-width:0}
+    .mid-title{text-align:left;font-size:clamp(20px,6.2vw,28px);max-width:18ch}
+    .mid-scroll{min-width:0;text-align:left;font-size:13px}
+    .panel{left:16px;right:16px;bottom:110px;max-width:none}
+    .panel h2{font-size:clamp(26px,7vw,34px)}
+    .panel p{font-size:13px;max-width:36ch}
+    .bot-left{left:16px;bottom:18px}
+    .bot-right{right:16px;bottom:22px;pointer-events:auto}
+    .rail{height:88px;width:2px}
+    .hint{bottom:max(28px,env(safe-area-inset-bottom));font-size:10px;letter-spacing:.16em}
+  }
 </style>
 </head>
 <body>
@@ -100,7 +118,7 @@
   </div>
 
   <canvas id="webgl"></canvas>
-  <div class="hint" id="moveHint">Move your cursor</div>
+  <div class="hint" id="moveHint">Move cursor · scroll to enter</div>
 
   <div class="chrome" id="chrome">
     <button class="sound" id="soundBtn" type="button">Sound off</button>
@@ -274,27 +292,24 @@ for (const t of [reliefMap, depthMap]) {
   t.minFilter = THREE.LinearFilter;
 }
 
-// --- fluid ping-pong ---
-const simRes = 256;
+// --- fluid ping-pong (IG-style: density = reveal, velocity = edge ripple) ---
+const isMobile = matchMedia('(max-width:768px), (pointer:coarse)').matches;
+const simRes = isMobile ? 180 : 280;
+const texel = 1 / simRes;
+
 function makeRT() {
-  const params = {
+  return new THREE.WebGLRenderTarget(simRes, simRes, {
     minFilter: THREE.LinearFilter,
     magFilter: THREE.LinearFilter,
     depthBuffer: false,
-    type: THREE.UnsignedByteType,
+    type: THREE.HalfFloatType,
     format: THREE.RGBAFormat,
-  };
-  // prefer float if available for smoother waves
-  try {
-    const gl = renderer.getContext();
-    if (gl.getExtension('EXT_color_buffer_float') || gl.getExtension('EXT_color_buffer_half_float')) {
-      params.type = THREE.HalfFloatType;
-    }
-  } catch (_) {}
-  return new THREE.WebGLRenderTarget(simRes, simRes, params);
+  });
 }
 let densityA = makeRT(), densityB = makeRT();
 let velA = makeRT(), velB = makeRT();
+let pressureA = makeRT(), pressureB = makeRT();
+let divergence = makeRT();
 
 const quad = new THREE.PlaneGeometry(2, 2);
 const simScene = new THREE.Scene();
@@ -302,16 +317,18 @@ const simCam = new THREE.OrthographicCamera(-1, 1, 1, -1, 0, 1);
 const simMesh = new THREE.Mesh(quad, new THREE.MeshBasicMaterial());
 simScene.add(simMesh);
 
+const VS = `varying vec2 vUv; void main(){ vUv=uv; gl_Position=vec4(position.xy,0.,1.); }`;
+
 const splatMat = new THREE.ShaderMaterial({
   uniforms: {
     uTarget: { value: null },
-    uPoint: { value: new THREE.Vector2(0.5, 0.5) },
-    uPrev: { value: new THREE.Vector2(0.5, 0.5) },
-    uColor: { value: new THREE.Vector3(1, 0, 0) },
-    uRadius: { value: 0.035 },
+    uPoint: { value: new THREE.Vector2() },
+    uPrev: { value: new THREE.Vector2() },
+    uColor: { value: new THREE.Vector3() },
+    uRadius: { value: 0.02 },
     uAspect: { value: 1 },
   },
-  vertexShader: `varying vec2 vUv; void main(){ vUv=uv; gl_Position=vec4(position.xy,0.,1.); }`,
+  vertexShader: VS,
   fragmentShader: `
     precision highp float;
     uniform sampler2D uTarget;
@@ -319,39 +336,16 @@ const splatMat = new THREE.ShaderMaterial({
     uniform vec3 uColor;
     uniform float uRadius, uAspect;
     varying vec2 vUv;
-    float splat(vec2 uv, vec2 p, float r){
-      vec2 d = uv - p; d.x *= uAspect;
-      // tighter falloff — IG: small local brush, not full-screen fog
-      return exp(-dot(d,d) / max(r * r, 1e-6));
+    float brush(vec2 uv, vec2 a, vec2 b, float r){
+      vec2 pa = uv - a; vec2 ba = b - a;
+      float h = clamp(dot(pa, ba) / max(dot(ba, ba), 1e-6), 0., 1.);
+      vec2 d = pa - ba * h; d.x *= uAspect;
+      return exp(-dot(d,d) / max(r*r, 1e-8));
     }
     void main(){
       vec4 base = texture2D(uTarget, vUv);
-      float r = uRadius;
-      float s = splat(vUv, uPoint, r);
-      vec2 pa = vUv - uPrev; vec2 ba = uPoint - uPrev;
-      float h = clamp(dot(pa, ba) / max(dot(ba, ba), 1e-5), 0., 1.);
-      vec2 d = pa - ba * h; d.x *= uAspect;
-      s = max(s, exp(-dot(d,d) / max(r * r * 0.9, 1e-6)));
-      // clamp add so trails never flood the buffer
-      vec3 add = uColor * s;
-      gl_FragColor = vec4(min(base.rgb + add, vec3(1.0)), 1.0);
-    }
-  `,
-});
-
-const fadeMat = new THREE.ShaderMaterial({
-  uniforms: {
-    uTex: { value: null },
-    uDissipation: { value: 0.987 },
-  },
-  vertexShader: `varying vec2 vUv; void main(){ vUv=uv; gl_Position=vec4(position.xy,0.,1.); }`,
-  fragmentShader: `
-    precision highp float;
-    uniform sampler2D uTex;
-    uniform float uDissipation;
-    varying vec2 vUv;
-    void main(){
-      gl_FragColor = texture2D(uTex, vUv) * uDissipation;
+      float s = brush(vUv, uPrev, uPoint, uRadius);
+      gl_FragColor = vec4(base.rgb + uColor * s, 1.0);
     }
   `,
 });
@@ -362,22 +356,102 @@ const advectMat = new THREE.ShaderMaterial({
     uSource: { value: null },
     uDissipation: { value: 0.98 },
     uDt: { value: 0.016 },
+    uTexel: { value: texel },
   },
-  vertexShader: `varying vec2 vUv; void main(){ vUv=uv; gl_Position=vec4(position.xy,0.,1.); }`,
+  vertexShader: VS,
   fragmentShader: `
     precision highp float;
     uniform sampler2D uVelocity, uSource;
-    uniform float uDissipation, uDt;
+    uniform float uDissipation, uDt, uTexel;
     varying vec2 vUv;
     void main(){
       vec2 vel = texture2D(uVelocity, vUv).xy;
       vec2 uv = vUv - vel * uDt;
-      gl_FragColor = texture2D(uSource, uv) * uDissipation;
+      // soft clamp
+      uv = clamp(uv, uTexel, 1.0 - uTexel);
+      gl_FragColor = vec4(texture2D(uSource, uv).rgb * uDissipation, 1.0);
     }
   `,
 });
 
-// Final display: paper + scroll-driven relief band + local mouse waves
+const divergenceMat = new THREE.ShaderMaterial({
+  uniforms: { uVelocity: { value: null }, uTexel: { value: texel } },
+  vertexShader: VS,
+  fragmentShader: `
+    precision highp float;
+    uniform sampler2D uVelocity;
+    uniform float uTexel;
+    varying vec2 vUv;
+    void main(){
+      float L = texture2D(uVelocity, vUv - vec2(uTexel, 0.)).x;
+      float R = texture2D(uVelocity, vUv + vec2(uTexel, 0.)).x;
+      float B = texture2D(uVelocity, vUv - vec2(0., uTexel)).y;
+      float T = texture2D(uVelocity, vUv + vec2(0., uTexel)).y;
+      float div = 0.5 * (R - L + T - B);
+      gl_FragColor = vec4(div, 0., 0., 1.);
+    }
+  `,
+});
+
+const pressureMat = new THREE.ShaderMaterial({
+  uniforms: {
+    uPressure: { value: null },
+    uDivergence: { value: null },
+    uTexel: { value: texel },
+  },
+  vertexShader: VS,
+  fragmentShader: `
+    precision highp float;
+    uniform sampler2D uPressure, uDivergence;
+    uniform float uTexel;
+    varying vec2 vUv;
+    void main(){
+      float L = texture2D(uPressure, vUv - vec2(uTexel, 0.)).x;
+      float R = texture2D(uPressure, vUv + vec2(uTexel, 0.)).x;
+      float B = texture2D(uPressure, vUv - vec2(0., uTexel)).x;
+      float T = texture2D(uPressure, vUv + vec2(0., uTexel)).x;
+      float b = texture2D(uDivergence, vUv).x;
+      float p = (L + R + B + T - b) * 0.25;
+      gl_FragColor = vec4(p, 0., 0., 1.);
+    }
+  `,
+});
+
+const gradientMat = new THREE.ShaderMaterial({
+  uniforms: {
+    uPressure: { value: null },
+    uVelocity: { value: null },
+    uTexel: { value: texel },
+  },
+  vertexShader: VS,
+  fragmentShader: `
+    precision highp float;
+    uniform sampler2D uPressure, uVelocity;
+    uniform float uTexel;
+    varying vec2 vUv;
+    void main(){
+      float L = texture2D(uPressure, vUv - vec2(uTexel, 0.)).x;
+      float R = texture2D(uPressure, vUv + vec2(uTexel, 0.)).x;
+      float B = texture2D(uPressure, vUv - vec2(0., uTexel)).x;
+      float T = texture2D(uPressure, vUv + vec2(0., uTexel)).x;
+      vec2 vel = texture2D(uVelocity, vUv).xy;
+      vel -= 0.5 * vec2(R - L, T - B);
+      gl_FragColor = vec4(vel, 0., 1.);
+    }
+  `,
+});
+
+const clearMat = new THREE.ShaderMaterial({
+  uniforms: { uValue: { value: 0 } },
+  vertexShader: VS,
+  fragmentShader: `
+    precision highp float;
+    uniform float uValue; varying vec2 vUv;
+    void main(){ gl_FragColor = vec4(uValue, uValue, uValue, 1.0); }
+  `,
+});
+
+// Composite: plaster sealed / image revealed by density; velocity ripples ONLY the edge (IG)
 const viewUniforms = {
   uPlaster: { value: plasterMap },
   uImage: { value: reliefMap },
@@ -389,78 +463,71 @@ const viewUniforms = {
   uReveal: { value: 0 },
   uTime: { value: 0 },
   uRes: { value: new THREE.Vector2(1, 1) },
-  uWave: { value: 0.012 },
 };
 const viewMat = new THREE.ShaderMaterial({
   uniforms: viewUniforms,
-  vertexShader: `varying vec2 vUv; void main(){ vUv=uv; gl_Position=vec4(position.xy,0.,1.); }`,
+  vertexShader: VS,
   fragmentShader: `
     precision highp float;
     uniform sampler2D uPlaster, uImage, uDepth, uDensity, uVelocity;
     uniform vec2 uMouse, uRes;
-    uniform float uScroll, uReveal, uTime, uWave;
+    uniform float uScroll, uReveal, uTime;
     varying vec2 vUv;
 
+    vec2 coverUv(vec2 uv, float imgAspect){
+      float aspect = uRes.x / max(uRes.y, 1.0);
+      vec2 iuv = uv;
+      if (aspect > imgAspect) iuv.y = (iuv.y - 0.5) * (imgAspect / aspect) + 0.5;
+      else iuv.x = (iuv.x - 0.5) * (aspect / imgAspect) + 0.5;
+      return iuv;
+    }
+
     void main(){
-      vec2 puv = vUv * vec2(uRes.x/uRes.y, 1.0) * 1.5;
-      puv.y += uScroll * 0.08; // paper rides with scroll (IG wall)
+      // sealed plaster wall — drifts slightly with scroll
+      vec2 puv = vUv * vec2(uRes.x/uRes.y, 1.0) * 1.55;
+      puv.y += uScroll * 0.1;
       vec3 plaster = texture2D(uPlaster, puv).rgb;
-      plaster = mix(plaster, vec3(0.91), 0.48);
+      plaster = mix(plaster, vec3(0.905), 0.5);
 
       float dens = texture2D(uDensity, vUv).r;
       vec2 vel = texture2D(uVelocity, vUv).xy;
 
-      // mouse wave — soft local brush, a bit bigger than pin-head
-      vec2 md = vUv - uMouse;
-      md.x *= uRes.x / uRes.y;
-      float cursor = exp(-dot(md, md) / 0.034);
-      float energy = dens * mix(0.35, 1.0, cursor);
-      float waveMask = smoothstep(0.04, 0.38, energy);
-      waveMask = pow(waveMask, 1.15);
+      // density → soft organic reveal (NOT a hard blob)
+      float mask = smoothstep(0.045, 0.30, dens);
+      // liquid edge band — velocity warps only here
+      float edge = mask * (1.0 - mask) * 4.0;
 
-      vec2 warp = vel * uWave * waveMask;
+      // scroll also lifts a soft band of relief into the field
+      float bandY = mix(1.25, 0.36, clamp(uScroll * 1.1, 0.0, 1.0));
+      float bandH = mix(0.0, 0.46, smoothstep(0.01, 0.48, uScroll));
+      float inBand = 1.0 - smoothstep(bandH, bandH + 0.12, abs(vUv.y - bandY));
+      inBand *= smoothstep(0.0, 0.07, uScroll) * uReveal;
+      float open = max(mask, inBand * 0.92);
 
-      // --- SCROLL: relief band rises into view (IG) ---
-      float bandY = mix(1.22, 0.38, clamp(uScroll * 1.15, 0.0, 1.0));
-      float bandH = mix(0.0, 0.44, smoothstep(0.01, 0.5, uScroll));
-      float inBand = 1.0 - smoothstep(bandH, bandH + 0.1, abs(vUv.y - bandY));
-      inBand *= smoothstep(0.0, 0.08, uScroll);
-
-      vec2 iuv = vUv;
-      float aspect = uRes.x / uRes.y;
-      float imgAspect = 16.0/9.0;
-      if (aspect > imgAspect) iuv.y = (iuv.y - 0.5) * (imgAspect / aspect) + 0.5;
-      else iuv.x = (iuv.x - 0.5) * (aspect / imgAspect) + 0.5;
-      // map band to image content
-      iuv.y = clamp((vUv.y - (bandY - bandH)) / max(bandH * 2.2, 0.001), 0.0, 1.0);
-      iuv.y = mix(0.15, 0.9, iuv.y);
-      iuv.x = clamp((iuv.x - 0.5) / mix(1.15, 1.0, uScroll) + 0.5, 0.001, 0.999);
-      iuv = clamp(iuv + warp * 0.35, 0.001, 0.999);
+      vec2 iuv = coverUv(vUv, 16.0/9.0);
+      // map scroll band into image
+      float by = clamp((vUv.y - (bandY - bandH)) / max(bandH * 2.15, 0.001), 0.0, 1.0);
+      iuv.y = mix(iuv.y, mix(0.12, 0.9, by), smoothstep(0.02, 0.35, uScroll));
+      iuv.x = clamp((iuv.x - 0.5) / mix(1.12, 1.0, uScroll) + 0.5, 0.0, 1.0);
+      // edge-only ripple (IG trick)
+      iuv = clamp(iuv - vel * 0.018 * edge, 0.001, 0.999);
 
       vec3 img = texture2D(uImage, iuv).rgb;
       float g = dot(img, vec3(0.299, 0.587, 0.114));
-      img = mix(img, vec3(g), 0.35);
-      img = mix(img, plaster, 0.18);
+      img = mix(img, vec3(g), 0.28);
+      img = mix(img, plaster, 0.12);
 
       float dL = texture2D(uDepth, clamp(iuv+vec2(-0.002,0.),0.,1.)).r;
       float dR = texture2D(uDepth, clamp(iuv+vec2( 0.002,0.),0.,1.)).r;
       float dD = texture2D(uDepth, clamp(iuv+vec2(0.,-0.002),0.,1.)).r;
       float dU = texture2D(uDepth, clamp(iuv+vec2(0., 0.002),0.,1.)).r;
-      vec3 N = normalize(vec3(dL-dR, dD-dU, 0.42));
-      vec3 L = normalize(vec3((uMouse.x-0.5)*0.9, (uMouse.y-0.5)*0.9, 1.0));
-      img *= 0.58 + clamp(dot(N, L), 0., 1.) * 0.45;
+      vec3 N = normalize(vec3(dL-dR, dD-dU, 0.45));
+      vec3 L = normalize(vec3((uMouse.x-0.5)*0.85, (uMouse.y-0.5)*0.85, 1.0));
+      img *= 0.6 + clamp(dot(N, L), 0., 1.) * 0.42;
 
-      // paper with local mouse refraction
-      vec3 paper = texture2D(uPlaster, puv + warp).rgb;
-      paper = mix(paper, vec3(0.91), 0.48);
-      vec3 col = mix(plaster, paper, waveMask * 0.65);
-
-      // scroll reveals carved band into the field
-      float reveal = inBand * uReveal;
-      col = mix(col, img, reveal);
-
-      // tiny extra peek where mouse waves over the relief
-      col = mix(col, img, waveMask * reveal * 0.25);
+      vec3 col = mix(plaster, img, open);
+      // wet rim on fluid edge
+      col += img * edge * 0.07;
 
       gl_FragColor = vec4(col, 1.0);
     }
@@ -471,38 +538,57 @@ scene.add(viewMesh);
 
 function fit() {
   const w = innerWidth, h = innerHeight;
-  renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+  renderer.setPixelRatio(Math.min(devicePixelRatio, isMobile ? 1.5 : 2));
   renderer.setSize(w, h, false);
   viewUniforms.uRes.value.set(w, h);
-  splatMat.uniforms.uAspect.value = w / h;
+  splatMat.uniforms.uAspect.value = w / Math.max(h, 1);
 }
 addEventListener('resize', fit);
 fit();
 
-// mouse → fluid
+function runPass(mat, outputRT, update) {
+  simMesh.material = mat;
+  update && update();
+  renderer.setRenderTarget(outputRT);
+  renderer.render(simScene, simCam);
+  renderer.setRenderTarget(null);
+}
+
+// pointer → fluid
 const mouse = new THREE.Vector2(0.5, 0.5);
 const prevMouse = new THREE.Vector2(0.5, 0.5);
 const mouseSmooth = new THREE.Vector2(0.5, 0.5);
 let hasMoved = false;
+let pointerDown = false;
+let paintActive = false;
 
-function setMouse(e) {
+function setPointerUV(x, y) {
   prevMouse.copy(mouse);
-  mouse.set(e.clientX / innerWidth, 1 - e.clientY / innerHeight);
+  mouse.set(x / innerWidth, 1 - y / innerHeight);
   if (!hasMoved) {
     hasMoved = true;
     moveHint.classList.add('is-hide');
   }
 }
-window.addEventListener('pointermove', setMouse);
-window.addEventListener('pointerdown', (e) => { setMouse(e); });
+
+window.addEventListener('pointermove', (e) => {
+  setPointerUV(e.clientX, e.clientY);
+  if (e.pointerType === 'mouse' || pointerDown) paintActive = true;
+}, { passive: true });
+window.addEventListener('pointerdown', (e) => {
+  pointerDown = true;
+  paintActive = true;
+  setPointerUV(e.clientX, e.clientY);
+  prevMouse.copy(mouse);
+});
+window.addEventListener('pointerup', () => { pointerDown = false; });
+window.addEventListener('pointerleave', () => { pointerDown = false; paintActive = false; });
 
 let targetScroll = 0, scrollP = 0;
 let chapterIdx = -1;
 function applyChapter(p) {
   let idx = -1;
-  for (let i = 0; i < chapters.length; i++) {
-    if (p >= chapters[i].at) idx = i;
-  }
+  for (let i = 0; i < chapters.length; i++) if (p >= chapters[i].at) idx = i;
   if (idx === chapterIdx) return;
   chapterIdx = idx;
   if (idx < 0) {
@@ -515,26 +601,58 @@ function applyChapter(p) {
   panelText.textContent = chapters[idx].text;
   panel.classList.add('is-on');
 }
+
 window.addEventListener('wheel', (e) => {
   e.preventDefault();
-  // IG-feel: wheel moves the field quickly into the relief
   const step = Math.abs(e.deltaY) > 40 ? e.deltaY * 0.00135 : e.deltaY * 0.0011;
   targetScroll = THREE.MathUtils.clamp(targetScroll + step, 0, 1);
 }, { passive: false });
 
-// touch / trackpad drag as scroll (phones + IG-like pan)
-let touchY = null;
+// mobile: finger paints; mostly-vertical swipe scrolls; rail is a scrubber
+const touchState = { y: 0, x: 0, mode: null }; // null | 'paint' | 'scroll'
 window.addEventListener('touchstart', (e) => {
-  touchY = e.touches[0].clientY;
+  const t = e.touches[0];
+  touchState.x = t.clientX; touchState.y = t.clientY; touchState.mode = null;
+  setPointerUV(t.clientX, t.clientY);
+  prevMouse.copy(mouse);
 }, { passive: true });
 window.addEventListener('touchmove', (e) => {
-  if (touchY == null) return;
+  const t = e.touches[0];
+  const dx = t.clientX - touchState.x;
+  const dy = t.clientY - touchState.y;
+  if (!touchState.mode) {
+    if (Math.abs(dx) + Math.abs(dy) < 8) return;
+    // right-edge rail zone OR dominant vertical → scroll; else paint
+    const nearRail = t.clientX > innerWidth * 0.82;
+    touchState.mode = (nearRail || Math.abs(dy) > Math.abs(dx) * 1.35) ? 'scroll' : 'paint';
+  }
   e.preventDefault();
-  const y = e.touches[0].clientY;
-  targetScroll = THREE.MathUtils.clamp(targetScroll + (touchY - y) * 0.0022, 0, 1);
-  touchY = y;
+  if (touchState.mode === 'scroll') {
+    targetScroll = THREE.MathUtils.clamp(targetScroll + (-dy) * 0.0024, 0, 1);
+    touchState.x = t.clientX; touchState.y = t.clientY;
+  } else {
+    paintActive = true;
+    setPointerUV(t.clientX, t.clientY);
+    touchState.x = t.clientX; touchState.y = t.clientY;
+  }
 }, { passive: false });
-window.addEventListener('touchend', () => { touchY = null; });
+window.addEventListener('touchend', () => { touchState.mode = null; paintActive = false; });
+
+// scrub progress rail on mobile / desktop
+const botRight = document.querySelector('.bot-right');
+botRight?.addEventListener('pointerdown', (e) => {
+  e.stopPropagation();
+  const scrub = (ev) => {
+    const rect = botRight.getBoundingClientRect();
+    const t = THREE.MathUtils.clamp((ev.clientY - rect.top) / rect.height, 0, 1);
+    targetScroll = t;
+  };
+  scrub(e);
+  const move = (ev) => scrub(ev);
+  const up = () => { window.removeEventListener('pointermove', move); window.removeEventListener('pointerup', up); };
+  window.addEventListener('pointermove', move);
+  window.addEventListener('pointerup', up);
+});
 
 $('menuBtn').onclick = () => { tick.play(); menu.classList.add('is-open'); };
 $('menuClose').onclick = () => { tick.play(); menu.classList.remove('is-open'); };
@@ -542,80 +660,94 @@ menu.querySelectorAll('[data-jump]').forEach((b) => b.onclick = () => {
   tick.play(); targetScroll = +b.dataset.jump; menu.classList.remove('is-open');
 });
 
-function runPass(mat, inputRT, outputRT, update) {
-  simMesh.material = mat;
-  update && update();
-  renderer.setRenderTarget(outputRT);
-  renderer.render(simScene, simCam);
-  renderer.setRenderTarget(null);
-}
+if (isMobile) moveHint.textContent = 'Drag to paint · swipe to scroll';
 
 const clock = new THREE.Clock();
+const PRESSURE_ITERS = isMobile ? 12 : 18;
+
 function frame() {
   const dt = Math.min(clock.getDelta(), 0.033);
   const t = clock.elapsedTime;
-
-  mouseSmooth.lerp(mouse, 1 - Math.exp(-dt * 8));
+  mouseSmooth.lerp(mouse, 1 - Math.exp(-dt * 10));
   scrollP += (targetScroll - scrollP) * (1 - Math.exp(-dt * 3.2));
 
-  // IG brush: local, a bit larger than pin-head, soft trail
   const force = new THREE.Vector2().subVectors(mouse, prevMouse);
-  const speed = Math.min(force.length() * 48.0, 0.95);
+  const speed = Math.min(force.length() * (isMobile ? 55 : 70), 1.2);
+  const shouldSplat = paintActive && speed > 0.0008;
 
-  runPass(fadeMat, velA, velB, () => {
-    fadeMat.uniforms.uTex.value = velA.texture;
-    fadeMat.uniforms.uDissipation.value = 0.905;
+  // advect velocity
+  runPass(advectMat, velB, () => {
+    advectMat.uniforms.uVelocity.value = velA.texture;
+    advectMat.uniforms.uSource.value = velA.texture;
+    advectMat.uniforms.uDissipation.value = 0.975;
+    advectMat.uniforms.uDt.value = dt;
   });
   [velA, velB] = [velB, velA];
 
-  if (speed > 0.0015) {
-    runPass(splatMat, velA, velB, () => {
+  if (shouldSplat) {
+    const fx = force.x * (isMobile ? 1.8 : 2.2);
+    const fy = force.y * (isMobile ? 1.8 : 2.2);
+    runPass(splatMat, velB, () => {
       splatMat.uniforms.uTarget.value = velA.texture;
       splatMat.uniforms.uPoint.value.copy(mouse);
       splatMat.uniforms.uPrev.value.copy(prevMouse);
-      splatMat.uniforms.uColor.value.set(force.x * 1.35, force.y * 1.35, 0);
-      splatMat.uniforms.uRadius.value = 0.014; // slightly bigger IG brush
+      splatMat.uniforms.uColor.value.set(fx, fy, 0);
+      splatMat.uniforms.uRadius.value = isMobile ? 0.028 : 0.022;
     });
     [velA, velB] = [velB, velA];
   }
 
-  runPass(fadeMat, densityA, densityB, () => {
-    fadeMat.uniforms.uTex.value = densityA.texture;
-    fadeMat.uniforms.uDissipation.value = 0.925;
+  // divergence + pressure + gradient (makes liquid trails, not blotches)
+  runPass(divergenceMat, divergence, () => {
+    divergenceMat.uniforms.uVelocity.value = velA.texture;
   });
-  [densityA, densityB] = [densityB, densityA];
+  runPass(clearMat, pressureA, () => {
+    clearMat.uniforms.uValue.value = 0;
+  });
+  for (let i = 0; i < PRESSURE_ITERS; i++) {
+    runPass(pressureMat, pressureB, () => {
+      pressureMat.uniforms.uPressure.value = pressureA.texture;
+      pressureMat.uniforms.uDivergence.value = divergence.texture;
+    });
+    [pressureA, pressureB] = [pressureB, pressureA];
+  }
+  runPass(gradientMat, velB, () => {
+    gradientMat.uniforms.uPressure.value = pressureA.texture;
+    gradientMat.uniforms.uVelocity.value = velA.texture;
+  });
+  [velA, velB] = [velB, velA];
 
-  runPass(advectMat, densityA, densityB, () => {
+  // density
+  runPass(advectMat, densityB, () => {
     advectMat.uniforms.uVelocity.value = velA.texture;
     advectMat.uniforms.uSource.value = densityA.texture;
-    advectMat.uniforms.uDissipation.value = 0.94;
-    advectMat.uniforms.uDt.value = dt * 0.16;
+    advectMat.uniforms.uDissipation.value = 0.986;
+    advectMat.uniforms.uDt.value = dt;
   });
   [densityA, densityB] = [densityB, densityA];
 
-  if (speed > 0.0015) {
-    runPass(splatMat, densityA, densityB, () => {
+  if (shouldSplat) {
+    runPass(splatMat, densityB, () => {
       splatMat.uniforms.uTarget.value = densityA.texture;
       splatMat.uniforms.uPoint.value.copy(mouse);
       splatMat.uniforms.uPrev.value.copy(prevMouse);
-      splatMat.uniforms.uColor.value.set(0.55, 0, 0);
-      splatMat.uniforms.uRadius.value = 0.016;
+      splatMat.uniforms.uColor.value.set(0.85, 0, 0);
+      splatMat.uniforms.uRadius.value = isMobile ? 0.03 : 0.024;
     });
     [densityA, densityB] = [densityB, densityA];
   }
 
   prevMouse.copy(mouse);
+  // keep a tiny idle motion so desktop hover still paints without click
+  if (!isMobile) paintActive = true;
 
-  // scroll → relief enters (0 at home, full by ~mid scroll)
   const reveal = THREE.MathUtils.smoothstep(scrollP, 0.02, 0.42);
-
   viewUniforms.uDensity.value = densityA.texture;
   viewUniforms.uVelocity.value = velA.texture;
   viewUniforms.uMouse.value.copy(mouseSmooth);
   viewUniforms.uScroll.value = scrollP;
   viewUniforms.uReveal.value = reveal;
   viewUniforms.uTime.value = t;
-  viewUniforms.uWave.value = 0.016; // soft local refraction, a bit stronger
 
   rail.style.height = `${(scrollP * 100).toFixed(1)}%`;
   midScroll.classList.toggle('is-hide', scrollP > 0.04);
