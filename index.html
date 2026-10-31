@@ -374,67 +374,48 @@ const viewMat = new THREE.ShaderMaterial({
     varying vec2 vUv;
 
     void main(){
-      // IG: quiet paper field first
-      vec2 puv = vUv * vec2(uRes.x/uRes.y, 1.0) * 1.55;
+      // IG home: mostly flat paper. Mouse = tiny local refraction only.
+      vec2 puv = vUv * vec2(uRes.x/uRes.y, 1.0) * 1.5;
       vec3 plaster = texture2D(uPlaster, puv).rgb;
-      plaster = mix(plaster, vec3(0.905), 0.42);
+      plaster = mix(plaster, vec3(0.91), 0.5);
 
-      vec4 dens4 = texture2D(uDensity, vUv);
+      float dens = texture2D(uDensity, vUv).r;
       vec2 vel = texture2D(uVelocity, vUv).xy;
-      float dens = dens4.r;
 
-      // LOCAL only — steep falloff, never paints whole screen
-      float local = smoothstep(0.12, 0.55, dens);
-      local = pow(local, 1.6);
+      // hard localize to cursor — no screen fog
+      vec2 md = vUv - uMouse;
+      md.x *= uRes.x / uRes.y;
+      float cursor = exp(-dot(md, md) / 0.012); // ~small IG brush
+      float energy = dens * cursor;
+      float mask = smoothstep(0.08, 0.45, energy);
+      mask *= mask; // even tighter
 
-      // soft cursor falloff (extra localization like IG radius ~0.07)
-      vec2 md = vUv - uMouse; md.x *= uRes.x / uRes.y;
-      float cursorGate = exp(-dot(md, md) / 0.045);
-      float mask = clamp(local * mix(0.35, 1.0, cursorGate), 0.0, 0.85);
+      // micro warp only (NO blur, NO big offset)
+      vec2 warp = vel * uWave * mask;
 
-      // tiny wave — refraction, not blur soup
-      float texel = 1.5 / 256.0;
-      float dL = texture2D(uDensity, vUv + vec2(-texel,0.)).r;
-      float dR = texture2D(uDensity, vUv + vec2( texel,0.)).r;
-      float dD = texture2D(uDensity, vUv + vec2(0.,-texel)).r;
-      float dU = texture2D(uDensity, vUv + vec2(0., texel)).r;
-      vec2 grad = vec2(dR - dL, dU - dD);
-      vec2 warp = (vel * 0.9 + grad * 0.55) * uWave * mask;
+      vec2 puv2 = puv + warp;
+      vec3 paper = texture2D(uPlaster, puv2).rgb;
+      paper = mix(paper, vec3(0.91), 0.5);
 
-      // also warp the paper slightly (IG: surface reacts, not image flood)
-      vec3 paperW = texture2D(uPlaster, puv + warp * 1.8).rgb;
-      paperW = mix(paperW, vec3(0.905), 0.4);
-      vec3 base = mix(plaster, paperW, mask);
-
-      // image peek only in the local wave
+      // very faint emboss tint near cursor (not a full image dump)
       vec2 iuv = vUv;
       float aspect = uRes.x / uRes.y;
       float imgAspect = 16.0/9.0;
-      if (aspect > imgAspect) {
-        float s = imgAspect / aspect;
-        iuv.y = (iuv.y - 0.5) * s + 0.5;
-      } else {
-        float s = aspect / imgAspect;
-        iuv.x = (iuv.x - 0.5) * s + 0.5;
-      }
-      iuv.y += uScroll * 0.08;
-      iuv = clamp(iuv + warp * 0.65, 0.001, 0.999);
+      if (aspect > imgAspect) iuv.y = (iuv.y - 0.5) * (imgAspect / aspect) + 0.5;
+      else iuv.x = (iuv.x - 0.5) * (aspect / imgAspect) + 0.5;
+      iuv.y += uScroll * 0.06;
+      iuv = clamp(iuv + warp * 0.25, 0.001, 0.999);
 
+      float depth = texture2D(uDepth, iuv).r;
       vec3 img = texture2D(uImage, iuv).rgb;
-      float g = dot(img, vec3(0.299,0.587,0.114));
-      img = mix(img, vec3(g), 0.4);
-      img = mix(img, base, 0.22);
+      float g = dot(img, vec3(0.299, 0.587, 0.114));
+      // almost monochrome stone, barely different from paper
+      vec3 stone = mix(vec3(0.88), vec3(g * 0.92 + 0.08), 0.55);
+      stone = mix(stone, paper, 0.55);
 
-      float dL2 = texture2D(uDepth, clamp(iuv+vec2(-0.002,0.),0.,1.)).r;
-      float dR2 = texture2D(uDepth, clamp(iuv+vec2( 0.002,0.),0.,1.)).r;
-      float dD2 = texture2D(uDepth, clamp(iuv+vec2(0.,-0.002),0.,1.)).r;
-      float dU2 = texture2D(uDepth, clamp(iuv+vec2(0., 0.002),0.,1.)).r;
-      vec3 N = normalize(vec3(dL2-dR2, dD2-dU2, 0.45));
-      vec3 L = normalize(vec3((uMouse.x-0.5)*1.2, (uMouse.y-0.5)*1.2, 1.0));
-      img *= 0.62 + clamp(dot(N, L), 0., 1.) * 0.4;
-
-      // peek: subtle, local
-      vec3 col = mix(base, img, mask * 0.72);
+      // max peek ~18% — subtle, local
+      vec3 col = mix(plaster, paper, mask * 0.55);
+      col = mix(col, stone, mask * 0.18);
 
       gl_FragColor = vec4(col, 1.0);
     }
@@ -510,39 +491,38 @@ function frame() {
   });
   [velA, velB] = [velB, velA];
 
-  if (speed > 0.0015) {
+  if (speed > 0.002) {
     runPass(splatMat, velA, velB, () => {
       splatMat.uniforms.uTarget.value = velA.texture;
       splatMat.uniforms.uPoint.value.copy(mouse);
       splatMat.uniforms.uPrev.value.copy(prevMouse);
-      splatMat.uniforms.uColor.value.set(force.x * 1.8, force.y * 1.8, 0);
-      splatMat.uniforms.uRadius.value = 0.012 + speed * 0.008; // tiny brush
+      splatMat.uniforms.uColor.value.set(force.x * 1.1, force.y * 1.1, 0);
+      splatMat.uniforms.uRadius.value = 0.007; // pin-head brush
     });
     [velA, velB] = [velB, velA];
   }
 
   runPass(fadeMat, densityA, densityB, () => {
     fadeMat.uniforms.uTex.value = densityA.texture;
-    fadeMat.uniforms.uDissipation.value = 0.95; // ~IG densityDissipation
+    fadeMat.uniforms.uDissipation.value = 0.90; // dies fast — no screen fill
   });
   [densityA, densityB] = [densityB, densityA];
 
   runPass(advectMat, densityA, densityB, () => {
     advectMat.uniforms.uVelocity.value = velA.texture;
     advectMat.uniforms.uSource.value = densityA.texture;
-    advectMat.uniforms.uDissipation.value = 0.97;
-    advectMat.uniforms.uDt.value = dt * 0.22;
+    advectMat.uniforms.uDissipation.value = 0.92;
+    advectMat.uniforms.uDt.value = dt * 0.12;
   });
   [densityA, densityB] = [densityB, densityA];
 
-  // splat only while actually moving — no idle flood
-  if (speed > 0.0015) {
+  if (speed > 0.002) {
     runPass(splatMat, densityA, densityB, () => {
       splatMat.uniforms.uTarget.value = densityA.texture;
       splatMat.uniforms.uPoint.value.copy(mouse);
       splatMat.uniforms.uPrev.value.copy(prevMouse);
-      splatMat.uniforms.uColor.value.set(0.55 + speed * 0.25, 0, 0);
-      splatMat.uniforms.uRadius.value = 0.014 + speed * 0.01;
+      splatMat.uniforms.uColor.value.set(0.35, 0, 0);
+      splatMat.uniforms.uRadius.value = 0.008;
     });
     [densityA, densityB] = [densityB, densityA];
   }
@@ -554,7 +534,7 @@ function frame() {
   viewUniforms.uMouse.value.copy(mouseSmooth);
   viewUniforms.uScroll.value = scrollP;
   viewUniforms.uTime.value = t;
-  viewUniforms.uWave.value = 0.018; // subtle refraction, not mush
+  viewUniforms.uWave.value = 0.006; // micro refraction only
 
   rail.style.height = `${(scrollP * 100).toFixed(1)}%`;
   midScroll.classList.toggle('is-hide', scrollP > 0.05);
