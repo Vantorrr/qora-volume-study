@@ -42,7 +42,7 @@
   .sound{position:absolute;left:clamp(24px,4vw,56px);top:clamp(20px,3vw,40px);pointer-events:auto;
     font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:rgba(3,3,3,.45)}
   .sound.is-on{color:var(--ink)}
-  .credit{position:absolute;right:clamp(24px,4vw,56px);top:clamp(22px,3vw,42px);font-size:11px;color:rgba(3,3,3,.4)}
+  .credit{position:absolute;right:clamp(88px,10vw,140px);top:clamp(22px,3vw,42px);font-size:11px;color:rgba(3,3,3,.4)}
   .midline{position:absolute;left:0;right:0;top:50%;transform:translateY(-50%);
     display:flex;align-items:center;justify-content:space-between;padding:0 clamp(24px,4vw,56px);gap:20px}
   .mid-logo{display:flex;align-items:center;gap:10px;text-decoration:none;color:inherit;pointer-events:auto;min-width:150px}
@@ -492,42 +492,37 @@ const viewMat = new THREE.ShaderMaterial({
       float dens = texture2D(uDensity, vUv).r;
       vec2 vel = texture2D(uVelocity, vUv).xy;
 
-      // density → soft organic reveal (NOT a hard blob)
-      float mask = smoothstep(0.045, 0.30, dens);
-      // liquid edge band — velocity warps only here
+      // density → soft liquid reveal (IG)
+      float mask = smoothstep(0.02, 0.22, dens);
       float edge = mask * (1.0 - mask) * 4.0;
 
-      // scroll also lifts a soft band of relief into the field
       float bandY = mix(1.25, 0.36, clamp(uScroll * 1.1, 0.0, 1.0));
       float bandH = mix(0.0, 0.46, smoothstep(0.01, 0.48, uScroll));
       float inBand = 1.0 - smoothstep(bandH, bandH + 0.12, abs(vUv.y - bandY));
       inBand *= smoothstep(0.0, 0.07, uScroll) * uReveal;
-      float open = max(mask, inBand * 0.92);
+      float open = max(mask, inBand * 0.95);
 
       vec2 iuv = coverUv(vUv, 16.0/9.0);
-      // map scroll band into image
       float by = clamp((vUv.y - (bandY - bandH)) / max(bandH * 2.15, 0.001), 0.0, 1.0);
       iuv.y = mix(iuv.y, mix(0.12, 0.9, by), smoothstep(0.02, 0.35, uScroll));
       iuv.x = clamp((iuv.x - 0.5) / mix(1.12, 1.0, uScroll) + 0.5, 0.0, 1.0);
-      // edge-only ripple (IG trick)
-      iuv = clamp(iuv - vel * 0.018 * edge, 0.001, 0.999);
+      // velocity ripples ONLY the wet edge
+      iuv = clamp(iuv - vel * 0.022 * edge, 0.001, 0.999);
 
       vec3 img = texture2D(uImage, iuv).rgb;
       float g = dot(img, vec3(0.299, 0.587, 0.114));
-      img = mix(img, vec3(g), 0.28);
-      img = mix(img, plaster, 0.12);
+      img = mix(img, vec3(g * 0.92 + 0.04), 0.18);
 
       float dL = texture2D(uDepth, clamp(iuv+vec2(-0.002,0.),0.,1.)).r;
       float dR = texture2D(uDepth, clamp(iuv+vec2( 0.002,0.),0.,1.)).r;
       float dD = texture2D(uDepth, clamp(iuv+vec2(0.,-0.002),0.,1.)).r;
       float dU = texture2D(uDepth, clamp(iuv+vec2(0., 0.002),0.,1.)).r;
-      vec3 N = normalize(vec3(dL-dR, dD-dU, 0.45));
-      vec3 L = normalize(vec3((uMouse.x-0.5)*0.85, (uMouse.y-0.5)*0.85, 1.0));
-      img *= 0.6 + clamp(dot(N, L), 0., 1.) * 0.42;
+      vec3 N = normalize(vec3(dL-dR, dD-dU, 0.5));
+      vec3 Ldir = normalize(vec3((uMouse.x-0.5)*0.7, (uMouse.y-0.5)*0.7, 1.15));
+      img *= 0.72 + clamp(dot(N, Ldir), 0., 1.) * 0.38;
 
       vec3 col = mix(plaster, img, open);
-      // wet rim on fluid edge
-      col += img * edge * 0.07;
+      col += img * edge * 0.1;
 
       gl_FragColor = vec4(col, 1.0);
     }
@@ -692,7 +687,7 @@ function frame() {
       splatMat.uniforms.uPoint.value.copy(mouse);
       splatMat.uniforms.uPrev.value.copy(prevMouse);
       splatMat.uniforms.uColor.value.set(fx, fy, 0);
-      splatMat.uniforms.uRadius.value = isMobile ? 0.028 : 0.022;
+      splatMat.uniforms.uRadius.value = isMobile ? 0.034 : 0.026;
     });
     [velA, velB] = [velB, velA];
   }
@@ -721,7 +716,7 @@ function frame() {
   runPass(advectMat, densityB, () => {
     advectMat.uniforms.uVelocity.value = velA.texture;
     advectMat.uniforms.uSource.value = densityA.texture;
-    advectMat.uniforms.uDissipation.value = 0.986;
+    advectMat.uniforms.uDissipation.value = 0.988;
     advectMat.uniforms.uDt.value = dt;
   });
   [densityA, densityB] = [densityB, densityA];
@@ -731,8 +726,8 @@ function frame() {
       splatMat.uniforms.uTarget.value = densityA.texture;
       splatMat.uniforms.uPoint.value.copy(mouse);
       splatMat.uniforms.uPrev.value.copy(prevMouse);
-      splatMat.uniforms.uColor.value.set(0.85, 0, 0);
-      splatMat.uniforms.uRadius.value = isMobile ? 0.03 : 0.024;
+      splatMat.uniforms.uColor.value.set(1.0, 0, 0);
+      splatMat.uniforms.uRadius.value = isMobile ? 0.036 : 0.028;
     });
     [densityA, densityB] = [densityB, densityA];
   }
