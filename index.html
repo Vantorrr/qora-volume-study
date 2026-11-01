@@ -1,818 +1,199 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-<title>Architecture — Forms in motion</title>
-<meta name="theme-color" content="#e8e8e8" />
-<style>
-  @font-face{font-family:PSTimes;src:url("./assets/fonts/PSTimes.woff2") format("woff2");font-display:swap}
-  @font-face{font-family:HelveticaNeueRegular;src:url("./assets/fonts/HelveticaNeue.woff2") format("woff2");font-display:swap}
-  :root{--bg:#e8e8e8;--ink:#030303}
-  *{box-sizing:border-box;margin:0;padding:0}
-  html.lenis,html.lenis body{height:auto}
-  html,body{width:100%;min-height:100%;background:var(--bg);color:var(--ink);
-    font-family:HelveticaNeueRegular,Helvetica,Arial,sans-serif;-webkit-font-smoothing:antialiased}
-  body{overflow-x:hidden}
-  #webgl{position:fixed;inset:0;width:100%;height:100%;display:block;z-index:1;opacity:0;pointer-events:none}
-  .scroll-spacer{height:420vh;width:1px;pointer-events:none}
-  .sound-cue{position:fixed;left:50%;bottom:max(64px,env(safe-area-inset-bottom));transform:translateX(-50%);
-    z-index:20;font-size:12px;letter-spacing:.2em;text-transform:uppercase;color:rgba(3,3,3,.55);
-    pointer-events:auto;cursor:pointer;background:none;border:0;font:inherit;padding:10px 14px;
-    transition:opacity .5s}
-  .sound-cue.is-hide{opacity:0;pointer-events:none}
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#e9e8e4"><title>OBSERVATORY — Architecture in Presence</title><style>
+:root{--bg:#e9e8e4;--ink:#292923;--muted:#77776d;--progress:0}*{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;background:var(--bg);color:var(--ink);font-family:Arial,Helvetica,sans-serif;overflow-x:hidden}button{font:inherit;cursor:pointer}a{color:inherit}#intro{position:fixed;inset:0;z-index:20;background:var(--bg);display:grid;place-items:center;transition:opacity .8s,visibility .8s}#intro.off{opacity:0;visibility:hidden}#intro strong{font:normal clamp(48px,8vw,130px)/.9 Georgia,serif;letter-spacing:-.07em}#intro small{display:block;text-align:center;margin-top:30px;letter-spacing:.24em;font-size:10px;text-transform:uppercase}.top{position:fixed;z-index:12;top:0;left:0;right:0;padding:28px 4.5vw;display:flex;justify-content:space-between;align-items:center;mix-blend-mode:multiply}.brand{font:italic 25px Georgia,serif;text-decoration:none}.top .right{display:flex;gap:25px;align-items:center}.top button{border:0;background:none;text-transform:uppercase;font-size:10px;letter-spacing:.16em;padding:10px 0}.top .index{font-size:10px;letter-spacing:.16em}.hero{height:100vh;min-height:580px;position:sticky;top:0;overflow:hidden;background:#d9d9d5}.scene{position:absolute;inset:0;overflow:hidden;pointer-events:none}.scene img,.scene canvas{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center 46%}.scene img{filter:grayscale(1) contrast(.75) brightness(1.2);transform:scale(1.03)}.scene canvas{z-index:2;opacity:0;transition:opacity .8s}.scene.webgl canvas{opacity:1}.scene.webgl img{opacity:0}.scene.canvas-mode img{opacity:0}.scene.canvas-mode .depth-fallback{opacity:1;z-index:2;filter:grayscale(.35)}.ripple-layer{position:absolute;inset:0;z-index:3;pointer-events:none;opacity:1!important;filter:none!important}.wash{position:absolute;inset:0;z-index:3;pointer-events:none;background:linear-gradient(90deg,rgba(233,232,228,.50),transparent 38%,rgba(233,232,228,.04)),linear-gradient(0deg,rgba(233,232,228,.38),transparent 19%)}.hero-title{position:absolute;z-index:4;left:5vw;top:30%;pointer-events:none;transition:opacity .2s;will-change:opacity}.eyebrow{font-size:10px;letter-spacing:.24em;text-transform:uppercase}.hero-title h1{font:normal clamp(60px,8vw,125px)/.88 Georgia,serif;letter-spacing:-.085em;margin:25px 0}.hero-title h1 em{font-weight:normal}.hero-title p{font-size:13px;line-height:1.7;max-width:280px}.bottom{position:absolute;z-index:4;bottom:34px;left:5vw;right:5vw;display:flex;justify-content:space-between;align-items:end;text-transform:uppercase;font-size:10px;letter-spacing:.15em}.bottom span{line-height:1.8}.progress{width:110px;height:1px;background:#aaa;margin-top:12px}.progress:before{content:'';display:block;width:calc(var(--progress)*100%);height:100%;background:#292923}.story{position:relative;z-index:5;height:330vh;pointer-events:none}.moment{height:110vh;display:flex;align-items:center;padding:0 7vw}.moment:first-child{padding-top:25vh}.moment:nth-child(2){justify-content:flex-end}.moment .copy{max-width:380px;background:rgba(233,232,228,.91);padding:30px 34px;backdrop-filter:blur(15px)}.moment h2{font:normal clamp(42px,5vw,80px)/1 Georgia,serif;letter-spacing:-.06em;margin:17px 0}.moment p{font-size:13px;line-height:1.75}.closing{min-height:85vh;background:var(--bg);position:relative;z-index:6;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:80px 25px}.closing h2{font:normal clamp(54px,9vw,145px)/.93 Georgia,serif;letter-spacing:-.075em;max-width:1100px;margin:24px auto}.closing p{font-size:13px;line-height:1.8;max-width:490px}.credit{font-size:10px;color:var(--muted);margin-top:65px;line-height:1.8}.hint{position:fixed;z-index:7;bottom:20px;left:50%;transform:translateX(-50%);font-size:10px;letter-spacing:.15em;pointer-events:none;text-transform:uppercase}#fallback{position:fixed;right:16px;bottom:15px;z-index:10;font-size:10px;color:#555;display:none}@media(max-width:700px){.top{padding:20px}.top .index{display:none}.hero-title{left:7vw;top:25%}.hero-title h1{font-size:15vw}.hero-title p{max-width:230px}.moment{padding:0 5vw}.moment .copy{padding:22px}.wash{background:linear-gradient(90deg,rgba(233,232,228,.7),transparent 80%),linear-gradient(0deg,rgba(233,232,228,.8),transparent 30%)}.bottom{left:7vw;right:7vw}.hint{display:none}}@media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}#intro{display:none}}
 
-  /* LOADER — IG */
-  .introLoader{position:fixed;inset:0;z-index:1010;color:#030303}
-  .introLoader.is-done{pointer-events:none;visibility:hidden}
-  .introLoader__bg{position:absolute;inset:0;background:#e8e8e8}
-  .introLoader__wrapper{position:relative;z-index:2;height:100%;max-width:2088px;margin:0 auto;padding:0 16px;
-    display:grid;grid-template-columns:repeat(12,1fr);column-gap:16px;align-items:center}
-  .introLoader__logo{grid-column:2/4}
-  .introLoader__logo svg{display:block;width:76%;min-width:160px;opacity:0}
-  .introLoader__progressWrapper{grid-column:4/10;position:relative;font-family:PSTimes,serif;
-    font-size:clamp(28px,1.944vw,37px);line-height:1.2}
-  .introLoader__progressBar{position:absolute;top:.5em;left:0;width:100%;height:100%;display:flex;opacity:.2}
-  .introLoader__progressBar>div{width:100%;height:1px;background:currentColor;transform:scaleX(0);transform-origin:0 0}
-  .introLoader__baseline{display:flex;flex-wrap:wrap;gap:.33em;margin-top:-.2em}
-  .introLoader__baseline>div{opacity:0}
-  .introLoader__scrollDown{grid-column:10/13;font-size:14px;opacity:0}
-  .introLoader__scrollDown .num{opacity:.6;font-variant-numeric:tabular-nums}
-  @media(max-width:1024px){
-    .introLoader__logo{grid-column:1/5}
-    .introLoader__progressWrapper,.introLoader__scrollDown{grid-column:1/12}
-  }
+.scene.webgl canvas{opacity:1;filter:none}.scene.webgl img{opacity:0}.hero{touch-action:pan-y}@media(prefers-reduced-motion:reduce){.scene canvas{display:none!important}.scene img{opacity:1!important}}
 
-  .chrome{position:fixed;inset:0;z-index:10;pointer-events:none;opacity:0}
-  .chrome.is-on{opacity:1}
-  .nav-top{position:absolute;top:clamp(20px,3vw,40px);right:clamp(24px,4vw,56px);pointer-events:auto}
-  .nav-top button,.sound{background:none;border:0;font:inherit;font-size:13px;color:var(--ink);cursor:pointer}
-  .sound{position:absolute;left:clamp(24px,4vw,56px);top:clamp(20px,3vw,40px);pointer-events:auto;
-    font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:rgba(3,3,3,.45)}
-  .sound.is-on{color:var(--ink)}
-  .credit{position:absolute;right:clamp(88px,10vw,140px);top:clamp(22px,3vw,42px);font-size:11px;color:rgba(3,3,3,.4)}
-  .midline{position:absolute;left:0;right:0;top:50%;transform:translateY(-50%);
-    display:flex;align-items:center;justify-content:space-between;padding:0 clamp(24px,4vw,56px);gap:20px}
-  .mid-logo{display:flex;align-items:center;gap:10px;text-decoration:none;color:inherit;pointer-events:auto;min-width:150px}
-  .mid-logo svg{width:28px;height:28px}
-  .mid-logo span{font-size:11px;letter-spacing:.28em;text-transform:uppercase}
-  .mid-title{flex:1;text-align:center;font-family:PSTimes,serif;font-size:clamp(22px,1.944vw,37px);transition:opacity .55s,transform .55s}
-  .mid-title.is-dim{opacity:0;transform:translateY(-10px)}
-  .mid-scroll{min-width:150px;text-align:right;font-size:14px;opacity:.85;transition:opacity .4s}
-  .mid-side{min-width:150px}
-  .mid-scroll.is-hide{opacity:0}
-  .panel{position:absolute;left:clamp(24px,4vw,56px);bottom:clamp(88px,14vh,150px);max-width:min(420px,86vw);
-    opacity:0;transform:translateY(16px);transition:opacity .55s,transform .55s;pointer-events:none}
-  .panel.is-on{opacity:1;transform:translateY(0)}
-  .panel h2{font-family:PSTimes,serif;font-size:clamp(28px,3.6vw,40px);font-weight:400;line-height:1.05;margin-bottom:10px}
-  .panel p{font-size:14px;line-height:1.55;color:rgba(3,3,3,.7);max-width:34ch}
-  .bot-left{position:absolute;left:clamp(24px,4vw,56px);bottom:clamp(20px,3vw,40px);pointer-events:auto}
-  .bot-left a{font-size:13px;color:inherit;text-decoration:none}
-  .bot-right{position:absolute;right:clamp(24px,4vw,56px);bottom:clamp(24px,3vw,44px)}
-  .dot{width:5px;height:5px;border-radius:50%;background:#030303;margin-left:auto}
-  .rail{width:1px;height:72px;background:rgba(3,3,3,.12);position:relative;margin-bottom:14px;margin-left:auto}
-  .rail>i{position:absolute;top:0;left:0;width:100%;height:0%;background:#030303}
-  .hint{position:fixed;left:50%;bottom:48px;transform:translateX(-50%);z-index:12;
-    font-size:11px;letter-spacing:.22em;text-transform:uppercase;color:rgba(3,3,3,.35);
-    pointer-events:none;transition:opacity .6s}
-  .hint.is-hide{opacity:0}
-  .menu-sheet{position:fixed;inset:0;z-index:40;background:rgba(232,232,232,.97);
-    display:grid;place-items:center;opacity:0;visibility:hidden;transition:.35s;pointer-events:none}
-  .menu-sheet.is-open{opacity:1;visibility:visible;pointer-events:auto}
-  .menu-sheet a,.menu-sheet button{font-family:PSTimes,serif;font-size:clamp(28px,5vw,44px);
-    color:inherit;background:none;border:0;text-decoration:none;cursor:pointer;display:block;margin:16px auto}
-  .menu-close{position:absolute!important;top:28px;right:40px;font-family:HelveticaNeueRegular,sans-serif!important;font-size:13px!important}
+/* Restored immersive sequence: hero remains pinned while the story scrolls. */
+.experience{position:relative;min-height:380vh;isolation:isolate}
+.experience>.hero{position:sticky;top:0;height:100vh;min-height:0;z-index:1}
+.experience>.story{position:relative;z-index:2;margin-top:-100vh;pointer-events:none}
+.experience>.story .moment{height:100vh;min-height:640px;display:flex;align-items:center;pointer-events:none}
+.experience>.story .copy{pointer-events:none;max-width:470px;backdrop-filter:blur(3px);background:rgba(240,237,229,.48);padding:clamp(22px,3vw,45px);border:1px solid rgba(255,255,255,.4)}
+.experience>.story .moment:first-child .copy{opacity:0}
+.scene img{filter:none;transform:none}
+.wash{background:linear-gradient(90deg,rgba(232,230,222,.12),transparent 50%),linear-gradient(0deg,rgba(232,230,222,.08),transparent 25%)}
+.scene.webgl canvas{opacity:1!important}
+@media(max-width:700px){.experience>.story .copy{margin:0 5vw;max-width:90vw}.experience>.story .moment{align-items:flex-end;padding-bottom:15vh}.experience>.story .moment:first-child{height:100vh}}
 
-  /* mobile */
-  @media(max-width:768px){
-    .credit{display:none}
-    .sound{letter-spacing:.12em;font-size:10px;left:16px;top:18px}
-    .nav-top{right:16px;top:18px}
-    .midline{top:auto;bottom:42%;padding:0 16px;flex-direction:column;gap:10px;align-items:flex-start}
-    .mid-logo{min-width:0}
-    .mid-title{text-align:left;font-size:clamp(20px,6.2vw,28px);max-width:18ch}
-    .mid-scroll{min-width:0;text-align:left;font-size:13px}
-    .panel{left:16px;right:16px;bottom:110px;max-width:none}
-    .panel h2{font-size:clamp(26px,7vw,34px)}
-    .panel p{font-size:13px;max-width:36ch}
-    .bot-left{left:16px;bottom:18px}
-    .bot-right{right:16px;bottom:22px;pointer-events:auto}
-    .rail{height:88px;width:2px}
-    .hint{bottom:max(28px,env(safe-area-inset-bottom));font-size:10px;letter-spacing:.16em}
-  }
-</style>
-</head>
-<body>
-  <div class="introLoader" id="loader">
-    <div class="introLoader__bg" id="loaderBg"></div>
-    <div class="introLoader__wrapper">
-      <div class="introLoader__logo" id="loaderLogo">
-        <svg viewBox="0 0 180 36" fill="none">
-          <defs><mask id="logoMask"><rect id="logoMaskRect" x="-118" y="0" width="180" height="36" fill="#fff"/></mask></defs>
-          <g mask="url(#logoMask)">
-            <path d="M14 2.5 L26 8.5 V20.5 L14 31.5 L2 20.5 V8.5 Z" stroke="#030303" stroke-width="1.15" fill="none"/>
-            <path d="M9.2 22.2 V12.8 H13.4 C15.55 12.8 16.85 13.95 16.85 15.85 C16.85 17.7 15.55 18.85 13.4 18.85 H11.2 V22.2 H9.2 Z M11.2 17.2 H13.25 C14.35 17.2 14.85 16.75 14.85 15.85 C14.85 14.95 14.35 14.5 13.25 14.5 H11.2 V17.2 Z" fill="#030303"/>
-            <text x="34" y="22.5" fill="#030303" font-family="Helvetica,Arial,sans-serif" font-size="11" letter-spacing="3.2">QORA</text>
-          </g>
-        </svg>
-      </div>
-      <div class="introLoader__progressWrapper">
-        <div class="introLoader__progressBar"><div id="progressLine"></div></div>
-        <div class="introLoader__baseline" id="baseline">
-          <div>Architecture</div><div>as</div><div>presence</div>
-        </div>
-      </div>
-      <div class="introLoader__scrollDown" id="scrollDown"><div><div class="num" id="loadPct">0</div></div></div>
-    </div>
-  </div>
+/* Final presentation refinements */
+.top{z-index:12}.experience{min-height:420vh}.experience>.story .copy{background:rgba(240,238,232,.26);backdrop-filter:blur(1px);border:0;box-shadow:none}
+.scene.webgl canvas{will-change:contents}.scene{background:#b7aea1}
+.wash{background:linear-gradient(90deg,rgba(231,228,220,.11),transparent 48%)}
+.scroll-meter{position:fixed;z-index:15;right:24px;top:50%;transform:translateY(-50%);height:120px;width:1px;background:rgba(45,43,37,.25);pointer-events:none}
+.scroll-meter:before{content:'';display:block;width:2px;height:calc(var(--progress)*100%);background:#292923;transition:height .12s linear}
+.scroll-meter:after{content:'01 — 04';position:absolute;right:12px;top:0;white-space:nowrap;font:10px Arial,sans-serif;letter-spacing:.16em;writing-mode:vertical-rl}
+@media(max-width:700px){.scroll-meter{right:12px;height:80px}.scroll-meter:after{display:none}.experience>.story .copy{background:rgba(240,238,232,.48)}}
 
-  <canvas id="webgl"></canvas>
-  <div class="scroll-spacer" aria-hidden="true"></div>
-  <div class="hint" id="moveHint">Scroll to enter</div>
-  <button class="sound-cue" id="soundCue" type="button">Sound</button>
-
-  <div class="chrome" id="chrome">
-    <button class="sound" id="soundBtn" type="button">Sound off</button>
-    <div class="credit">Marble bas-relief · study</div>
-    <div class="nav-top"><button type="button" id="menuBtn">Menu</button></div>
-    <div class="midline">
-      <div class="mid-side brand"><i style="font:italic 22px Georgia,serif;letter-spacing:0;text-transform:none">Form.</i></div>
-      <div class="mid-title" id="midTitle">Architecture as presence</div>
-      <div class="mid-scroll" id="midScroll">Scroll down</div>
-    </div>
-    <div class="panel" id="panel">
-      <h2 id="panelTitle">From the plane</h2>
-      <p id="panelText">Scroll lets the architectural bas-relief flow through the field. Move to find the light.</p>
-    </div>
-    <div class="bot-left"><a href="https://qora.group" target="_blank" rel="noopener">See all</a></div>
-    <div class="bot-right"><div class="rail"><i id="rail"></i></div><div class="dot"></div></div>
-  </div>
-
-  <div class="menu-sheet" id="menu">
-    <button class="menu-close" type="button" id="menuClose">Close</button>
-    <div>
-      <button type="button" data-jump="0">Home</button>
-      <a href="https://qora.group" target="_blank" rel="noopener">qora.group</a>
-      <a href="https://t.me/pavel_xdev" target="_blank" rel="noopener">@pavel_xdev</a>
-    </div>
-  </div>
-
-<script src="https://cdn.jsdelivr.net/npm/howler@2.2.4/dist/howler.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js"></script>
-<script type="importmap">{ "imports": {
-  "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
-  "lenis": "https://cdn.jsdelivr.net/npm/lenis@1.1.18/+esm"
-} }</script>
-<script type="module">
-/**
- * IG stack: Lenis scroll + Howler ambient + fluid density reveal
- */
-import * as THREE from 'three';
-import Lenis from 'lenis';
-
-const $ = (id) => document.getElementById(id);
-const loader = $('loader');
-const progressLine = $('progressLine');
-const loadPct = $('loadPct');
-const baselineWords = [...document.querySelectorAll('#baseline > div')];
-const scrollDown = $('scrollDown');
-const logoMaskRect = $('logoMaskRect');
-const loaderLogo = $('loaderLogo');
-const loaderBg = $('loaderBg');
-const chrome = $('chrome');
-const webglEl = $('webgl');
-const moveHint = $('moveHint');
-const rail = $('rail');
-const midScroll = $('midScroll');
-const soundBtn = $('soundBtn');
-const menu = $('menu');
-const midTitle = $('midTitle');
-const panel = $('panel');
-const panelTitle = $('panelTitle');
-const panelText = $('panelText');
-
-const chapters = [
-  { at: 0.10, title: 'From the plane', text: 'Carved marble rises into the field. Not a gallery — a presence you travel through.' },
-  { at: 0.40, title: 'Architectural form', text: 'Scroll moves along the relief. Light finds the stone. Inspiration, nothing for sale.' },
-  { at: 0.70, title: 'Your architecture next', text: 'The same atmosphere on your renders — façade, detail, interior.' },
-];
-
-// ——— sound: exact IG home theme (IG_HomePage_v5_v4.mp3) ———
-const soundCue = $('soundCue');
-let soundOn = false;
-const AMBIENT_URL = new URL('./assets/sounds/ambient_loop.mp3', import.meta.url).href;
-const CLICK_URL = new URL('./assets/sounds/click.mp3', import.meta.url).href;
-const MUSIC_VOL = 1;
-
-const music = new Howl({
-  src: [AMBIENT_URL],
-  loop: true,
-  volume: MUSIC_VOL,
-  preload: true,
-  html5: false, // WebAudio — html5 play() was silently failing
-});
-const tick = new Howl({ src: [CLICK_URL], volume: 0.25, preload: true, html5: false });
-
-music.on('loaderror', (_id, err) => console.error('[sound] ambient loaderror', err, AMBIENT_URL));
-music.on('playerror', (_id, err) => console.error('[sound] ambient playerror', err));
-
-function setSoundUI(on) {
-  soundOn = on;
-  soundBtn.textContent = on ? 'Sound on' : 'Sound off';
-  soundBtn.classList.toggle('is-on', on);
-  soundCue.classList.toggle('is-hide', on);
+/* Commission presentation: photographic clarity and sequential editorial restraint */
+.scene{background:#c9c1b4}.wash{background:linear-gradient(90deg,rgba(235,232,224,.10),transparent 45%)!important}
+.experience>.story .copy{max-width:390px;background:rgba(240,238,231,.58);padding:25px 29px;backdrop-filter:blur(7px)}
+.experience>.story .moment:nth-child(2){align-items:flex-end;padding-bottom:12vh}
+.experience>.story .moment:nth-child(3){align-items:center;justify-content:flex-start}
+.hero-title{top:25%}.hero-title h1{font-size:clamp(56px,7.2vw,112px)}
+@media(max-width:700px){.experience>.story .moment:nth-child(2){align-items:flex-end;padding-bottom:17vh}.hero-title{top:20%}}
+</style></head><body><div id="intro"><div><strong>Observatory.</strong><small>Architecture, felt in space</small></div></div><header class="top"><a href="#top" class="brand">Observatory.</a><div class="right"><span class="index">An architectural encounter</span><button id="audio" aria-pressed="false">Sound off</button></div></header><div class="scroll-meter" aria-hidden="true"></div><main id="top"><div class="experience"><section class="hero"><div class="scene" id="scene"><img src="assets/hero.jpg" alt="Photograph of the observatory building used for the architectural depth study"></div><div class="wash"></div><div class="hero-title"><span class="eyebrow">Architecture / An immersive encounter</span><h1>Form.<br><em>Light.</em><br>Presence.</h1><p>An architectural journey through light, texture and depth. Scroll to bring the building forward. Move your cursor to touch the surface.</p></div><div class="bottom"><span>Architectural photograph / Domed façade<br>Light, form and spatial perception</span><span>Scroll to reveal<div class="progress"></div></span></div></section><div class="story"><section class="moment"><div class="copy"><span class="eyebrow">01 / The photograph</span><h2>A façade in full colour.</h2><p>Brick, vertical window bays and a domed roof. Every movement begins with the photographed structure itself.</p></div></section><section class="moment"><div class="copy"><span class="eyebrow">02 / The relief</span><h2>Beyond the photograph.</h2><p>The facade emerges from the image. Its surfaces move in space as the viewpoint travels around the architecture.</p></div></section><section class="moment"><div class="copy"><span class="eyebrow">03 / The light</span><h2>Touch the light.</h2><p>Light bends gently around your pointer, close to the surface. The architecture remains the centre of the experience.</p></div></section></div></div><section class="closing"><span class="eyebrow">Architecture / reimagined</span><h2>Architecture<br><em>felt, not just seen.</em></h2><p>On your architectural photographs, the same pipeline applies: image preparation, depth mapping, interactive light and scroll-directed relief.</p><div class="credit">Architectural interaction concept · Demonstration imagery</div></section></main><div class="hint">Move to reveal · Scroll to reveal</div><div id="fallback">Local depth renderer active</div>
+<script>
+(()=>{
+'use strict';
+const scene=document.getElementById('scene'),intro=document.getElementById('intro'),audio=document.getElementById('audio');
+const reduce=matchMedia('(prefers-reduced-motion: reduce)').matches;
+const photo=scene.querySelector('img');
+const pointer={x:.5,y:.5,tx:.5,ty:.5,strength:0,goal:0};
+const trails=Array.from({length:7},()=>({x:.5,y:.5}));
+let progress=0,scrollTarget=0,lastMove=0;
+const heroTitle=document.querySelector('.hero-title');
+function scrollUpdate(){const height=Math.max(1,document.querySelector('.experience').offsetHeight-innerHeight);scrollTarget=Math.min(1,Math.max(0,scrollY/height));document.documentElement.style.setProperty('--progress',scrollTarget.toFixed(3));heroTitle.style.opacity=String(Math.max(0,1-scrollY/Math.max(300,innerHeight*.72)));}
+addEventListener('scroll',scrollUpdate,{passive:true});scrollUpdate();
+addEventListener('pointermove',e=>{pointer.tx=e.clientX/innerWidth;pointer.ty=1-e.clientY/innerHeight;pointer.goal=1;lastMove=performance.now()},{passive:true});
+addEventListener('pointerleave',()=>pointer.goal=0,{passive:true});
+setTimeout(()=>intro.classList.add('off'),1050);
+let sound=null;audio.addEventListener('click',()=>{if(!sound){sound=new Audio('assets/ambient.mp3');sound.loop=true;sound.volume=.75;}if(sound.paused){sound.play().then(()=>{audio.textContent='Sound on';audio.setAttribute('aria-pressed','true')}).catch(()=>{audio.textContent='Sound unavailable'})}else{sound.pause();audio.textContent='Sound off';audio.setAttribute('aria-pressed','false')}});
+if(reduce)return;
+function smoothstep(a,b,x){const v=Math.max(0,Math.min(1,(x-a)/(b-a)));return v*v*(3-2*v)}
+function activate2D(){
+const c=document.createElement('canvas');c.setAttribute('aria-hidden','true');scene.appendChild(c);
+const ctx=c.getContext('2d',{alpha:false});if(!ctx)return;
+const img=new Image();img.src='assets/hero.jpg';let last=0,px=.5,py=.5,energy=0;
+function draw(t){requestAnimationFrame(draw);if(document.hidden||t-last<33||!img.complete||!img.naturalWidth)return;last=t;
+const w=Math.min(innerWidth,900),h=Math.round(w*innerHeight/innerWidth);
+if(c.width!==w||c.height!==h){c.width=w;c.height=h}
+progress+=(scrollTarget-progress)*.07;
+const zoom=1+.38*smoothstep(0,.86,progress);
+const scale=Math.max(w/img.width,h/img.height)*zoom,sw=w/scale,sh=h/scale;
+const sx=Math.max(0,Math.min(img.width-sw,(img.width-sw)/2+progress*img.width*.055));
+const sy=Math.max(0,Math.min(img.height-sh,(img.height-sh)/2-progress*img.height*.035));
+ctx.drawImage(img,sx,sy,sw,sh,0,0,w,h);
+px+=(pointer.tx-px)*.2;py+=(pointer.ty-py)*.2;
+const target=performance.now()-lastMove<420?1:0;energy+=(target-energy)*.09;
+if(energy>.01){const mx=px*w,my=(1-py)*h,rad=Math.min(w,h)*.22;
+for(let i=-20;i<=20;i++){const y=my+i*rad/20;if(y<0||y>=h)continue;const d=Math.abs(i)/20,fade=Math.pow(1-d,2)*energy;const shift=Math.sin(i*.85-t*.004)*rad*.10*fade;
+const yy=Math.floor(y),hh=Math.max(2,Math.ceil(rad/20));const sourceY=sy+(yy/h)*sh;
+ctx.drawImage(img,Math.max(0,Math.min(img.width-sw,sx+shift/scale)),sourceY,sw,hh/scale,0,yy,w,hh);
 }
-
-async function enableSound() {
-  setSoundUI(true);
-  try {
-    if (Howler.ctx && Howler.ctx.state !== 'running') await Howler.ctx.resume();
-  } catch (_) {}
-  Howler.mute(false);
-  Howler.volume(1);
-
-  const kick = () => {
-    if (music.playing()) {
-      music.volume(MUSIC_VOL);
-      return;
-    }
-    music.volume(0);
-    const id = music.play();
-    // audible immediately, then ease to full (IG ~2s)
-    if (id == null) {
-      // retry once on next tick (gesture / decode race)
-      requestAnimationFrame(() => {
-        music.volume(MUSIC_VOL);
-        music.play();
-      });
-      return;
-    }
-    music.fade(0, MUSIC_VOL, 2000, id);
-  };
-
-  if (music.state() === 'loaded') kick();
-  else music.once('load', kick);
+const glow=ctx.createRadialGradient(mx,my,0,mx,my,rad);glow.addColorStop(0,'rgba(255,248,229,'+(.16*energy)+')');glow.addColorStop(1,'rgba(255,248,229,0)');ctx.fillStyle=glow;ctx.fillRect(mx-rad,my-rad,rad*2,rad*2);
 }
-
-function disableSound() {
-  setSoundUI(false);
-  const v = music.volume();
-  music.fade(typeof v === 'number' ? v : MUSIC_VOL, 0, 400);
-  setTimeout(() => { if (!soundOn) music.stop(); }, 450);
+ctx.fillStyle='rgba(234,232,227,.025)';ctx.fillRect(0,0,w,h);
 }
-
-soundBtn.onclick = (e) => {
-  e.preventDefault();
-  e.stopPropagation();
-  if (!soundOn || !music.playing()) {
-    try { tick.play(); } catch (_) {}
-    enableSound();
-  } else {
-    try { tick.play(); } catch (_) {}
-    disableSound();
-  }
-};
-soundCue.onclick = (e) => {
-  e.preventDefault();
-  e.stopPropagation();
-  try { tick.play(); } catch (_) {}
-  enableSound();
-};
-
-// first real user gesture unlocks audio (IG pattern)
-const unlock = () => {
-  enableSound();
-  window.removeEventListener('pointerdown', unlock, true);
-  window.removeEventListener('keydown', unlock, true);
-};
-window.addEventListener('pointerdown', unlock, { once: true, capture: true });
-window.addEventListener('keydown', unlock, { once: true, capture: true });
-
-// ——— LOADER ———
-const loadState = { p: 0 };
-let assetProgress = 0;
-let outroStarted = false;
-const MIN_LOAD_MS = 3200;
-const t0 = performance.now();
-
-function playIntroIn() {
-  const tl = gsap.timeline();
-  gsap.set(loaderLogo.querySelector('svg'), { opacity: 1 });
-  tl.fromTo(logoMaskRect, { attr: { x: -118 } }, { attr: { x: 0 }, duration: 2.5, ease: 'quart.out' }, 0);
-  tl.fromTo(baselineWords, { opacity: 0 }, { opacity: 1, duration: 1, ease: 'sine.inOut', stagger: 0.1 }, 0.3);
-  tl.fromTo(scrollDown, { opacity: 0 }, { opacity: 1, duration: 0.8, ease: 'sine.inOut' }, 0.35);
+img.onload=()=>{scene.classList.add('webgl');document.documentElement.dataset.renderer='canvas-fallback';requestAnimationFrame(draw)};
 }
-function playIntroOut() {
-  const tl = gsap.timeline({
-    onComplete: () => { loader.classList.add('is-done'); },
-  });
-  tl.add(() => { loadPct.textContent = 'Scroll down'; loadPct.style.opacity = '1'; }, 0);
-  tl.to(progressLine.parentElement, { opacity: 0, duration: 1.2, ease: 'sine.inOut' }, 0);
-  tl.to(baselineWords, { opacity: 0, duration: 1, ease: 'sine.inOut', stagger: -0.1 }, 0.15);
-  tl.to(logoMaskRect, { attr: { x: -118 }, duration: 2, ease: 'quart.inOut' }, 0);
-  tl.to(loaderLogo, { opacity: 0, duration: 0.5, ease: 'sine.inOut' }, 1.9);
-  tl.to(scrollDown, { opacity: 0, duration: 0.8, ease: 'sine.inOut' }, 1.9);
-  tl.to(loaderBg, { opacity: 0, duration: 1.2, ease: 'sine.inOut' }, 2.0);
-  tl.to(webglEl, { opacity: 1, duration: 1.15, ease: 'sine.inOut' }, 2.05);
-  tl.add(() => {
-    chrome.classList.add('is-on');
-    gsap.fromTo(chrome, { opacity: 0 }, { opacity: 1, duration: 0.9, ease: 'sine.inOut' });
-    try { lenis.start(); } catch (_) {}
-  }, 2.2);
-}
-function tickLoader() {
-  const elapsed = performance.now() - t0;
-  const timeP = Math.min(1, elapsed / MIN_LOAD_MS);
-  const ready = assetProgress >= 1 && elapsed >= MIN_LOAD_MS;
-  const goal = ready ? 1 : Math.min(0.97, Math.max(assetProgress * 0.95, timeP * 0.9));
-  loadState.p += (goal - loadState.p) * (ready ? 0.14 : 0.06);
-  if (ready && loadState.p > 0.995) loadState.p = 1;
-  gsap.set(progressLine, { scaleX: loadState.p });
-  if (loadPct.textContent !== 'Scroll down') loadPct.textContent = String(Math.round(loadState.p * 100));
-  if (loadState.p < 1) requestAnimationFrame(tickLoader);
-  else if (!outroStarted) {
-    outroStarted = true;
-    gsap.set(progressLine, { scaleX: 1 });
-    loadPct.textContent = '100';
-    gsap.delayedCall(0.5, playIntroOut);
-  }
-}
-playIntroIn();
-requestAnimationFrame(tickLoader);
-
-// ——— THREE + FLUID FLOWMAP ———
-const canvas = $('webgl');
-const renderer = new THREE.WebGLRenderer({ canvas, antialias: false, powerPreference: 'high-performance' });
-renderer.setClearColor(0xe8e8e8, 1);
-renderer.outputColorSpace = THREE.SRGBColorSpace;
-
-const scene = new THREE.Scene();
-const camera = new THREE.OrthographicCamera(-1, 1, 1, -1, 0, 1);
-
-const loaderTex = new THREE.TextureLoader();
-const A = (p) => new URL(`./assets/${p}`, import.meta.url).href;
-const [plasterMap, reliefMap, depthMap] = await Promise.all([
-  loaderTex.loadAsync(A('tex/plaster.jpg')),
-  loaderTex.loadAsync(A('tex/relief.jpg')),
-  loaderTex.loadAsync(A('tex/relief_depth.png')),
-]);
-assetProgress = 1;
-plasterMap.colorSpace = THREE.SRGBColorSpace;
-reliefMap.colorSpace = THREE.SRGBColorSpace;
-plasterMap.wrapS = plasterMap.wrapT = THREE.RepeatWrapping;
-plasterMap.repeat.set(2.2, 2.2);
-for (const t of [reliefMap, depthMap]) {
-  t.wrapS = t.wrapT = THREE.ClampToEdgeWrapping;
-  t.minFilter = THREE.LinearFilter;
-}
-
-// --- fluid ping-pong (IG-style: density = reveal, velocity = edge ripple) ---
-const isMobile = matchMedia('(max-width:768px), (pointer:coarse)').matches;
-const simRes = isMobile ? 180 : 280;
-const texel = 1 / simRes;
-
-function makeRT() {
-  return new THREE.WebGLRenderTarget(simRes, simRes, {
-    minFilter: THREE.LinearFilter,
-    magFilter: THREE.LinearFilter,
-    depthBuffer: false,
-    type: THREE.HalfFloatType,
-    format: THREE.RGBAFormat,
-  });
-}
-let densityA = makeRT(), densityB = makeRT();
-let velA = makeRT(), velB = makeRT();
-let pressureA = makeRT(), pressureB = makeRT();
-let divergence = makeRT();
-
-const quad = new THREE.PlaneGeometry(2, 2);
-const simScene = new THREE.Scene();
-const simCam = new THREE.OrthographicCamera(-1, 1, 1, -1, 0, 1);
-const simMesh = new THREE.Mesh(quad, new THREE.MeshBasicMaterial());
-simScene.add(simMesh);
-
-const VS = `varying vec2 vUv; void main(){ vUv=uv; gl_Position=vec4(position.xy,0.,1.); }`;
-
-const splatMat = new THREE.ShaderMaterial({
-  uniforms: {
-    uTarget: { value: null },
-    uPoint: { value: new THREE.Vector2() },
-    uPrev: { value: new THREE.Vector2() },
-    uColor: { value: new THREE.Vector3() },
-    uRadius: { value: 0.02 },
-    uAspect: { value: 1 },
-  },
-  vertexShader: VS,
-  fragmentShader: `
-    precision highp float;
-    uniform sampler2D uTarget;
-    uniform vec2 uPoint, uPrev;
-    uniform vec3 uColor;
-    uniform float uRadius, uAspect;
-    varying vec2 vUv;
-    float brush(vec2 uv, vec2 a, vec2 b, float r){
-      vec2 pa = uv - a; vec2 ba = b - a;
-      float h = clamp(dot(pa, ba) / max(dot(ba, ba), 1e-6), 0., 1.);
-      vec2 d = pa - ba * h; d.x *= uAspect;
-      return exp(-dot(d,d) / max(r*r, 1e-8));
-    }
-    void main(){
-      vec4 base = texture2D(uTarget, vUv);
-      float s = brush(vUv, uPrev, uPoint, uRadius);
-      gl_FragColor = vec4(base.rgb + uColor * s, 1.0);
-    }
-  `,
-});
-
-const advectMat = new THREE.ShaderMaterial({
-  uniforms: {
-    uVelocity: { value: null },
-    uSource: { value: null },
-    uDissipation: { value: 0.98 },
-    uDt: { value: 0.016 },
-    uTexel: { value: texel },
-  },
-  vertexShader: VS,
-  fragmentShader: `
-    precision highp float;
-    uniform sampler2D uVelocity, uSource;
-    uniform float uDissipation, uDt, uTexel;
-    varying vec2 vUv;
-    void main(){
-      vec2 vel = texture2D(uVelocity, vUv).xy;
-      vec2 uv = vUv - vel * uDt;
-      // soft clamp
-      uv = clamp(uv, uTexel, 1.0 - uTexel);
-      gl_FragColor = vec4(texture2D(uSource, uv).rgb * uDissipation, 1.0);
-    }
-  `,
-});
-
-const divergenceMat = new THREE.ShaderMaterial({
-  uniforms: { uVelocity: { value: null }, uTexel: { value: texel } },
-  vertexShader: VS,
-  fragmentShader: `
-    precision highp float;
-    uniform sampler2D uVelocity;
-    uniform float uTexel;
-    varying vec2 vUv;
-    void main(){
-      float L = texture2D(uVelocity, vUv - vec2(uTexel, 0.)).x;
-      float R = texture2D(uVelocity, vUv + vec2(uTexel, 0.)).x;
-      float B = texture2D(uVelocity, vUv - vec2(0., uTexel)).y;
-      float T = texture2D(uVelocity, vUv + vec2(0., uTexel)).y;
-      float div = 0.5 * (R - L + T - B);
-      gl_FragColor = vec4(div, 0., 0., 1.);
-    }
-  `,
-});
-
-const pressureMat = new THREE.ShaderMaterial({
-  uniforms: {
-    uPressure: { value: null },
-    uDivergence: { value: null },
-    uTexel: { value: texel },
-  },
-  vertexShader: VS,
-  fragmentShader: `
-    precision highp float;
-    uniform sampler2D uPressure, uDivergence;
-    uniform float uTexel;
-    varying vec2 vUv;
-    void main(){
-      float L = texture2D(uPressure, vUv - vec2(uTexel, 0.)).x;
-      float R = texture2D(uPressure, vUv + vec2(uTexel, 0.)).x;
-      float B = texture2D(uPressure, vUv - vec2(0., uTexel)).x;
-      float T = texture2D(uPressure, vUv + vec2(0., uTexel)).x;
-      float b = texture2D(uDivergence, vUv).x;
-      float p = (L + R + B + T - b) * 0.25;
-      gl_FragColor = vec4(p, 0., 0., 1.);
-    }
-  `,
-});
-
-const gradientMat = new THREE.ShaderMaterial({
-  uniforms: {
-    uPressure: { value: null },
-    uVelocity: { value: null },
-    uTexel: { value: texel },
-  },
-  vertexShader: VS,
-  fragmentShader: `
-    precision highp float;
-    uniform sampler2D uPressure, uVelocity;
-    uniform float uTexel;
-    varying vec2 vUv;
-    void main(){
-      float L = texture2D(uPressure, vUv - vec2(uTexel, 0.)).x;
-      float R = texture2D(uPressure, vUv + vec2(uTexel, 0.)).x;
-      float B = texture2D(uPressure, vUv - vec2(0., uTexel)).x;
-      float T = texture2D(uPressure, vUv + vec2(0., uTexel)).x;
-      vec2 vel = texture2D(uVelocity, vUv).xy;
-      vel -= 0.5 * vec2(R - L, T - B);
-      gl_FragColor = vec4(vel, 0., 1.);
-    }
-  `,
-});
-
-const clearMat = new THREE.ShaderMaterial({
-  uniforms: { uValue: { value: 0 } },
-  vertexShader: VS,
-  fragmentShader: `
-    precision highp float;
-    uniform float uValue; varying vec2 vUv;
-    void main(){ gl_FragColor = vec4(uValue, uValue, uValue, 1.0); }
-  `,
-});
-
-// Composite: plaster sealed / image revealed by density; velocity ripples ONLY the edge (IG)
-const viewUniforms = {
-  uPlaster: { value: plasterMap },
-  uImage: { value: reliefMap },
-  uDepth: { value: depthMap },
-  uDensity: { value: null },
-  uVelocity: { value: null },
-  uMouse: { value: new THREE.Vector2(0.5, 0.5) },
-  uScroll: { value: 0 },
-  uReveal: { value: 0 },
-  uTime: { value: 0 },
-  uRes: { value: new THREE.Vector2(1, 1) },
-};
-const viewMat = new THREE.ShaderMaterial({
-  uniforms: viewUniforms,
-  vertexShader: VS,
-  fragmentShader: `
-    precision highp float;
-    uniform sampler2D uPlaster, uImage, uDepth, uDensity, uVelocity;
-    uniform vec2 uMouse, uRes;
-    uniform float uScroll, uReveal, uTime;
-    varying vec2 vUv;
-
-    vec2 coverUv(vec2 uv, float imgAspect){
-      float aspect = uRes.x / max(uRes.y, 1.0);
-      vec2 iuv = uv;
-      if (aspect > imgAspect) iuv.y = (iuv.y - 0.5) * (imgAspect / aspect) + 0.5;
-      else iuv.x = (iuv.x - 0.5) * (aspect / imgAspect) + 0.5;
-      return iuv;
-    }
-
-    void main(){
-      // plaster wall pans with Lenis scroll
-      vec2 puv = vUv * vec2(uRes.x/uRes.y, 1.0) * 1.55;
-      puv.y += uScroll * 0.55;
-      vec3 plaster = texture2D(uPlaster, puv).rgb;
-      plaster = mix(plaster, vec3(0.905), 0.5);
-
-      float dens = texture2D(uDensity, vUv).r;
-      vec2 vel = texture2D(uVelocity, vUv).xy;
-
-      // mouse fluid = soft liquid reveal
-      float mask = smoothstep(0.02, 0.22, dens);
-      float edge = mask * (1.0 - mask) * 4.0;
-
-      // SCROLL JOURNEY (IG): relief fills the field as you scroll
-      float scrollOpen = smoothstep(0.01, 0.22, uScroll) * uReveal;
-      scrollOpen = mix(scrollOpen, 1.0, smoothstep(0.18, 0.65, uScroll) * 0.96);
-      float open = max(mask, scrollOpen);
-
-      vec2 iuv = coverUv(vUv, 2400.0/1500.0);
-      // image flows down through the frame with scroll
-      iuv.y += uScroll * 0.38;
-      iuv.x = (iuv.x - 0.5) / mix(1.08, 0.92, smoothstep(0.0, 0.8, uScroll)) + 0.5;
-      iuv = clamp(iuv - vel * 0.022 * edge, 0.001, 0.999);
-
-      vec3 img = texture2D(uImage, iuv).rgb;
-      float g = dot(img, vec3(0.299, 0.587, 0.114));
-      img = mix(img, vec3(g * 0.92 + 0.04), 0.15);
-
-      float dL = texture2D(uDepth, clamp(iuv+vec2(-0.002,0.),0.,1.)).r;
-      float dR = texture2D(uDepth, clamp(iuv+vec2( 0.002,0.),0.,1.)).r;
-      float dD = texture2D(uDepth, clamp(iuv+vec2(0.,-0.002),0.,1.)).r;
-      float dU = texture2D(uDepth, clamp(iuv+vec2(0., 0.002),0.,1.)).r;
-      vec3 N = normalize(vec3(dL-dR, dD-dU, mix(0.7, 0.35, scrollOpen)));
-      vec3 Ldir = normalize(vec3((uMouse.x-0.5)*0.7, (uMouse.y-0.5)*0.7, 1.15));
-      float lit = 0.62 + clamp(dot(N, Ldir), 0., 1.) * 0.55;
-      // volume reading grows with scroll
-      float depthBoost = mix(1.0, 0.78 + texture2D(uDepth, iuv).r * 0.4, scrollOpen);
-      img *= lit * depthBoost;
-
-      vec3 col = mix(plaster, img, open);
-      col += img * edge * 0.1;
-
-      gl_FragColor = vec4(col, 1.0);
-    }
-  `,
-});
-const viewMesh = new THREE.Mesh(quad, viewMat);
-scene.add(viewMesh);
-
-function fit() {
-  const w = innerWidth, h = innerHeight;
-  renderer.setPixelRatio(Math.min(devicePixelRatio, isMobile ? 1.5 : 2));
-  renderer.setSize(w, h, false);
-  viewUniforms.uRes.value.set(w, h);
-  splatMat.uniforms.uAspect.value = w / Math.max(h, 1);
-}
-addEventListener('resize', fit);
-fit();
-
-function runPass(mat, outputRT, update) {
-  simMesh.material = mat;
-  update && update();
-  renderer.setRenderTarget(outputRT);
-  renderer.render(simScene, simCam);
-  renderer.setRenderTarget(null);
-}
-
-// pointer → fluid
-const mouse = new THREE.Vector2(0.5, 0.5);
-const prevMouse = new THREE.Vector2(0.5, 0.5);
-const mouseSmooth = new THREE.Vector2(0.5, 0.5);
-let hasMoved = false;
-let pointerDown = false;
-let paintActive = false;
-
-function setPointerUV(x, y) {
-  prevMouse.copy(mouse);
-  mouse.set(x / innerWidth, 1 - y / innerHeight);
-  if (!hasMoved) {
-    hasMoved = true;
-    moveHint.classList.add('is-hide');
-  }
-}
-
-window.addEventListener('pointermove', (e) => {
-  setPointerUV(e.clientX, e.clientY);
-  if (e.pointerType === 'mouse' || pointerDown) paintActive = true;
-}, { passive: true });
-window.addEventListener('pointerdown', (e) => {
-  pointerDown = true;
-  paintActive = true;
-  setPointerUV(e.clientX, e.clientY);
-  prevMouse.copy(mouse);
-});
-window.addEventListener('pointerup', () => { pointerDown = false; });
-window.addEventListener('pointerleave', () => { pointerDown = false; paintActive = false; });
-
-// ——— Lenis scroll (same stack as Immersive Garden) ———
-let scrollP = 0;
-const lenis = new Lenis({
-  lerp: isMobile ? 0.12 : 0.075,
-  wheelMultiplier: 0.95,
-  touchMultiplier: 1.35,
-  syncTouch: true,
-  smoothWheel: true,
-});
-lenis.stop(); // locked during loader
-lenis.on('scroll', ({ progress }) => {
-  scrollP = THREE.MathUtils.clamp(progress, 0, 1);
-});
-function lenisRaf(time) {
-  lenis.raf(time);
-  requestAnimationFrame(lenisRaf);
-}
-requestAnimationFrame(lenisRaf);
-
-let chapterIdx = -1;
-function applyChapter(p) {
-  let idx = -1;
-  for (let i = 0; i < chapters.length; i++) if (p >= chapters[i].at) idx = i;
-  if (idx === chapterIdx) return;
-  chapterIdx = idx;
-  if (idx < 0) {
-    panel.classList.remove('is-on');
-    midTitle.classList.remove('is-dim');
-    return;
-  }
-  midTitle.classList.add('is-dim');
-  panelTitle.textContent = chapters[idx].title;
-  panelText.textContent = chapters[idx].text;
-  panel.classList.add('is-on');
-}
-
-// scrub progress rail
-const botRight = document.querySelector('.bot-right');
-botRight?.addEventListener('pointerdown', (e) => {
-  e.stopPropagation();
-  const scrub = (ev) => {
-    const rect = botRight.getBoundingClientRect();
-    const t = THREE.MathUtils.clamp((ev.clientY - rect.top) / Math.max(rect.height, 1), 0, 1);
-    const max = Math.max(1, document.documentElement.scrollHeight - innerHeight);
-    lenis.scrollTo(t * max, { immediate: false });
-  };
-  scrub(e);
-  const move = (ev) => scrub(ev);
-  const up = () => { window.removeEventListener('pointermove', move); window.removeEventListener('pointerup', up); };
-  window.addEventListener('pointermove', move);
-  window.addEventListener('pointerup', up);
-});
-
-$('menuBtn').onclick = () => { tick.play(); menu.classList.add('is-open'); };
-$('menuClose').onclick = () => { tick.play(); menu.classList.remove('is-open'); };
-menu.querySelectorAll('[data-jump]').forEach((b) => b.onclick = () => {
-  tick.play();
-  const max = Math.max(1, document.documentElement.scrollHeight - innerHeight);
-  lenis.scrollTo((+b.dataset.jump) * max, { lerp: 0.08 });
-  menu.classList.remove('is-open');
-});
-
-if (isMobile) moveHint.textContent = 'Scroll · drag to paint';
-
-const clock = new THREE.Clock();
-const PRESSURE_ITERS = isMobile ? 12 : 18;
-
-function frame() {
-  const dt = Math.min(clock.getDelta(), 0.033);
-  const t = clock.elapsedTime;
-  mouseSmooth.lerp(mouse, 1 - Math.exp(-dt * 10));
-
-  const force = new THREE.Vector2().subVectors(mouse, prevMouse);
-  const speed = Math.min(force.length() * (isMobile ? 55 : 70), 1.2);
-  const shouldSplat = paintActive && speed > 0.0008;
-
-  // advect velocity
-  runPass(advectMat, velB, () => {
-    advectMat.uniforms.uVelocity.value = velA.texture;
-    advectMat.uniforms.uSource.value = velA.texture;
-    advectMat.uniforms.uDissipation.value = 0.975;
-    advectMat.uniforms.uDt.value = dt;
-  });
-  [velA, velB] = [velB, velA];
-
-  if (shouldSplat) {
-    const fx = force.x * (isMobile ? 1.8 : 2.2);
-    const fy = force.y * (isMobile ? 1.8 : 2.2);
-    runPass(splatMat, velB, () => {
-      splatMat.uniforms.uTarget.value = velA.texture;
-      splatMat.uniforms.uPoint.value.copy(mouse);
-      splatMat.uniforms.uPrev.value.copy(prevMouse);
-      splatMat.uniforms.uColor.value.set(fx, fy, 0);
-      splatMat.uniforms.uRadius.value = isMobile ? 0.034 : 0.026;
-    });
-    [velA, velB] = [velB, velA];
-  }
-
-  // divergence + pressure + gradient (makes liquid trails, not blotches)
-  runPass(divergenceMat, divergence, () => {
-    divergenceMat.uniforms.uVelocity.value = velA.texture;
-  });
-  runPass(clearMat, pressureA, () => {
-    clearMat.uniforms.uValue.value = 0;
-  });
-  for (let i = 0; i < PRESSURE_ITERS; i++) {
-    runPass(pressureMat, pressureB, () => {
-      pressureMat.uniforms.uPressure.value = pressureA.texture;
-      pressureMat.uniforms.uDivergence.value = divergence.texture;
-    });
-    [pressureA, pressureB] = [pressureB, pressureA];
-  }
-  runPass(gradientMat, velB, () => {
-    gradientMat.uniforms.uPressure.value = pressureA.texture;
-    gradientMat.uniforms.uVelocity.value = velA.texture;
-  });
-  [velA, velB] = [velB, velA];
-
-  // density
-  runPass(advectMat, densityB, () => {
-    advectMat.uniforms.uVelocity.value = velA.texture;
-    advectMat.uniforms.uSource.value = densityA.texture;
-    advectMat.uniforms.uDissipation.value = 0.988;
-    advectMat.uniforms.uDt.value = dt;
-  });
-  [densityA, densityB] = [densityB, densityA];
-
-  if (shouldSplat) {
-    runPass(splatMat, densityB, () => {
-      splatMat.uniforms.uTarget.value = densityA.texture;
-      splatMat.uniforms.uPoint.value.copy(mouse);
-      splatMat.uniforms.uPrev.value.copy(prevMouse);
-      splatMat.uniforms.uColor.value.set(1.0, 0, 0);
-      splatMat.uniforms.uRadius.value = isMobile ? 0.036 : 0.028;
-    });
-    [densityA, densityB] = [densityB, densityA];
-  }
-
-  prevMouse.copy(mouse);
-  // keep a tiny idle motion so desktop hover still paints without click
-  if (!isMobile) paintActive = true;
-
-  const reveal = THREE.MathUtils.smoothstep(scrollP, 0.01, 0.22);
-  viewUniforms.uDensity.value = densityA.texture;
-  viewUniforms.uVelocity.value = velA.texture;
-  viewUniforms.uMouse.value.copy(mouseSmooth);
-  viewUniforms.uScroll.value = scrollP;
-  viewUniforms.uReveal.value = reveal;
-  viewUniforms.uTime.value = t;
-
-  rail.style.height = `${(scrollP * 100).toFixed(1)}%`;
-  midScroll.classList.toggle('is-hide', scrollP > 0.03);
-  if (scrollP > 0.02) moveHint.classList.add('is-hide');
-  applyChapter(scrollP);
-
-  renderer.render(scene, camera);
-  requestAnimationFrame(frame);
-}
-frame();
-</script>
-</body>
-</html>
+// A genuine vertex-displaced facade. The pointer shader remains a local surface effect.
+const canvas=document.createElement('canvas');canvas.setAttribute('aria-hidden','true');scene.appendChild(canvas);
+const gl=canvas.getContext('webgl2',{alpha:false,antialias:true,depth:true,stencil:false,preserveDrawingBuffer:false,powerPreference:'low-power'});
+if(!gl){canvas.remove();activate2D();return;}
+const vertex=`#version 300 es
+precision highp float;
+layout(location=0) in vec2 aXY;
+uniform sampler2D uDepth;
+uniform vec2 uResolution,uImage;
+uniform float uScroll;
+out vec2 vUv;
+out float vDepth;
+out vec3 vNormal;
+out float vReveal;
+out float vFacing;
+vec2 cover(vec2 uv){float ar=uResolution.x/uResolution.y,ir=uImage.x/uImage.y;vec2 s=ar>ir?vec2(1.,ir/ar):vec2(ar/ir,1.);return (uv-.5)*s+.5;}
+float dep(vec2 uv){return texture(uDepth,clamp(uv,vec2(.003),vec2(.997))).r;}
+float ease(float x){x=clamp(x,0.,1.);return x*x*(3.-2.*x);}
+void main(){
+ vec2 uv=aXY*.5+.5;
+ vec2 pic=cover(uv);
+ float d=dep(pic);
+ // Sculptural emergence, then a measured camera orbit; not a 2D UV zoom.
+ float emergence=ease((uScroll-.08)/.37);
+ float orbit=ease((uScroll-.36)/.49);
+ float closeup=ease((uScroll-.72)/.28);
+ float shape=pow(clamp(d,0.,1.),1.35);
+ float relief=(shape-.44)*1.64*emergence;
+ // A physical plane with vertex-displaced relief, not image-space distortion.
+ vec3 pos=vec3(aXY.x*1.22,aXY.y*1.22,relief);
+ float yaw=-.48*orbit+.12*closeup;
+ float pitch=.12*orbit;
+ float xx=pos.x*cos(yaw)+pos.z*sin(yaw);
+ float zz=-pos.x*sin(yaw)+pos.z*cos(yaw);
+ float yy=pos.y*cos(pitch)-zz*sin(pitch);
+ zz=pos.y*sin(pitch)+zz*cos(pitch);
+ float cameraDistance=3.65-.30*orbit;
+ float perspective=cameraDistance/(cameraDistance-zz);
+ float zoom=mix(.86,1.10,emergence)+.17*orbit+.08*closeup;
+ vec2 projected=vec2(xx,yy)*perspective*zoom;
+ projected+=vec2(.055*orbit-.08*closeup,-.02*orbit+.055*closeup);
+ gl_Position=vec4(projected,clamp(-zz*.17,-.95,.95),1.);
+ float dx=dep(pic+vec2(.003,0.))-dep(pic-vec2(.003,0.));
+ float dy=dep(pic+vec2(0.,.003))-dep(pic-vec2(0.,.003));
+ vNormal=normalize(vec3(-dx*57.*emergence,-dy*57.*emergence,1.));
+ vUv=pic;vDepth=d;vReveal=emergence;vFacing=orbit;
+}`;
+const fragment=`#version 300 es
+precision highp float;
+in vec2 vUv;
+in float vDepth;
+in vec3 vNormal;
+in float vReveal;
+in float vFacing;
+uniform sampler2D uPhoto;
+uniform vec2 uResolution,uMouse;
+uniform vec2 uTrail[6];
+uniform float uEnergy,uTime,uScroll;
+out vec4 outColor;
+void main(){
+ vec2 screen=gl_FragCoord.xy/uResolution;
+ vec2 aspect=vec2(uResolution.x/uResolution.y,1.);
+ vec2 motion=vec2(0.);
+ float illumination=0.;
+ for(int i=0;i<6;i++){
+  vec2 delta=(screen-uTrail[i])*aspect;
+  float dist=length(delta);
+  float radius=.115+float(i)*.009;
+  float envelope=exp(-dist*dist/(radius*radius*.31))*uEnergy;
+  float wave=sin(dist*64.-uTime*6.-float(i)*.6);
+  motion+=normalize(delta+vec2(.00001))*wave*envelope*.0032;
+  illumination+=envelope*.024;
+ }
+ vec2 pic=clamp(vUv+motion*(.85+vDepth*.30),vec2(.001),vec2(.999));
+ vec3 color=texture(uPhoto,pic).rgb;
+ vec3 normal=normalize(vNormal);
+ vec3 key=normalize(vec3(-.68+.45*uScroll,.60,.86));
+ float diffuse=max(dot(normal,key),0.);
+ float rim=pow(1.-max(dot(normal,vec3(0.,0.,1.)),0.),2.);
+ // Preserve photographic colours; modelled normals bring out architectural relief.
+ color*=mix(1.,.78+.46*diffuse,vReveal*.72);
+ color+=vec3(.95,.80,.63)*rim*vReveal*.075;
+ color+=vec3(1.,.93,.82)*illumination;
+ outColor=vec4(color,1.);
+}`;
+function compile(type,source){const sh=gl.createShader(type);gl.shaderSource(sh,source);gl.compileShader(sh);if(!gl.getShaderParameter(sh,gl.COMPILE_STATUS))throw Error(gl.getShaderInfoLog(sh));return sh;}
+let program;
+try{program=gl.createProgram();gl.attachShader(program,compile(gl.VERTEX_SHADER,vertex));gl.attachShader(program,compile(gl.FRAGMENT_SHADER,fragment));gl.linkProgram(program);if(!gl.getProgramParameter(program,gl.LINK_STATUS))throw Error(gl.getProgramInfoLog(program));}
+catch(e){console.warn('3D renderer unavailable',e);canvas.remove();activate2D();return;}
+const nx=152,ny=100;
+const vertices=[],indices=[];
+for(let y=0;y<=ny;y++)for(let x=0;x<=nx;x++)vertices.push(x/nx*2-1,y/ny*2-1);
+for(let y=0;y<ny;y++)for(let x=0;x<nx;x++){const a=y*(nx+1)+x,b=a+nx+1;indices.push(a,b,a+1,b,b+1,a+1);}
+const vao=gl.createVertexArray();gl.bindVertexArray(vao);
+const buffer=gl.createBuffer();gl.bindBuffer(gl.ARRAY_BUFFER,buffer);gl.bufferData(gl.ARRAY_BUFFER,new Float32Array(vertices),gl.STATIC_DRAW);gl.enableVertexAttribArray(0);gl.vertexAttribPointer(0,2,gl.FLOAT,false,0,0);
+const indexBuffer=gl.createBuffer();gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER,indexBuffer);gl.bufferData(gl.ELEMENT_ARRAY_BUFFER,new Uint16Array(indices),gl.STATIC_DRAW);
+gl.useProgram(program);gl.enable(gl.DEPTH_TEST);gl.depthFunc(gl.LEQUAL);gl.clearColor(.88,.87,.84,1.);
+function tex(img,unit){gl.activeTexture(gl.TEXTURE0+unit);const t=gl.createTexture();gl.bindTexture(gl.TEXTURE_2D,t);gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MIN_FILTER,gl.LINEAR);gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MAG_FILTER,gl.LINEAR);gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_WRAP_S,gl.CLAMP_TO_EDGE);gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_WRAP_T,gl.CLAMP_TO_EDGE);gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL,true);gl.texImage2D(gl.TEXTURE_2D,0,gl.RGBA,gl.RGBA,gl.UNSIGNED_BYTE,img);}
+function load(url){return new Promise((resolve,reject)=>{const im=new Image();im.onload=()=>resolve(im);im.onerror=reject;im.src=url;});}
+Promise.all([load('assets/hero.jpg'),load('assets/depth.png')]).then(([photoImg,depthImg])=>{
+tex(photoImg,0);tex(depthImg,1);
+gl.uniform1i(gl.getUniformLocation(program,'uPhoto'),0);gl.uniform1i(gl.getUniformLocation(program,'uDepth'),1);
+const u={res:gl.getUniformLocation(program,'uResolution'),img:gl.getUniformLocation(program,'uImage'),scroll:gl.getUniformLocation(program,'uScroll'),mouse:gl.getUniformLocation(program,'uMouse'),energy:gl.getUniformLocation(program,'uEnergy'),time:gl.getUniformLocation(program,'uTime'),trail:gl.getUniformLocation(program,'uTrail[0]')};
+gl.uniform2f(u.img,photoImg.width,photoImg.height);
+let last=0,live=true;document.addEventListener('visibilitychange',()=>live=!document.hidden);
+function resize(){const scale=Math.min(devicePixelRatio||1,1.3);const w=Math.max(1,Math.round(innerWidth*scale)),h=Math.max(1,Math.round(innerHeight*scale));if(canvas.width!==w||canvas.height!==h){canvas.width=w;canvas.height=h;gl.viewport(0,0,w,h);gl.uniform2f(u.res,w,h);}}
+resize();addEventListener('resize',resize,{passive:true});scene.classList.add('webgl');document.documentElement.dataset.renderer='architecture-presence-3d';
+function frame(now){requestAnimationFrame(frame);if(!live||now-last<20)return;last=now;resize();
+progress+=(scrollTarget-progress)*.075;
+pointer.x+=(pointer.tx-pointer.x)*.18;pointer.y+=(pointer.ty-pointer.y)*.18;
+if(now-lastMove>400)pointer.goal=0;
+pointer.strength+=(pointer.goal-pointer.strength)*.13;
+trails[0].x+=(pointer.x-trails[0].x)*.6;trails[0].y+=(pointer.y-trails[0].y)*.6;
+for(let i=1;i<6;i++){trails[i].x+=(trails[i-1].x-trails[i].x)*.24;trails[i].y+=(trails[i-1].y-trails[i].y)*.24;}
+const tr=[];for(let i=0;i<6;i++)tr.push(trails[i].x,trails[i].y);
+gl.uniform2f(u.mouse,pointer.x,pointer.y);gl.uniform2fv(u.trail,new Float32Array(tr));gl.uniform1f(u.scroll,progress);gl.uniform1f(u.energy,pointer.strength);gl.uniform1f(u.time,now*.001);
+gl.clear(gl.COLOR_BUFFER_BIT|gl.DEPTH_BUFFER_BIT);gl.bindVertexArray(vao);gl.drawElements(gl.TRIANGLES,indices.length,gl.UNSIGNED_SHORT,0);
+}requestAnimationFrame(frame);
+}).catch(e=>{console.warn('Asset loading failed',e);canvas.remove();activate2D()});
+})();
+</script></body></html>
