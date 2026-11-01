@@ -1,118 +1,478 @@
-<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#e9e8e4"><title>OBSERVATORY — Architecture in Motion</title><style>
-:root{--bg:#e9e8e4;--ink:#292923;--muted:#77776d;--progress:0}*{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;background:var(--bg);color:var(--ink);font-family:Arial,Helvetica,sans-serif;overflow-x:hidden}button{font:inherit;cursor:pointer}a{color:inherit}#intro{position:fixed;inset:0;z-index:20;background:var(--bg);display:grid;place-items:center;transition:opacity .8s,visibility .8s}#intro.off{opacity:0;visibility:hidden}#intro strong{font:normal clamp(48px,8vw,130px)/.9 Georgia,serif;letter-spacing:-.07em}#intro small{display:block;text-align:center;margin-top:30px;letter-spacing:.24em;font-size:10px;text-transform:uppercase}.top{position:fixed;z-index:12;top:0;left:0;right:0;padding:28px 4.5vw;display:flex;justify-content:space-between;align-items:center;mix-blend-mode:multiply}.brand{font:italic 25px Georgia,serif;text-decoration:none}.top .right{display:flex;gap:25px;align-items:center}.top button{border:0;background:none;text-transform:uppercase;font-size:10px;letter-spacing:.16em;padding:10px 0}.top .index{font-size:10px;letter-spacing:.16em}.hero{height:100vh;min-height:580px;position:sticky;top:0;overflow:hidden;background:#d9d9d5}.scene{position:absolute;inset:0;overflow:hidden;pointer-events:none}.scene img,.scene canvas{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center 46%}.scene img{filter:grayscale(1) contrast(.75) brightness(1.2);transform:scale(1.03)}.scene canvas{z-index:2;opacity:0;transition:opacity .8s}.scene.webgl canvas{opacity:1}.scene.webgl img{opacity:0}.scene.canvas-mode img{opacity:0}.scene.canvas-mode .depth-fallback{opacity:1;z-index:2;filter:grayscale(.35)}.ripple-layer{position:absolute;inset:0;z-index:3;pointer-events:none;opacity:1!important;filter:none!important}.wash{position:absolute;inset:0;z-index:3;pointer-events:none;background:linear-gradient(90deg,rgba(233,232,228,.50),transparent 38%,rgba(233,232,228,.04)),linear-gradient(0deg,rgba(233,232,228,.38),transparent 19%)}.hero-title{position:absolute;z-index:4;left:5vw;top:30%;pointer-events:none;transition:opacity .2s;will-change:opacity}.eyebrow{font-size:10px;letter-spacing:.24em;text-transform:uppercase}.hero-title h1{font:normal clamp(60px,8vw,125px)/.88 Georgia,serif;letter-spacing:-.085em;margin:25px 0}.hero-title h1 em{font-weight:normal}.hero-title p{font-size:13px;line-height:1.7;max-width:280px}.bottom{position:absolute;z-index:4;bottom:34px;left:5vw;right:5vw;display:flex;justify-content:space-between;align-items:end;text-transform:uppercase;font-size:10px;letter-spacing:.15em}.bottom span{line-height:1.8}.progress{width:110px;height:1px;background:#aaa;margin-top:12px}.progress:before{content:'';display:block;width:calc(var(--progress)*100%);height:100%;background:#292923}.story{position:relative;z-index:5;height:330vh;pointer-events:none}.moment{height:110vh;display:flex;align-items:center;padding:0 7vw}.moment:first-child{padding-top:25vh}.moment:nth-child(2){justify-content:flex-end}.moment .copy{max-width:380px;background:rgba(233,232,228,.91);padding:30px 34px;backdrop-filter:blur(15px)}.moment h2{font:normal clamp(42px,5vw,80px)/1 Georgia,serif;letter-spacing:-.06em;margin:17px 0}.moment p{font-size:13px;line-height:1.75}.closing{min-height:85vh;background:var(--bg);position:relative;z-index:6;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:80px 25px}.closing h2{font:normal clamp(54px,9vw,145px)/.93 Georgia,serif;letter-spacing:-.075em;max-width:1100px;margin:24px auto}.closing p{font-size:13px;line-height:1.8;max-width:490px}.credit{font-size:10px;color:var(--muted);margin-top:65px;line-height:1.8}.hint{position:fixed;z-index:7;bottom:20px;left:50%;transform:translateX(-50%);font-size:10px;letter-spacing:.15em;pointer-events:none;text-transform:uppercase}#fallback{position:fixed;right:16px;bottom:15px;z-index:10;font-size:10px;color:#555;display:none}@media(max-width:700px){.top{padding:20px}.top .index{display:none}.hero-title{left:7vw;top:25%}.hero-title h1{font-size:15vw}.hero-title p{max-width:230px}.moment{padding:0 5vw}.moment .copy{padding:22px}.wash{background:linear-gradient(90deg,rgba(233,232,228,.7),transparent 80%),linear-gradient(0deg,rgba(233,232,228,.8),transparent 30%)}.bottom{left:7vw;right:7vw}.hint{display:none}}@media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}#intro{display:none}}
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+<meta name="theme-color" content="#e8e8e8" />
+<title>Architecture — Form in motion</title>
+<style>
+  :root{--bg:#e8e8e8;--ink:#030303;--muted:rgba(3,3,3,.48)}
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{width:100%;min-height:100%;background:var(--bg);color:var(--ink);
+    font-family:Helvetica Neue,Helvetica,Arial,sans-serif;-webkit-font-smoothing:antialiased;overflow-x:hidden}
+  body.lock{overflow:hidden}
+  canvas#view{position:fixed;inset:0;width:100%;height:100%;display:block;z-index:1;opacity:0;transition:opacity .9s ease}
+  canvas#view.on{opacity:1}
+  .spacer{height:460vh;pointer-events:none}
 
-.scene.webgl canvas{opacity:1;filter:none}.scene.webgl img{opacity:0}.hero{touch-action:pan-y}@media(prefers-reduced-motion:reduce){.scene canvas{display:none!important}.scene img{opacity:1!important}}
+  /* loader */
+  #loader{position:fixed;inset:0;z-index:40;background:var(--bg);display:grid;place-items:center;transition:opacity .7s,visibility .7s}
+  #loader.off{opacity:0;visibility:hidden;pointer-events:none}
+  .loader-inner{width:min(920px,88vw);text-align:left}
+  .loader-brand{font:italic 22px Georgia,serif;margin-bottom:28px;opacity:0;transition:opacity .6s}
+  .loader-line{position:relative;font:normal clamp(28px,3.2vw,42px)/1.25 Georgia,"Times New Roman",serif;letter-spacing:-.02em}
+  .loader-line .ghost{color:rgba(3,3,3,.22)}
+  .loader-line .fill{position:absolute;left:0;top:0;white-space:nowrap;overflow:hidden;width:0%;color:var(--ink)}
+  .loader-pct{margin-top:18px;font-size:12px;letter-spacing:.2em;text-transform:uppercase;color:var(--muted)}
 
-/* Restored immersive sequence: hero remains pinned while the story scrolls. */
-.experience{position:relative;min-height:380vh;isolation:isolate}
-.experience>.hero{position:sticky;top:0;height:100vh;min-height:0;z-index:1}
-.experience>.story{position:relative;z-index:2;margin-top:-100vh;pointer-events:none}
-.experience>.story .moment{height:100vh;min-height:640px;display:flex;align-items:center;pointer-events:none}
-.experience>.story .copy{pointer-events:none;max-width:470px;backdrop-filter:blur(8px);background:rgba(240,237,229,.70);padding:clamp(22px,3vw,45px);border:1px solid rgba(255,255,255,.4)}
-.experience>.story .moment:first-child .copy{opacity:0}
-.scene img{filter:none;transform:none}
-.wash{background:linear-gradient(90deg,rgba(232,230,222,.27),transparent 50%),linear-gradient(0deg,rgba(232,230,222,.15),transparent 25%)}
-.scene.webgl canvas{opacity:1!important}
-@media(max-width:700px){.experience>.story .copy{margin:0 5vw;max-width:90vw}.experience>.story .moment{align-items:flex-end;padding-bottom:15vh}.experience>.story .moment:first-child{height:100vh}}
-</style></head><body><div id="intro"><div><strong>Observatory.</strong><small>An architectural experience</small></div></div><header class="top"><a href="#top" class="brand">Observatory.</a><div class="right"><span class="index">An immersive architectural experience</span><button id="audio" aria-pressed="false">Sound off</button></div></header><main id="top"><div class="experience"><section class="hero"><div class="scene" id="scene"><img src="assets/hero.jpg" alt="Photograph of the observatory building used for the architectural depth study"></div><div class="wash"></div><div class="hero-title"><span class="eyebrow">Architecture / An immersive encounter</span><h1>Form.<br><em>Light.</em><br>Presence.</h1><p>An architectural journey through light, texture and depth. Scroll to move closer. Move to disturb the surface.</p></div><div class="bottom"><span>Architectural photograph / Domed façade<br>Light, form and spatial perception</span><span>Scroll to explore<div class="progress"></div></span></div></section><div class="story"><section class="moment"><div class="copy"><span class="eyebrow">01 / The photograph</span><h2>A façade in full colour.</h2><p>Brick, vertical window bays and a domed roof. Every movement begins with the photographed structure itself.</p></div></section><section class="moment"><div class="copy"><span class="eyebrow">02 / The relief</span><h2>Beyond the photograph.</h2><p>As you scroll, the camera moves closer and shifts sideways. The building and the surrounding space respond at different depths.</p></div></section><section class="moment"><div class="copy"><span class="eyebrow">03 / The light</span><h2>Touch the light.</h2><p>Move your cursor over the stone and brick. A restrained ripple follows your hand while the scroll journey continues independently.</p></div></section></div></div><section class="closing"><span class="eyebrow">Architecture / reimagined</span><h2>From photograph<br><em>to architectural presence.</em></h2><p>On your architectural photographs, the same pipeline applies: image preparation, depth mapping, interactive light and scroll-directed relief.</p><div class="credit">Interactive architectural concept. Imagery is for demonstration only; replace with licensed client assets before publication.</div></section></main><div class="hint">Move to reveal · Scroll to explore</div><div id="fallback">Local depth renderer active</div>
+  /* chrome */
+  .chrome{position:fixed;inset:0;z-index:10;pointer-events:none;opacity:0;transition:opacity .8s}
+  .chrome.on{opacity:1}
+  .chrome button,.chrome a{pointer-events:auto;background:none;border:0;font:inherit;color:inherit;cursor:pointer;text-decoration:none}
+  .top-l,.top-r,.bot-l,.bot-r,.mid{position:absolute}
+  .top-l{left:clamp(20px,4vw,52px);top:clamp(18px,3vw,36px)}
+  .top-r{right:clamp(20px,4vw,52px);top:clamp(18px,3vw,36px)}
+  .bot-l{left:clamp(20px,4vw,52px);bottom:clamp(18px,3vw,36px)}
+  .bot-r{right:clamp(20px,4vw,52px);bottom:clamp(20px,3vw,40px);display:flex;flex-direction:column;align-items:flex-end;gap:12px}
+  .sound{font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:rgba(3,3,3,.45)}
+  .sound.on{color:var(--ink)}
+  .menu{font-size:13px}
+  .brand{display:flex;align-items:center;gap:10px;font-size:11px;letter-spacing:.26em;text-transform:uppercase}
+  .brand i{font:italic 22px Georgia,serif;font-style:italic;letter-spacing:0;text-transform:none}
+  .mid{left:0;right:0;top:50%;transform:translateY(-50%);display:flex;align-items:center;justify-content:space-between;
+    padding:0 clamp(20px,4vw,52px);gap:18px;pointer-events:none}
+  .mid-title{flex:1;text-align:center;font:normal clamp(24px,2.4vw,38px)/1.15 Georgia,"Times New Roman",serif;
+    transition:opacity .55s,transform .55s}
+  .mid-title.dim{opacity:0;transform:translateY(-12px)}
+  .mid-side{min-width:120px;font-size:13px;opacity:.8}
+  .mid-side.right{text-align:right}
+  .mid-side.hide{opacity:0}
+  .rail{width:1px;height:78px;background:rgba(3,3,3,.14);position:relative}
+  .rail>i{position:absolute;left:0;top:0;width:100%;height:0;background:#030303}
+  .dot{width:5px;height:5px;border-radius:50%;background:#030303}
+  .panel{position:absolute;left:clamp(20px,4vw,52px);bottom:clamp(88px,14vh,150px);max-width:min(420px,86vw);
+    opacity:0;transform:translateY(18px);transition:opacity .55s,transform .55s;pointer-events:none}
+  .panel.on{opacity:1;transform:translateY(0)}
+  .panel small{display:block;font-size:10px;letter-spacing:.22em;text-transform:uppercase;color:var(--muted);margin-bottom:12px}
+  .panel h2{font:normal clamp(30px,4vw,46px)/1.02 Georgia,"Times New Roman",serif;letter-spacing:-.03em;margin-bottom:12px}
+  .panel p{font-size:14px;line-height:1.6;color:rgba(3,3,3,.72);max-width:36ch}
+  .hint{position:fixed;left:50%;bottom:max(28px,env(safe-area-inset-bottom));transform:translateX(-50%);z-index:12;
+    font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:rgba(3,3,3,.38);pointer-events:none;transition:opacity .5s}
+  .hint.hide{opacity:0}
+  .end{position:relative;z-index:5;min-height:85vh;display:grid;place-items:center;text-align:center;padding:80px 24px;background:var(--bg)}
+  .end h2{font:normal clamp(42px,8vw,110px)/.95 Georgia,"Times New Roman",serif;letter-spacing:-.04em;max-width:14ch;margin:0 auto 22px}
+  .end p{font-size:14px;line-height:1.75;max-width:42ch;margin:0 auto;color:rgba(3,3,3,.7)}
+  .end .note{margin-top:40px;font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
+  @media(max-width:720px){
+    .mid{top:auto;bottom:38%;flex-direction:column;align-items:flex-start;padding:0 18px}
+    .mid-title{text-align:left;font-size:clamp(22px,6.5vw,30px);max-width:16ch}
+    .mid-side{min-width:0}.mid-side.right{text-align:left}
+    .panel{left:18px;right:18px;bottom:110px;max-width:none}
+    .top-l,.bot-l{left:16px}.top-r,.bot-r{right:16px}
+  }
+</style>
+</head>
+<body class="lock">
+<div id="loader">
+  <div class="loader-inner">
+    <div class="loader-brand" id="lb">Form.</div>
+    <div class="loader-line">
+      <div class="ghost">Architecture, beyond the image</div>
+      <div class="fill" id="lfill">Architecture, beyond the image</div>
+    </div>
+    <div class="loader-pct"><span id="lpct">0</span>%</div>
+  </div>
+</div>
+
+<canvas id="view" aria-label="Architectural bas-relief experience"></canvas>
+<div class="spacer" aria-hidden="true"></div>
+
+<div class="chrome" id="chrome">
+  <button class="sound top-l" id="sound" type="button">Sound off</button>
+  <div class="top-r"><span class="menu">Study</span></div>
+  <div class="mid">
+    <div class="brand mid-side"><i>Form.</i></div>
+    <div class="mid-title" id="midTitle">Architectural presence</div>
+    <div class="mid-side right" id="midScroll">Scroll down</div>
+  </div>
+  <div class="panel" id="panel">
+    <small id="pEyebrow">01</small>
+    <h2 id="pTitle"></h2>
+    <p id="pText"></p>
+  </div>
+  <div class="bot-l"><a href="#end">Continue</a></div>
+  <div class="bot-r">
+    <div class="rail"><i id="rail"></i></div>
+    <div class="dot"></div>
+  </div>
+</div>
+<div class="hint" id="hint">Scroll to travel · Move to light</div>
+
+<section class="end" id="end">
+  <div>
+    <h2>Your architecture.<br><em>The same presence.</em></h2>
+    <p>This study uses a public architectural bas-relief as stand-in. On your renders — façade, interior, detail — we build the same journey: material rising from the plane, light, scroll, silence.</p>
+    <div class="note">Not a catalogue · Not square metres · Form</div>
+  </div>
+</section>
+
 <script>
-(()=>{
+(() => {
 'use strict';
-const scene=document.getElementById('scene'),intro=document.getElementById('intro'),audio=document.getElementById('audio');
-const reduce=matchMedia('(prefers-reduced-motion: reduce)').matches;
-const photo=scene.querySelector('img');
-const pointer={x:.5,y:.5,tx:.5,ty:.5,strength:0,goal:0};
-const trails=Array.from({length:7},()=>({x:.5,y:.5}));
-let progress=0,scrollTarget=0,lastMove=0;
-const heroTitle=document.querySelector('.hero-title');
-function scrollUpdate(){const height=Math.max(1,document.querySelector('.experience').offsetHeight-innerHeight);scrollTarget=Math.min(1,Math.max(0,scrollY/height));document.documentElement.style.setProperty('--progress',scrollTarget.toFixed(3));heroTitle.style.opacity=String(Math.max(0,1-scrollY/Math.max(300,innerHeight*.72)));}
-addEventListener('scroll',scrollUpdate,{passive:true});scrollUpdate();
-addEventListener('pointermove',e=>{pointer.tx=e.clientX/innerWidth;pointer.ty=1-e.clientY/innerHeight;pointer.goal=1;lastMove=performance.now()},{passive:true});
-addEventListener('pointerleave',()=>pointer.goal=0,{passive:true});
-setTimeout(()=>intro.classList.add('off'),1050);
-let sound=null;audio.addEventListener('click',()=>{if(!sound){sound=new Audio('assets/ambient.mp3');sound.loop=true;sound.volume=.75;}if(sound.paused){sound.play().then(()=>{audio.textContent='Sound on';audio.setAttribute('aria-pressed','true')}).catch(()=>{audio.textContent='Sound unavailable'})}else{sound.pause();audio.textContent='Sound off';audio.setAttribute('aria-pressed','false')}});
-if(reduce)return;
-function activate2D(){
-const c=document.createElement('canvas');c.setAttribute('aria-hidden','true');scene.appendChild(c);
-const ctx=c.getContext('2d',{alpha:false});if(!ctx)return;
-const img=new Image();img.src='assets/hero.jpg';let last=0,px=.5,py=.5,energy=0;
-function draw(t){requestAnimationFrame(draw);if(document.hidden||t-last<33||!img.complete||!img.naturalWidth)return;last=t;
-const w=Math.min(innerWidth,900),h=Math.round(w*innerHeight/innerWidth);
-if(c.width!==w||c.height!==h){c.width=w;c.height=h}
-const scale=Math.max(w/img.width,h/img.height),sw=w/scale,sh=h/scale,sx=(img.width-sw)/2,sy=(img.height-sh)/2;
-ctx.drawImage(img,sx,sy,sw,sh,0,0,w,h);
-px+=(pointer.tx-px)*.2;py+=(pointer.ty-py)*.2;
-const target=performance.now()-lastMove<420?1:0;energy+=(target-energy)*.09;
-if(energy>.01){const mx=px*w,my=(1-py)*h,rad=Math.min(w,h)*.22;
-for(let i=-20;i<=20;i++){const y=my+i*rad/20;if(y<0||y>=h)continue;const d=Math.abs(i)/20,fade=Math.pow(1-d,2)*energy;const shift=Math.sin(i*.85-t*.004)*rad*.10*fade;
-const yy=Math.floor(y),hh=Math.max(2,Math.ceil(rad/20));const sourceY=sy+(yy/h)*sh;
-ctx.drawImage(img,sx+shift/scale,sourceY,sw,hh/scale,0,yy,w,hh);
+const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+const canvas = document.getElementById('view');
+const loader = document.getElementById('loader');
+const chrome = document.getElementById('chrome');
+const soundBtn = document.getElementById('sound');
+const midTitle = document.getElementById('midTitle');
+const midScroll = document.getElementById('midScroll');
+const panel = document.getElementById('panel');
+const pEyebrow = document.getElementById('pEyebrow');
+const pTitle = document.getElementById('pTitle');
+const pText = document.getElementById('pText');
+const rail = document.getElementById('rail');
+const hint = document.getElementById('hint');
+const lfill = document.getElementById('lfill');
+const lpct = document.getElementById('lpct');
+const lb = document.getElementById('lb');
+
+const chapters = [
+  { at: 0.10, eye: '01 / The wall', title: 'Form before measure.', text: 'Not lots and metres — the carved surface itself. Architecture as a presence you travel through.' },
+  { at: 0.34, eye: '02 / The relief', title: 'From plane to volume.', text: 'As you scroll, the bas-relief rises from the plaster field. The image does not fly toward you — it becomes space.' },
+  { at: 0.62, eye: '03 / The light', title: 'Light discovers stone.', text: 'Move across the carving. Soft light follows the geometry — no stock ripples, only the material.' },
+  { at: 0.84, eye: '04 / Your object', title: 'Your renders next.', text: 'Same principle on your architectural frames: preparation, depth, scroll-directed relief, atmosphere.' },
+];
+
+let targetScroll = 0, scroll = 0;
+let mx = 0.5, my = 0.5, tx = 0.5, ty = 0.5;
+let sound = null, soundOn = false;
+
+function setProgress(p) {
+  targetScroll = Math.min(1, Math.max(0, p));
 }
-const glow=ctx.createRadialGradient(mx,my,0,mx,my,rad);glow.addColorStop(0,'rgba(255,248,229,'+(.16*energy)+')');glow.addColorStop(1,'rgba(255,248,229,0)');ctx.fillStyle=glow;ctx.fillRect(mx-rad,my-rad,rad*2,rad*2);
+function onScroll() {
+  const max = Math.max(1, document.documentElement.scrollHeight - innerHeight);
+  setProgress(scrollY / max);
 }
-ctx.fillStyle='rgba(234,232,227,.025)';ctx.fillRect(0,0,w,h);
+addEventListener('scroll', onScroll, { passive: true });
+addEventListener('pointermove', e => {
+  tx = e.clientX / innerWidth;
+  ty = 1 - e.clientY / innerHeight;
+  hint.classList.add('hide');
+}, { passive: true });
+
+soundBtn.addEventListener('click', () => {
+  if (!sound) {
+    sound = new Audio('assets/ambient.mp3');
+    sound.loop = true;
+    sound.volume = 0.72;
+  }
+  if (sound.paused) {
+    sound.play().then(() => {
+      soundOn = true;
+      soundBtn.textContent = 'Sound on';
+      soundBtn.classList.add('on');
+    }).catch(() => { soundBtn.textContent = 'Sound unavailable'; });
+  } else {
+    sound.pause();
+    soundOn = false;
+    soundBtn.textContent = 'Sound off';
+    soundBtn.classList.remove('on');
+  }
+});
+
+function loadImage(src) {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    img.onload = () => resolve(img);
+    img.onerror = reject;
+    img.src = src;
+  });
 }
-img.onload=()=>{scene.classList.add('webgl');requestAnimationFrame(draw)};
+
+function compile(gl, type, src) {
+  const sh = gl.createShader(type);
+  gl.shaderSource(sh, src);
+  gl.compileShader(sh);
+  if (!gl.getShaderParameter(sh, gl.COMPILE_STATUS)) throw Error(gl.getShaderInfoLog(sh));
+  return sh;
 }
-const canvas=document.createElement('canvas');canvas.setAttribute('aria-hidden','true');scene.appendChild(canvas);
-const gl=canvas.getContext('webgl',{alpha:false,antialias:false,depth:false,stencil:false,preserveDrawingBuffer:false,powerPreference:'high-performance'});
-if(!gl){canvas.remove();activate2D();return}
-const vertex=`attribute vec2 aPosition;varying vec2 vUv;void main(){vUv=aPosition*.5+.5;gl_Position=vec4(aPosition,0.,1.);}`;
-const fragment=`precision mediump float;
-varying vec2 vUv;uniform sampler2D uPhoto,uDepth;uniform vec2 uResolution,uImage,uMouse;uniform float uScroll,uEnergy,uTime;uniform vec2 uTrail[7];
-vec2 cover(vec2 uv){float ar=uResolution.x/uResolution.y;float ir=uImage.x/uImage.y;vec2 scale=ar>ir?vec2(1.,ir/ar):vec2(ar/ir,1.);return (uv-.5)*scale+.5;}
-float dep(vec2 uv){return texture2D(uDepth,clamp(uv,0.001,.999)).r;}
-void main(){vec2 uv=vUv;vec2 m=uMouse;vec2 ratio=vec2(uResolution.x/uResolution.y,1.);vec2 motion=vec2(0.);float halo=0.;
-for(int i=0;i<7;i++){
-vec2 offset=(uv-uTrail[i])*ratio;float d=length(offset);float radius=.19+float(i)*.018;
-float influence=exp(-d*d/(radius*radius*.38))*uEnergy;
-float phase=d*(39.-float(i)*2.)-uTime*3.4-float(i)*.42;
-float ring=sin(phase)*influence;
-motion+=normalize(offset+vec2(.00001))*(.0045+float(i)*.00045)*ring;
-halo+=influence*(.09/float(i+2));
+
+async function boot() {
+  lb.style.opacity = '1';
+  const assets = Promise.all([
+    loadImage('assets/hero.jpg'),
+    loadImage('assets/depth.png'),
+    loadImage('assets/plaster.jpg'),
+  ]);
+
+  // fake+real loader progress
+  let fake = 0;
+  const tick = setInterval(() => {
+    fake = Math.min(92, fake + (92 - fake) * 0.08 + 0.4);
+    lfill.style.width = fake.toFixed(1) + '%';
+    lpct.textContent = String(Math.floor(fake));
+  }, 40);
+
+  const [hero, depth, plaster] = await assets;
+  clearInterval(tick);
+  lfill.style.width = '100%';
+  lpct.textContent = '100';
+
+  if (reduce) {
+    document.body.classList.remove('lock');
+    loader.classList.add('off');
+    chrome.classList.add('on');
+    canvas.style.display = 'none';
+    return;
+  }
+
+  const gl = canvas.getContext('webgl', {
+    alpha: false, antialias: false, depth: true, powerPreference: 'high-performance'
+  });
+  if (!gl) throw Error('WebGL unavailable');
+
+  const vs = `
+    attribute vec2 aPos;
+    attribute float aDepth;
+    varying vec2 vUv;
+    varying float vD;
+    varying vec3 vN;
+    uniform float uScroll;
+    uniform vec2 uMouse;
+    uniform float uAspect;
+    void main(){
+      vUv = aPos * .5 + .5;
+      vD = aDepth;
+      float rise = smoothstep(0.02, 0.55, uScroll);
+      float travel = smoothstep(0.08, 0.95, uScroll);
+      float d = clamp(aDepth, 0., 1.);
+      // bas-relief rises from the plaster plane — not a camera fly-in
+      vec3 p = vec3(aPos.x * uAspect, aPos.y, (d - 0.42) * 1.55 * rise);
+      // slow travel along the wall
+      p.x += (uMouse.x - .5) * 0.04;
+      p.y += travel * 0.42 + (uMouse.y - .5) * 0.03;
+      float zoom = 1.0 + travel * 0.18;
+      float cam = 3.35 - travel * 0.45;
+      float persp = cam / (cam - p.z);
+      vec2 screen = vec2(p.x / uAspect, p.y) * persp / zoom;
+      gl_Position = vec4(screen, clamp((cam - p.z) / 6., 0., 1.) * 2. - 1., 1.);
+      // cheap normal hint from depth slope in UV
+      vN = normalize(vec3((d - 0.5) * 2., (d - 0.5) * 1.2, 1.0));
+    }
+  `;
+
+  const fs = `
+    precision mediump float;
+    varying vec2 vUv;
+    varying float vD;
+    varying vec3 vN;
+    uniform sampler2D uPhoto, uDepth, uPlaster;
+    uniform vec2 uMouse, uRes, uImage;
+    uniform float uScroll, uTime;
+    vec2 cover(vec2 uv){
+      float ar = uRes.x / uRes.y;
+      float ir = uImage.x / uImage.y;
+      vec2 s = ar > ir ? vec2(1., ir / ar) : vec2(ar / ir, 1.);
+      return (uv - .5) * s + .5;
+    }
+    void main(){
+      // plaster field behind / around the carving
+      vec2 puv = vUv * vec2(uRes.x / uRes.y, 1.) * 1.35;
+      puv.y += uScroll * 0.35;
+      vec3 plaster = texture2D(uPlaster, puv).rgb;
+      plaster = mix(plaster, vec3(0.91), 0.42);
+
+      float open = smoothstep(0.01, 0.22, uScroll);
+      open = mix(open, 1.0, smoothstep(0.22, 0.7, uScroll) * 0.95);
+
+      // image travels down the wall with scroll (IG feeling)
+      vec2 uv = cover(vUv);
+      uv.y += uScroll * 0.28;
+      uv.x = (uv.x - .5) / mix(1.06, 0.94, smoothstep(0., .85, uScroll)) + .5;
+      uv = clamp(uv, 0.002, 0.998);
+
+      vec3 photo = texture2D(uPhoto, uv).rgb;
+      float depth = texture2D(uDepth, uv).r;
+      float dL = texture2D(uDepth, clamp(uv + vec2(-0.0025,0.),0.,1.)).r;
+      float dR = texture2D(uDepth, clamp(uv + vec2( 0.0025,0.),0.,1.)).r;
+      float dD = texture2D(uDepth, clamp(uv + vec2(0.,-0.0025),0.,1.)).r;
+      float dU = texture2D(uDepth, clamp(uv + vec2(0., 0.0025),0.,1.)).r;
+      vec3 N = normalize(vec3(dL - dR, dD - dU, mix(0.85, 0.32, open)));
+      vec3 L = normalize(vec3((uMouse.x - vUv.x) * 1.6, (uMouse.y - vUv.y) * 1.6, 1.05));
+      float lit = 0.68 + max(dot(N, L), 0.) * 0.42;
+      float relief = (depth - 0.45) * open * 0.18;
+      photo *= lit + relief;
+
+      // soft edge into plaster — the carving appears from the wall
+      float edge = smoothstep(0.04, 0.18, open) * (0.75 + depth * 0.35);
+      vec3 col = mix(plaster, photo, edge);
+      // slight warm stone grade
+      col = mix(col, vec3(dot(col, vec3(.299,.587,.114))), 0.06);
+      gl_FragColor = vec4(col, 1.);
+    }
+  `;
+
+  const program = gl.createProgram();
+  gl.attachShader(program, compile(gl, gl.VERTEX_SHADER, vs));
+  gl.attachShader(program, compile(gl, gl.FRAGMENT_SHADER, fs));
+  gl.linkProgram(program);
+  if (!gl.getProgramParameter(program, gl.LINK_STATUS)) throw Error(gl.getProgramInfoLog(program));
+  gl.useProgram(program);
+  gl.enable(gl.DEPTH_TEST);
+  gl.depthFunc(gl.LEQUAL);
+
+  function tex(img, unit) {
+    const t = gl.createTexture();
+    gl.activeTexture(gl.TEXTURE0 + unit);
+    gl.bindTexture(gl.TEXTURE_2D, t);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+    gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true);
+    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, img);
+    return t;
+  }
+  // plaster repeats
+  const plasterTex = gl.createTexture();
+  gl.activeTexture(gl.TEXTURE2);
+  gl.bindTexture(gl.TEXTURE_2D, plasterTex);
+  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.REPEAT);
+  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.REPEAT);
+  gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true);
+  gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, plaster);
+
+  tex(hero, 0);
+  tex(depth, 1);
+  gl.uniform1i(gl.getUniformLocation(program, 'uPhoto'), 0);
+  gl.uniform1i(gl.getUniformLocation(program, 'uDepth'), 1);
+  gl.uniform1i(gl.getUniformLocation(program, 'uPlaster'), 2);
+  gl.uniform2f(gl.getUniformLocation(program, 'uImage'), hero.width, hero.height);
+
+  const gridX = 180, gridY = 120;
+  const dc = document.createElement('canvas');
+  dc.width = depth.width; dc.height = depth.height;
+  const dctx = dc.getContext('2d', { willReadFrequently: true });
+  dctx.drawImage(depth, 0, 0);
+  const dp = dctx.getImageData(0, 0, depth.width, depth.height).data;
+  const verts = new Float32Array((gridX + 1) * (gridY + 1) * 3);
+  const ids = new Uint16Array(gridX * gridY * 6);
+  const imgAspect = hero.width / hero.height;
+  for (let y = 0; y <= gridY; y++) {
+    for (let x = 0; x <= gridX; x++) {
+      const u = x / gridX, v = y / gridY;
+      const viewAspect = Math.max(innerWidth / Math.max(innerHeight, 1), 0.5);
+      const cu = viewAspect > imgAspect ? u : (u - 0.5) * (viewAspect / imgAspect) + 0.5;
+      const cv = viewAspect > imgAspect ? (1 - v - 0.5) * (imgAspect / viewAspect) + 0.5 : 1 - v;
+      const ix = Math.max(0, Math.min(depth.width - 1, Math.floor(cu * (depth.width - 1))));
+      const iy = Math.max(0, Math.min(depth.height - 1, Math.floor(cv * (depth.height - 1))));
+      const i = (y * (gridX + 1) + x) * 3;
+      verts[i] = u * 2 - 1;
+      verts[i + 1] = v * 2 - 1;
+      verts[i + 2] = dp[(iy * depth.width + ix) * 4] / 255;
+    }
+  }
+  let k = 0;
+  for (let y = 0; y < gridY; y++) {
+    for (let x = 0; x < gridX; x++) {
+      const a = y * (gridX + 1) + x, b = a + 1, c = a + gridX + 1, d = c + 1;
+      ids.set([a, b, c, b, d, c], k); k += 6;
+    }
+  }
+  const vbo = gl.createBuffer();
+  gl.bindBuffer(gl.ARRAY_BUFFER, vbo);
+  gl.bufferData(gl.ARRAY_BUFFER, verts, gl.STATIC_DRAW);
+  const aPos = gl.getAttribLocation(program, 'aPos');
+  const aDepth = gl.getAttribLocation(program, 'aDepth');
+  gl.enableVertexAttribArray(aPos);
+  gl.vertexAttribPointer(aPos, 2, gl.FLOAT, false, 12, 0);
+  gl.enableVertexAttribArray(aDepth);
+  gl.vertexAttribPointer(aDepth, 1, gl.FLOAT, false, 12, 8);
+  const ibo = gl.createBuffer();
+  gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, ibo);
+  gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, ids, gl.STATIC_DRAW);
+
+  const uScroll = gl.getUniformLocation(program, 'uScroll');
+  const uMouse = gl.getUniformLocation(program, 'uMouse');
+  const uAspect = gl.getUniformLocation(program, 'uAspect');
+  const uRes = gl.getUniformLocation(program, 'uRes');
+  const uTime = gl.getUniformLocation(program, 'uTime');
+
+  function resize() {
+    const scale = Math.min(devicePixelRatio || 1, 1.5);
+    const w = Math.max(1, Math.round(innerWidth * scale));
+    const h = Math.max(1, Math.round(innerHeight * scale));
+    if (canvas.width !== w || canvas.height !== h) {
+      canvas.width = w; canvas.height = h;
+      gl.viewport(0, 0, w, h);
+      gl.uniform2f(uRes, w, h);
+      gl.uniform1f(uAspect, w / h);
+    }
+  }
+  addEventListener('resize', resize, { passive: true });
+  resize();
+
+  let chapter = -1;
+  function applyChapter(p) {
+    let idx = -1;
+    for (let i = 0; i < chapters.length; i++) if (p >= chapters[i].at) idx = i;
+    if (idx === chapter) return;
+    chapter = idx;
+    if (idx < 0) {
+      panel.classList.remove('on');
+      midTitle.classList.remove('dim');
+      return;
+    }
+    midTitle.classList.add('dim');
+    pEyebrow.textContent = chapters[idx].eye;
+    pTitle.textContent = chapters[idx].title;
+    pText.textContent = chapters[idx].text;
+    panel.classList.add('on');
+  }
+
+  setTimeout(() => {
+    loader.classList.add('off');
+    document.body.classList.remove('lock');
+    canvas.classList.add('on');
+    chrome.classList.add('on');
+    onScroll();
+  }, 420);
+
+  let last = 0, visible = true;
+  document.addEventListener('visibilitychange', () => { visible = !document.hidden; });
+
+  function frame(now) {
+    requestAnimationFrame(frame);
+    if (!visible || now - last < 18) return;
+    last = now;
+    resize();
+    scroll += (targetScroll - scroll) * 0.07;
+    mx += (tx - mx) * 0.08;
+    my += (ty - my) * 0.08;
+    gl.uniform1f(uScroll, scroll);
+    gl.uniform2f(uMouse, mx, my);
+    gl.uniform1f(uTime, now * 0.001);
+    gl.clearColor(0.91, 0.91, 0.91, 1);
+    gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+    gl.drawElements(gl.TRIANGLES, ids.length, gl.UNSIGNED_SHORT, 0);
+    rail.style.height = (scroll * 100).toFixed(1) + '%';
+    midScroll.classList.toggle('hide', scroll > 0.04);
+    if (scroll > 0.03) hint.classList.add('hide');
+    applyChapter(scroll);
+  }
+  requestAnimationFrame(frame);
 }
-// Scroll acts as a camera push-in, then an orbit; depth is sampled per pixel.
-float phase=uScroll;
-float push=smoothstep(0.,.78,phase);
-float orbit=smoothstep(.27,1.,phase);
-vec2 camera=vec2(-.075*orbit,.026*orbit);
-float zoom=1.+.46*push;
-vec2 screen=(uv-.5)/zoom+.5+camera;
-vec2 base=cover(screen);
-float depth=dep(base);
-vec2 reliefShift=vec2((depth-.42)*(.14*orbit+.045*push), (depth-.42)*(.038*push-.025*orbit));
-vec2 shift=motion*(.75+depth*.8);
-vec2 sampleUv=clamp(base+shift+reliefShift,vec2(.002),vec2(.998));
-vec3 c=texture2D(uPhoto,sampleUv).rgb;
-float depthX=dep(sampleUv+vec2(.0025,0.))-dep(sampleUv-vec2(.0025,0.));
-float depthY=dep(sampleUv+vec2(0.,.0025))-dep(sampleUv-vec2(0.,.0025));
-vec3 normal=normalize(vec3(-depthX*8.,-depthY*8.,1.));
-vec3 light=normalize(vec3((m.x-uv.x)*2.,(m.y-uv.y)*2.,.9));
-float illumination=max(0.,dot(normal,light));
-float relief=(illumination-.6)*uScroll*.22;
-float edge=length(motion)*3.5;
-// Keep natural brick and stone colours.
-c*=1.0+relief;c+=vec3(.07,.065,.055)*halo+vec3(edge);
-c=mix(c,vec3(.91,.905,.89),.035*(1.-uScroll));
-gl_FragColor=vec4(c,1.);
-}`;
-function compile(type,src){const sh=gl.createShader(type);gl.shaderSource(sh,src);gl.compileShader(sh);if(!gl.getShaderParameter(sh,gl.COMPILE_STATUS))throw Error(gl.getShaderInfoLog(sh));return sh}
-let program;try{program=gl.createProgram();gl.attachShader(program,compile(gl.VERTEX_SHADER,vertex));gl.attachShader(program,compile(gl.FRAGMENT_SHADER,fragment));gl.linkProgram(program);if(!gl.getProgramParameter(program,gl.LINK_STATUS))throw Error(gl.getProgramInfoLog(program))}catch(e){console.warn('WebGL shader unavailable',e);canvas.remove();activate2D();return}
-gl.useProgram(program);const buffer=gl.createBuffer();gl.bindBuffer(gl.ARRAY_BUFFER,buffer);gl.bufferData(gl.ARRAY_BUFFER,new Float32Array([-1,-1,1,-1,-1,1,1,1]),gl.STATIC_DRAW);const a=gl.getAttribLocation(program,'aPosition');gl.enableVertexAttribArray(a);gl.vertexAttribPointer(a,2,gl.FLOAT,false,0,0);
-function texture(img,unit){const tex=gl.createTexture();gl.activeTexture(gl.TEXTURE0+unit);gl.bindTexture(gl.TEXTURE_2D,tex);gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MIN_FILTER,gl.LINEAR);gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MAG_FILTER,gl.LINEAR);gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_WRAP_S,gl.CLAMP_TO_EDGE);gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_WRAP_T,gl.CLAMP_TO_EDGE);gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL,true);gl.texImage2D(gl.TEXTURE_2D,0,gl.RGBA,gl.RGBA,gl.UNSIGNED_BYTE,img);}
-function load(src){return new Promise((resolve,reject)=>{const img=new Image();img.onload=()=>resolve(img);img.onerror=reject;img.src=src})}
-Promise.all([load('assets/hero.jpg'),load('assets/depth.png')]).then(([img,depth])=>{
-texture(img,0);texture(depth,1);gl.uniform1i(gl.getUniformLocation(program,'uPhoto'),0);gl.uniform1i(gl.getUniformLocation(program,'uDepth'),1);
-const uniforms={resolution:gl.getUniformLocation(program,'uResolution'),image:gl.getUniformLocation(program,'uImage'),mouse:gl.getUniformLocation(program,'uMouse'),scroll:gl.getUniformLocation(program,'uScroll'),energy:gl.getUniformLocation(program,'uEnergy'),time:gl.getUniformLocation(program,'uTime'),trail:gl.getUniformLocation(program,'uTrail[0]')};
-gl.uniform2f(uniforms.image,img.width,img.height);
-function resize(){const scale=Math.min(devicePixelRatio||1,1.1);const width=Math.max(1,Math.round(innerWidth*scale)),height=Math.max(1,Math.round(innerHeight*scale));if(canvas.width!==width||canvas.height!==height){canvas.width=width;canvas.height=height;gl.viewport(0,0,width,height);gl.uniform2f(uniforms.resolution,width,height)}}
-addEventListener('resize',resize,{passive:true});resize();scene.classList.add('webgl');
-let last=0,visible=true;document.addEventListener('visibilitychange',()=>{visible=!document.hidden});
-function render(now){requestAnimationFrame(render);if(!visible||now-last<27)return;last=now;resize();progress+=(scrollTarget-progress)*.065;pointer.x+=(pointer.tx-pointer.x)*.16;pointer.y+=(pointer.ty-pointer.y)*.16;if(now-lastMove>420)pointer.goal=0;pointer.strength+=(pointer.goal-pointer.strength)*.11;
-trails[0].x+=(pointer.x-trails[0].x)*.7;trails[0].y+=(pointer.y-trails[0].y)*.7;
-for(let i=1;i<trails.length;i++){const k=.42-i*.036;trails[i].x+=(trails[i-1].x-trails[i].x)*k;trails[i].y+=(trails[i-1].y-trails[i].y)*k;}
-const packed=new Float32Array(14);for(let i=0;i<7;i++){packed[i*2]=trails[i].x;packed[i*2+1]=trails[i].y;}gl.uniform2fv(uniforms.trail,packed);
-gl.uniform2f(uniforms.mouse,pointer.x,pointer.y);gl.uniform1f(uniforms.scroll,progress);gl.uniform1f(uniforms.energy,pointer.strength);gl.uniform1f(uniforms.time,now*.001);gl.drawArrays(gl.TRIANGLE_STRIP,0,4)}requestAnimationFrame(render);
-}).catch(e=>{console.warn('Photo/depth assets unavailable',e);canvas.remove();activate2D()});
+
+boot().catch(err => {
+  console.error(err);
+  lpct.textContent = 'err';
+  document.body.classList.remove('lock');
+  loader.classList.add('off');
+});
 })();
-</script></body></html>
+</script>
+</body>
+</html>

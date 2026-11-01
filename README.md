@@ -1,7 +1,5 @@
-OBSERVATORY / RESTORED V7
+# Architecture — Form in motion
 
-Open index.html with assets/ alongside it. For best results serve via HTTP (python3 -m http.server 8080).
+Immersive study for architectural atmosphere: plaster field + public-domain bas-relief (Arch of Constantine), scroll-driven rise, soft light. Not a developer catalogue.
 
-Restored V2 localized cursor refraction. Scroll now holds scene sticky through three viewport-height chapters, changes camera zoom and orbit plus depth parallax. No CDN dependencies.
-
-Image licensing not established: replace before commercial publication. Depth is approximate 2.5D, not a true 3D reconstruction.
+Serve via HTTP. Sound on click.
