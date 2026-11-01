@@ -249,7 +249,7 @@ async function boot() {
       float travel = smoothstep(0.08, 0.95, uScroll);
       float d = clamp(aDepth, 0., 1.);
       // bas-relief rises from the plaster plane — not a camera fly-in
-      vec3 p = vec3(aPos.x * uAspect, aPos.y, (d - 0.42) * 1.55 * rise);
+      vec3 p = vec3(aPos.x * uAspect, aPos.y, (d - 0.42) * 1.15 * rise);
       // slow travel along the wall
       p.x += (uMouse.x - .5) * 0.04;
       p.y += travel * 0.42 + (uMouse.y - .5) * 0.03;
@@ -289,7 +289,7 @@ async function boot() {
 
       // image travels down the wall with scroll (IG feeling)
       vec2 uv = cover(vUv);
-      uv.y += uScroll * 0.28;
+      uv.y += uScroll * 0.18;
       uv.x = (uv.x - .5) / mix(1.06, 0.94, smoothstep(0., .85, uScroll)) + .5;
       uv = clamp(uv, 0.002, 0.998);
 
