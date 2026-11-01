@@ -59,6 +59,7 @@
   .mid-title{flex:1;text-align:center;font-family:PSTimes,serif;font-size:clamp(22px,1.944vw,37px);transition:opacity .55s,transform .55s}
   .mid-title.is-dim{opacity:0;transform:translateY(-10px)}
   .mid-scroll{min-width:150px;text-align:right;font-size:14px;opacity:.85;transition:opacity .4s}
+  .mid-side{min-width:150px}
   .mid-scroll.is-hide{opacity:0}
   .panel{position:absolute;left:clamp(24px,4vw,56px);bottom:clamp(88px,14vh,150px);max-width:min(420px,86vw);
     opacity:0;transform:translateY(16px);transition:opacity .55s,transform .55s;pointer-events:none}
@@ -128,25 +129,22 @@
   <canvas id="webgl"></canvas>
   <div class="scroll-spacer" aria-hidden="true"></div>
   <div class="hint" id="moveHint">Scroll to enter</div>
-  <button class="sound-cue" id="soundCue" type="button">Click anywhere for sound</button>
+  <button class="sound-cue" id="soundCue" type="button">Sound</button>
 
   <div class="chrome" id="chrome">
     <button class="sound" id="soundBtn" type="button">Sound off</button>
-    <div class="credit">Arch of Constantine · bas-relief study</div>
+    <div class="credit">Marble bas-relief · study</div>
     <div class="nav-top"><button type="button" id="menuBtn">Menu</button></div>
     <div class="midline">
-      <a class="mid-logo" href="https://qora.group" target="_blank" rel="noopener">
-        <svg viewBox="0 0 32 32" fill="none"><path d="M16 2.5 L27 8.2 V19.5 L16 29.5 L5 19.5 V8.2 Z" stroke="#030303" stroke-width="1.2"/><path d="M11.5 20 V12.5 H15.2 C17.1 12.5 18.2 13.5 18.2 15.1 C18.2 16.7 17.1 17.7 15.2 17.7 H13.2 V20 H11.5 Z M13.2 16.3 H15 C16 16.3 16.5 15.9 16.5 15.1 C16.5 14.3 16 13.9 15 13.9 H13.2 V16.3 Z" fill="#030303"/></svg>
-        <span>Qora</span>
-      </a>
-      <div class="mid-title" id="midTitle">Architectural forms</div>
+      <div class="mid-side brand"><i style="font:italic 22px Georgia,serif;letter-spacing:0;text-transform:none">Form.</i></div>
+      <div class="mid-title" id="midTitle">Architecture as presence</div>
       <div class="mid-scroll" id="midScroll">Scroll down</div>
     </div>
     <div class="panel" id="panel">
-      <h2 id="panelTitle">Form before measure</h2>
+      <h2 id="panelTitle">From the plane</h2>
       <p id="panelText">Scroll lets the architectural bas-relief flow through the field. Move to find the light.</p>
     </div>
-    <div class="bot-left"><a href="https://qora.group" target="_blank" rel="noopener">Continue →</a></div>
+    <div class="bot-left"><a href="https://qora.group" target="_blank" rel="noopener">See all</a></div>
     <div class="bot-right"><div class="rail"><i id="rail"></i></div><div class="dot"></div></div>
   </div>
 
@@ -194,9 +192,9 @@ const panelTitle = $('panelTitle');
 const panelText = $('panelText');
 
 const chapters = [
-  { at: 0.08, title: 'Form before measure', text: 'Not square metres. A bas-relief of architecture that travels with the scroll — presence first.' },
-  { at: 0.36, title: 'The wall becomes space', text: 'As you move, carved stone rises from the plaster field. Inspiration, not a catalogue.' },
-  { at: 0.66, title: 'Admiration, not sales', text: 'No lots. No brick counts. Only architectural form — the same feeling on your renders.' },
+  { at: 0.10, title: 'From the plane', text: 'Carved marble rises into the field. Not a gallery — a presence you travel through.' },
+  { at: 0.40, title: 'Architectural form', text: 'Scroll moves along the relief. Light finds the stone. Inspiration, nothing for sale.' },
+  { at: 0.70, title: 'Your architecture next', text: 'The same atmosphere on your renders — façade, detail, interior.' },
 ];
 
 // ——— sound: exact IG home theme (IG_HomePage_v5_v4.mp3) ———
@@ -573,11 +571,11 @@ const viewMat = new THREE.ShaderMaterial({
       float edge = mask * (1.0 - mask) * 4.0;
 
       // SCROLL JOURNEY (IG): relief fills the field as you scroll
-      float scrollOpen = smoothstep(0.02, 0.28, uScroll) * uReveal;
-      scrollOpen = mix(scrollOpen, 1.0, smoothstep(0.28, 0.72, uScroll) * 0.92);
+      float scrollOpen = smoothstep(0.01, 0.22, uScroll) * uReveal;
+      scrollOpen = mix(scrollOpen, 1.0, smoothstep(0.18, 0.65, uScroll) * 0.96);
       float open = max(mask, scrollOpen);
 
-      vec2 iuv = coverUv(vUv, 1920.0/1723.0);
+      vec2 iuv = coverUv(vUv, 2400.0/1500.0);
       // image flows down through the frame with scroll
       iuv.y += uScroll * 0.38;
       iuv.x = (iuv.x - 0.5) / mix(1.08, 0.92, smoothstep(0.0, 0.8, uScroll)) + 0.5;
@@ -593,7 +591,7 @@ const viewMat = new THREE.ShaderMaterial({
       float dU = texture2D(uDepth, clamp(iuv+vec2(0., 0.002),0.,1.)).r;
       vec3 N = normalize(vec3(dL-dR, dD-dU, mix(0.7, 0.35, scrollOpen)));
       vec3 Ldir = normalize(vec3((uMouse.x-0.5)*0.7, (uMouse.y-0.5)*0.7, 1.15));
-      float lit = 0.72 + clamp(dot(N, Ldir), 0., 1.) * 0.38;
+      float lit = 0.62 + clamp(dot(N, Ldir), 0., 1.) * 0.55;
       // volume reading grows with scroll
       float depthBoost = mix(1.0, 0.78 + texture2D(uDepth, iuv).r * 0.4, scrollOpen);
       img *= lit * depthBoost;
