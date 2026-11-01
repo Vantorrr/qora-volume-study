@@ -1,5 +1,7 @@
-# Architecture — Form in motion
+# Architecture — Forms in motion
 
-Immersive study for architectural atmosphere: plaster field + public-domain bas-relief (Arch of Constantine), scroll-driven rise, soft light. Not a developer catalogue.
+Immersive Garden–style study for architectural admiration:
+plaster field + architectural bas-relief (Arch of Constantine), Lenis scroll,
+soft fluid reveal, ambient. Not a developer catalogue.
 
-Serve via HTTP. Sound on click.
+Open via HTTPS/static host. Sound on first click.
